@@ -5,4 +5,19 @@ app = FastAPI()
 
 @app.get("/")
 def root():
-    return {"message": "AI HR Assistant API"}
+    return {"message": "Welcome"}
+
+
+@app.get("/hello")
+def hello():
+    return {"message": "Hello"}
+
+
+@app.get("/employees")
+def employees():
+    return []
+
+
+@app.get("/employees/{employee_id}")
+def employee(employee_id: int):
+    return {"id": employee_id}
