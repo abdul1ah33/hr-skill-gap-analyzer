@@ -78,6 +78,7 @@ function App() {
                 <SkillsPage 
                   skills={hrState.skills}
                   addSkill={hrState.addSkill}
+                  editSkill={hrState.editSkill}
                   deleteSkill={hrState.deleteSkill}
                 />
               } 
