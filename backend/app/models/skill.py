@@ -49,3 +49,8 @@ class Skill(Base):
     assessment_skills: Mapped[list[AssessmentSkill]] = relationship(
         back_populates="skill"
     )
+
+    positions: Mapped[list[Position]] = relationship(
+        secondary="position_skills",
+        back_populates="skills"
+    )

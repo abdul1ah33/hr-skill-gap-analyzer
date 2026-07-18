@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import enum
 from datetime import datetime
 
-from sqlalchemy import Boolean, Date, ForeignKey, UniqueConstraint
+from sqlalchemy import Boolean, Date, ForeignKey, UniqueConstraint, Enum as SQLAlchemyEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+
+class SkillLevel(str, enum.Enum):
+    BEGINNER = "Beginner"
+    INTERMEDIATE = "Intermediate"
+    ADVANCED = "Advanced"
+    EXPERT = "Expert"
 
 
 class EmployeeSkill(Base):
@@ -18,16 +26,18 @@ class EmployeeSkill(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
 
     employee_id: Mapped[int] = mapped_column(
-        ForeignKey("employees.id"),
+        ForeignKey("employees.id", ondelete="CASCADE"),
         nullable=False
     )
 
     skill_id: Mapped[int] = mapped_column(
-        ForeignKey("skills.id"),
+        ForeignKey("skills.id", ondelete="CASCADE"),
         nullable=False
     )
 
-    level: Mapped[int | None]
+    level: Mapped[SkillLevel | None] = mapped_column(
+        SQLAlchemyEnum(SkillLevel)
+    )
 
     years_experience: Mapped[int | None]
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import (
     String,
@@ -54,9 +55,6 @@ class Employee(Base):
         nullable=False,
     )
 
-    manager_id: Mapped[int | None] = mapped_column(
-        ForeignKey("employees.id")
-    )
 
     profile_picture: Mapped[str | None] = mapped_column(String(255))
 
@@ -91,20 +89,7 @@ class Employee(Base):
         back_populates="employees"
     )
 
-    manager: Mapped["Employee | None"] = relationship(
-        remote_side=[id],
-        back_populates="subordinates",
-    )
 
-    subordinates: Mapped[list["Employee"]] = relationship(
-        back_populates="manager"
-    )
-
-    managed_department: Mapped["Department | None"] = relationship(
-        back_populates="manager",
-        foreign_keys="Department.manager_employee_id",
-        uselist=False,
-    )
 
     user: Mapped["User | None"] = relationship(
         back_populates="employee",
@@ -125,3 +110,12 @@ class Employee(Base):
         back_populates="employee",
         cascade="all, delete-orphan",
     )
+
+    # ─── Computed properties ─────────────────────────────────────────────────
+
+    @property
+    def role(self) -> Optional["Role"]:
+        """Resolve the employee's role via their linked user account."""
+        if self.user is not None:
+            return self.user.role
+        return None

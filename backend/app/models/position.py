@@ -54,3 +54,8 @@ class Position(Base):
     employees: Mapped[list[Employee]] = relationship(
         back_populates="position"
     )
+
+    skills: Mapped[list[Skill]] = relationship(
+        secondary="position_skills",
+        back_populates="positions"
+    )
