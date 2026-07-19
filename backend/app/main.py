@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth.router import router as auth_router
+
 from app.api.endpoints.employees import router as employee_router
 from app.api.endpoints.departments import router as department_router
 from app.api.endpoints.positions import router as position_router
@@ -22,6 +24,12 @@ app.add_middleware(
 
 
 # ─── Routers ─────────────────────────────────────────────────────────────────
+
+app.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["Authentication"],
+)
 
 app.include_router(
     employee_router,

@@ -1,10 +1,19 @@
 from sqlalchemy.orm import Session
 
+from fastapi import HTTPException, status
+
 from app.auth import crud
-from app.auth.schemas import SignupRequest
+from app.auth.schemas import (
+    SignupRequest,
+    LoginRequest,
+    TokenResponse,
+)
 
-from app.core.security import hash_password
-
+from app.core.security import (
+    hash_password,
+    verify_password,
+    create_access_token,
+)
 
 def signup(
     db: Session,
@@ -20,7 +29,10 @@ def signup(
     )
 
     if employee is None:
-        raise ValueError("Employee not found.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Employee not found.",
+        )
 
 
     existing_user = crud.get_user_by_employee_id(
@@ -29,8 +41,9 @@ def signup(
     )
 
     if existing_user:
-        raise ValueError(
-            "This employee already has an account."
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This employee already has an account.",
         )
     
 
@@ -40,8 +53,9 @@ def signup(
     )
 
     if existing_username:
-        raise ValueError(
-            "Username already exists."
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This employee already has an account.",
         )
     
 
@@ -71,3 +85,46 @@ def signup(
     )
 
     return user
+
+
+def login(
+    db: Session,
+    login_data: LoginRequest,
+) -> TokenResponse:
+    """
+    Authenticate a user and return an access token.
+    """
+    user = crud.get_user_by_login(
+    db,
+    login_data.login,
+    )
+    
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username/email or password.",
+        )
+    
+    if not verify_password(
+        login_data.password,
+        user.password_hash,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username/email or password.",
+        )
+    
+    crud.update_last_login(
+        db,
+        user,
+    )
+    
+    access_token = create_access_token(
+        user_id=user.id,
+        role=user.role.name,
+    )
+
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+    )

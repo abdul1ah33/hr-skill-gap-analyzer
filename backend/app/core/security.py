@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+from app.auth.schemas import TokenPayload
+
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -24,13 +26,17 @@ def verify_password(
     )
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(
+    user_id: int,
+    role: str,
+) -> str:
     expire = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
 
     payload = {
         "sub": str(user_id),
+        "role": role,
         "exp": expire,
     }
 
@@ -42,7 +48,9 @@ def create_access_token(user_id: int) -> str:
     return token
 
 
-def decode_access_token(token: str) -> int:
+def decode_access_token(
+    token: str,
+) -> TokenPayload:
     try:
         payload = jwt.decode(
             token,
@@ -51,11 +59,18 @@ def decode_access_token(token: str) -> int:
         )
 
         user_id = payload.get("sub")
+        role = payload.get("role")
 
         if user_id is None:
             raise JWTError("Token does not contain a subject.")
 
-        return int(user_id)
+        if role is None:
+            raise JWTError("Token does not contain a role.")
+
+        return TokenPayload(
+            user_id=int(user_id),
+            role=role,
+        )
 
     except JWTError as exc:
         raise JWTError("Invalid or expired access token.") from exc

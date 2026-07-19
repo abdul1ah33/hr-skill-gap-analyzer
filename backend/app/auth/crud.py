@@ -5,6 +5,7 @@ from app.models.employee import Employee
 from app.models.user import User
 from app.models.role import Role
 
+from datetime import datetime, UTC
 
 
 def get_employee_by_email(
@@ -87,6 +88,16 @@ def create_user(
         employee_id=employee_id,
     )
     db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def update_last_login(
+    db: Session,
+    user: User,
+) -> User:
+    user.last_login = datetime.now(UTC)
     db.commit()
     db.refresh(user)
     return user
