@@ -4,7 +4,6 @@ export interface Employee {
   firstName: string;
   lastName: string;
   email: string; // mapped to work_email
-  personalEmail?: string;
   phone?: string;
   gender?: string;
   birthDate?: string;

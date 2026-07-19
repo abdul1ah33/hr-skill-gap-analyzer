@@ -1,0 +1,30 @@
+                    HR
+                     │
+          Creates Employee Record
+                     │
+      (name, email, department, position...)
+                     │
+                     ▼
+            Employee table only
+                     │
+────────────────────────────────────────────
+                     │
+             Employee opens website
+                     │
+                Clicks "Sign Up"
+                     │
+      Enters email + username + password
+                     │
+                     ▼
+     Does an employee with this email exist?
+              │                  │
+             No                 Yes
+              │                  │
+      Reject signup       Does a User exist?
+                              │         │
+                             Yes       No
+                              │         │
+                       Reject signup  Create User
+                                         │
+                                         ▼
+                              Employee can log in

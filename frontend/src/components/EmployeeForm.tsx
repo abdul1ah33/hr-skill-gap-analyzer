@@ -31,7 +31,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [personalEmail, setPersonalEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [birthDate, setBirthDate] = useState("");
@@ -60,7 +59,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setFirstName(employee.firstName || "");
       setLastName(employee.lastName || "");
       setEmail(employee.email || "");
-      setPersonalEmail(employee.personalEmail || "");
       setPhone(employee.phone || "");
       setAddress(employee.address || "");
       setBirthDate(employee.birthDate || "");
@@ -82,7 +80,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setFirstName("");
       setLastName("");
       setEmail("");
-      setPersonalEmail("");
       setPhone("");
       setAddress("");
       setBirthDate("");
@@ -143,7 +140,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       firstName,
       lastName,
       email,
-      personalEmail,
       phone,
       address,
       birthDate,
@@ -244,8 +240,6 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                   <input 
                     type="email" 
                     className="form-control" 
-                    value={personalEmail} 
-                    onChange={e => setPersonalEmail(e.target.value)} 
                     placeholder="e.g. ahmed@gmail.com" 
                   />
                 </div>

@@ -9,7 +9,6 @@ const mapEmployeeToBackend = (emp: Partial<Employee>): any => {
   if (emp.firstName !== undefined) mapped.first_name = emp.firstName;
   if (emp.lastName !== undefined) mapped.last_name = emp.lastName;
   if (emp.email !== undefined) mapped.work_email = emp.email;
-  if (emp.personalEmail !== undefined) mapped.personal_email = emp.personalEmail;
   if (emp.phone !== undefined) mapped.phone = emp.phone;
   if (emp.gender !== undefined) mapped.gender = emp.gender;
   if (emp.birthDate !== undefined) mapped.birth_date = emp.birthDate;
@@ -31,7 +30,6 @@ const mapEmployeeToFrontend = (data: any): Employee => {
     firstName: data.first_name,
     lastName: data.last_name,
     email: data.work_email,
-    personalEmail: data.personal_email || undefined,
     phone: data.phone || undefined,
     gender: data.gender || undefined,
     birthDate: data.birth_date || undefined,

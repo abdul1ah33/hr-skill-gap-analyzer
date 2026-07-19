@@ -27,11 +27,13 @@ class Employee(Base):
 
     last_name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    work_email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(100),
+        unique=True,
+        nullable=False,
+    )
 
-    personal_email: Mapped[str | None] = mapped_column(String(100))
-
-    phone: Mapped[str | None] = mapped_column(String(20))
+    phone: Mapped[str | None] = mapped_column(String(20), unique=True)
 
     gender: Mapped[str | None] = mapped_column(String(20))
 
