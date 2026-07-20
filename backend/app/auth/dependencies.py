@@ -24,7 +24,7 @@ def get_current_user(
     
     try:
         payload = decode_access_token(token)
-    except Exception:
+    except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -42,3 +42,15 @@ def get_current_user(
         )
     
     return user
+
+
+def get_current_hr(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    if current_user.role.name != "HR":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to access this resource.",
+        )
+    
+    return current_user
