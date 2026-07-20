@@ -60,7 +60,6 @@ class User(Base):
         onupdate=datetime.utcnow,
     )
 
-
     role: Mapped["Role"] = relationship(
         back_populates="users"
     )
