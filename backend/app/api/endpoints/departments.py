@@ -16,7 +16,12 @@ from app.crud.department import (
     get_department_count,
 )
 
-router = APIRouter()
+from backend.app.auth.dependencies import get_current_hr
+
+
+router = APIRouter(
+    dependencies=[Depends(get_current_hr)]
+)
 
 
 @router.post("/", response_model=DepartmentResponse, status_code=201)

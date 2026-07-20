@@ -25,7 +25,12 @@ from app.crud.position_skill import (
 )
 from app.crud.skill import get_skill
 
-router = APIRouter()
+from backend.app.auth.dependencies import get_current_hr
+
+
+router = APIRouter(
+    dependencies=[Depends(get_current_hr)]
+)
 
 
 @router.post("/", response_model=PositionResponse, status_code=201)

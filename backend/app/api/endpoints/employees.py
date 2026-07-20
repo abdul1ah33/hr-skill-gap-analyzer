@@ -28,8 +28,12 @@ from app.crud.employee_skill import (
     get_employee_skill,
 )
 from app.crud.skill import get_skill
+from app.auth.dependencies import get_current_hr
 
-router = APIRouter()
+
+router = APIRouter(
+    dependencies=[Depends(get_current_hr)]
+)
 
 
 # ─── POST /employees ─────────────────────────────────────────────────────────
