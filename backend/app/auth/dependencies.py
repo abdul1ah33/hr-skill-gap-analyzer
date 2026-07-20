@@ -21,7 +21,9 @@ def get_current_user(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    
+    """
+    Authenticate the current user using a JWT access token.
+    """
     try:
         payload = decode_access_token(token)
     except JWTError:
@@ -47,10 +49,27 @@ def get_current_user(
 def get_current_hr(
     current_user: User = Depends(get_current_user),
 ) -> User:
+    """
+    Ensure the authenticated user has the HR role.
+    """
     if current_user.role.name != "HR":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to access this resource.",
+            detail="Invalid authentication credentials.",
+        )
+    
+    return current_user
+
+def get_current_employee(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Ensure the authenticated user has the Employee role.
+    """
+    if current_user.role.name != "Employee":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid authentication credentials.",
         )
     
     return current_user
