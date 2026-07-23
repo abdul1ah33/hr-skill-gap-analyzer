@@ -12,7 +12,7 @@ from app.crud.skill import (
     get_skill_count,
 )
 
-from backend.app.auth.dependencies import get_current_hr
+from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(

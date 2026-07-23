@@ -25,7 +25,7 @@ from app.crud.position_skill import (
 )
 from app.crud.skill import get_skill
 
-from backend.app.auth.dependencies import get_current_hr
+from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(

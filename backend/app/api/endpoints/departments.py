@@ -16,7 +16,7 @@ from app.crud.department import (
     get_department_count,
 )
 
-from backend.app.auth.dependencies import get_current_hr
+from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(

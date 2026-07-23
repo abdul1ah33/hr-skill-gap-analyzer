@@ -7,6 +7,7 @@ from app.api.endpoints.employees import router as employee_router
 from app.api.endpoints.departments import router as department_router
 from app.api.endpoints.positions import router as position_router
 from app.api.endpoints.skills import router as skill_router
+from app.api.endpoints.me import router as me_router
 
 app = FastAPI(
     title="AI-Based HR Assisting App",
@@ -29,6 +30,12 @@ app.include_router(
     auth_router,
     prefix="/auth",
     tags=["Authentication"],
+)
+
+app.include_router(
+    me_router,
+    prefix="/me",
+    tags=["Me"],
 )
 
 app.include_router(

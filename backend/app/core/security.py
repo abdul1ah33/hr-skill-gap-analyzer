@@ -1,6 +1,11 @@
 from datetime import datetime, timedelta, timezone
 
 from app.auth.schemas import TokenPayload
+from app.core.config import (
+    SECRET_KEY,
+    ALGORITHM,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+)
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
