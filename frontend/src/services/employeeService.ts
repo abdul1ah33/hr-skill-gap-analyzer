@@ -5,44 +5,45 @@ import type { Employee, Department, Position, Skill } from "../types/employee";
 
 const mapEmployeeToBackend = (emp: Partial<Employee>): any => {
   const mapped: any = {};
-  if (emp.employeeNumber !== undefined) mapped.employee_number = emp.employeeNumber;
-  if (emp.firstName !== undefined) mapped.first_name = emp.firstName;
-  if (emp.lastName !== undefined) mapped.last_name = emp.lastName;
-  if (emp.email !== undefined) mapped.work_email = emp.email;
-  if (emp.phone !== undefined) mapped.phone = emp.phone;
-  if (emp.gender !== undefined) mapped.gender = emp.gender;
-  if (emp.birthDate !== undefined) mapped.birth_date = emp.birthDate;
-  if (emp.address !== undefined) mapped.address = emp.address;
-  if (emp.departmentId !== undefined) mapped.department_id = emp.departmentId;
-  if (emp.roleId !== undefined) mapped.position_id = emp.roleId;
-  if (emp.employmentType !== undefined) mapped.employment_type = emp.employmentType;
-  if (emp.hireDate !== undefined) mapped.hire_date = emp.hireDate;
-  if (emp.salary !== undefined) mapped.salary = emp.salary;
-  if (emp.status !== undefined) mapped.employment_status = emp.status;
-  if (emp.certifications !== undefined) mapped.notes = emp.certifications;
+  if (emp.employeeNumber) mapped.employee_number = emp.employeeNumber;
+  if (emp.firstName) mapped.first_name = emp.firstName;
+  if (emp.lastName) mapped.last_name = emp.lastName;
+  if (emp.email) mapped.email = emp.email; // Send as 'email'
+  if (emp.phone) mapped.phone = emp.phone;
+  if (emp.gender) mapped.gender = emp.gender;
+  if (emp.birthDate && emp.birthDate.trim() !== "") mapped.birth_date = emp.birthDate;
+  if (emp.hireDate && emp.hireDate.trim() !== "") mapped.hire_date = emp.hireDate;
+  if (emp.address) mapped.address = emp.address;
+  if (emp.departmentId) mapped.department_id = Number(emp.departmentId);
+  if (emp.roleId) mapped.position_id = Number(emp.roleId);
+  if (emp.employmentType) mapped.employment_type = emp.employmentType;
+  if (emp.status) mapped.employment_status = emp.status;
+  if (emp.salary !== undefined && emp.salary !== null && emp.salary !== 0) mapped.salary = Number(emp.salary);
+  if (emp.certifications) mapped.notes = emp.certifications;
   return mapped;
 };
 
 const mapEmployeeToFrontend = (data: any): Employee => {
   return {
     id: data.id,
-    employeeNumber: data.employee_number,
-    firstName: data.first_name,
-    lastName: data.last_name,
-    email: data.work_email,
+    employeeNumber: data.employee_number || data.employeeNumber || (data.id ? `EMP-${data.id}` : ""),
+    firstName: data.first_name || data.firstName || "",
+    lastName: data.last_name || data.lastName || "",
+    email: data.email || "",
     phone: data.phone || undefined,
     gender: data.gender || undefined,
-    birthDate: data.birth_date || undefined,
+    birthDate: data.birth_date || data.birthDate || undefined,
     address: data.address || undefined,
-    departmentId: data.department_id,
-    roleId: data.position_id,
-    employmentType: data.employment_type || undefined,
-    hireDate: data.hire_date,
+    departmentId: data.department_id || data.departmentId || 0,
+    roleId: data.position_id || data.roleId || 0,
+    employmentType: data.employment_type || data.employmentType || undefined,
+    hireDate: data.hire_date || data.hireDate || "",
     salary: data.salary !== null && data.salary !== undefined ? parseFloat(data.salary) : undefined,
-    status: data.employment_status || "Active",
-    certifications: data.notes || undefined,
-    // Safely extract skill list if present in response
-    skills: data.employee_skills ? data.employee_skills.map((s: any) => s.skill?.name).filter(Boolean) : []
+    status: data.employment_status || data.status || "Active",
+    certifications: data.notes || data.certifications || undefined,
+    skills: data.employee_skills 
+      ? data.employee_skills.map((s: any) => s.skill?.name).filter(Boolean) 
+      : Array.isArray(data.skills) ? data.skills : []
   };
 };
 

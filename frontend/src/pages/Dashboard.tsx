@@ -24,8 +24,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     ? (employees.reduce((acc, curr) => acc + (curr.yearsExperience || 0), 0) / totalEmployees).toFixed(1)
     : "0";
 
-  const activeEmployees = employees.filter(e => e.status.toLowerCase() === "active").length;
-  const leaveEmployees = employees.filter(e => e.status.toLowerCase() === "on leave" || e.status.toLowerCase() === "leave").length;
+  const activeEmployees = employees.filter(e => (e?.status || "").toLowerCase() === "active").length;
+  const leaveEmployees = employees.filter(e => {
+    const s = (e?.status || "").toLowerCase();
+    return s === "on leave" || s === "leave";
+  }).length;
   
   // Get recent 4 employees
   const recentEmployees = [...employees]
@@ -109,7 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                       <div className="employee-initials" style={{ width: "34px", height: "34px", fontSize: "0.85rem" }}>
-                        {emp.firstName[0]}{emp.lastName[0]}
+                        {emp.firstName ? emp.firstName[0] : "E"}{emp.lastName ? emp.lastName[0] : ""}
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{emp.firstName} {emp.lastName}</div>

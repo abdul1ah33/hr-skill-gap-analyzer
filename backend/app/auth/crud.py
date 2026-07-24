@@ -20,6 +20,17 @@ def get_employee_by_email(
     )
 
 
+def get_user_by_id(
+    db: Session,
+    user_id: int,
+) -> User | None:
+    return (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+
 def get_user_by_employee_id(
     db: Session,
     employee_id: int,

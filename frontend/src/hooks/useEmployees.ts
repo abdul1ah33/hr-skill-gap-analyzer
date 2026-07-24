@@ -161,7 +161,19 @@ export const useEmployees = () => {
         }
       }
 
-
+      if (skillData.length === 0) {
+        if (storedSkills) {
+          skillData = JSON.parse(storedSkills);
+        } else {
+          skillData = [
+            { id: 1, name: "React", category: "Frontend", description: "UI Framework" },
+            { id: 2, name: "TypeScript", category: "Language", description: "Typed JavaScript" },
+            { id: 3, name: "Python", category: "Backend", description: "Programming Language" },
+            { id: 4, name: "Node.js", category: "Backend", description: "JavaScript Runtime" }
+          ];
+          localStorage.setItem("hr_skills", JSON.stringify(skillData));
+        }
+      }
 
       setEmployees(empData);
       setDepartments(deptData);
@@ -252,21 +264,26 @@ export const useEmployees = () => {
   // Filtered employees
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => {
-      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
-      const email = emp.email.toLowerCase();
-      const empNum = emp.employeeNumber.toLowerCase();
+      if (!emp) return false;
+      const firstName = emp.firstName || "";
+      const lastName = emp.lastName || "";
+      const fullName = `${firstName} ${lastName}`.toLowerCase();
+      const email = (emp.email || "").toLowerCase();
+      const empNum = (emp.employeeNumber || "").toLowerCase();
+      const search = (searchQuery || "").toLowerCase();
+
       const matchesSearch = 
-        fullName.includes(searchQuery.toLowerCase()) || 
-        email.includes(searchQuery.toLowerCase()) ||
-        empNum.includes(searchQuery.toLowerCase());
+        fullName.includes(search) || 
+        email.includes(search) ||
+        empNum.includes(search);
 
       const matchesDept = 
         filterDepartment === "all" || 
-        emp.departmentId.toString() === filterDepartment;
+        (emp.departmentId !== undefined && emp.departmentId !== null && emp.departmentId.toString() === filterDepartment);
 
       const matchesStatus = 
         filterStatus === "all" || 
-        emp.status.toLowerCase() === filterStatus.toLowerCase();
+        (emp.status || "").toLowerCase() === filterStatus.toLowerCase();
 
       return matchesSearch && matchesDept && matchesStatus;
     });

@@ -3,7 +3,7 @@ export interface Employee {
   employeeNumber: string;
   firstName: string;
   lastName: string;
-  email: string; // mapped to work_email
+  email: string;
   phone?: string;
   gender?: string;
   birthDate?: string;

@@ -64,12 +64,19 @@ def get_current_employee(
     current_user: User = Depends(get_current_user),
 ) -> User:
     """
-    Ensure the authenticated user has the Employee role.
+    Ensure the authenticated user is an employee and is linked
+    to an employee record.
     """
     if current_user.role.name != "Employee":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Invalid authentication credentials.",
         )
-    
+
+    if current_user.employee_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Employee account is not linked to an employee record.",
+        )
+
     return current_user
