@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from app.core.exceptions import EmployeeNotFoundError
-from app.models.employee import Employee
+from app.core.exceptions import EmployeeNotFoundError, SkillNotFoundError, PositionNotFoundError
 
+from app.models.employee import Employee
 from app.models.position import Position
-from app.core.exceptions import PositionNotFoundError
+from app.models.skill import Skill
 
 
 def get_position_or_raise(
