@@ -25,7 +25,7 @@ from app.crud.employee_skill import (
     add_skill_to_employee,
     update_employee_skill,
     remove_skill_from_employee,
-    get_employee_skill,
+    get_employee_skills,
 )
 from app.crud.skill import get_skill
 

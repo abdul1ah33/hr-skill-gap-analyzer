@@ -15,7 +15,7 @@ from app.core.exceptions import (
     EmployeeSkillNotFoundError,
     EmployeeSkillAlreadyExistsError,
 )
-from backend.app.crud import position_skill
+from app.crud import position_skill
 
 
 

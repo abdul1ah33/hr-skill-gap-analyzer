@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.db.database import get_db
+from app.dependencies import get_db
 
 from app.crud.employee_skill import (
     add_skill_to_employee,

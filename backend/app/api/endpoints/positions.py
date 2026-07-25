@@ -16,7 +16,7 @@ from app.crud.position import (
     delete_position,
     get_position_count,
 )
-from app.schemas.position_skill import PositionSkillAdd
+from app.schemas.position_skill import PositionSkillBase
 from app.schemas.skill import SkillResponse
 from app.crud.position_skill import (
     get_position_skills,
@@ -105,7 +105,7 @@ def get_position_skills_route(position_id: int, db: Session = Depends(get_db)):
 @router.post("/{position_id}/skills")
 def add_position_skill_route(
     position_id: int,
-    pos_skill: PositionSkillAdd,
+    pos_skill: PositionSkillBase,
     db: Session = Depends(get_db),
 ):
     position = get_position(db, position_id)
