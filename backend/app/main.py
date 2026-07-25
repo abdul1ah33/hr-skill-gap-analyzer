@@ -9,12 +9,17 @@ from app.api.endpoints.positions import router as position_router
 from app.api.endpoints.skills import router as skill_router
 from app.api.endpoints.me import router as me_router
 from app.api.endpoints.employee_skill import router as employee_skill_router
+from app.api.endpoints.position_skill import router as position_skill_router
+
+from app.core.exception_handlers import register_exception_handlers
 
 app = FastAPI(
     title="AI-Based HR Assisting App",
     description="REST API for the AI-powered HR assistant.",
     version="1.0.0",
 )
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,6 +72,12 @@ app.include_router(
     employee_skill_router,
     prefix="/employees/{employee_id}/skills",
     tags=["Employee Skills"],
+)
+
+app.include_router(
+    position_skill_router,
+    prefix="/positions/{position_id}/skills",
+    tags=["Position Skills"],
 )
 
 # ─── Health check ─────────────────────────────────────────────────────────────

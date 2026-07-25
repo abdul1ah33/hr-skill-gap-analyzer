@@ -7,6 +7,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .position_skill import PositionSkill
+
 
 class Skill(Base):
     __tablename__ = "skills"
@@ -50,7 +55,6 @@ class Skill(Base):
         back_populates="skill"
     )
 
-    positions: Mapped[list[Position]] = relationship(
-        secondary="position_skills",
-        back_populates="skills"
+    position_skills: Mapped[list["PositionSkill"]] = relationship(
+        back_populates="skill",
     )

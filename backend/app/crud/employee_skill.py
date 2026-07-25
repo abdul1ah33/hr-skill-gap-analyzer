@@ -2,11 +2,9 @@ from datetime import date
 
 from sqlalchemy.orm import Session, selectinload
 
-from app.crud.helpers import get_employee_or_raise
+from app.crud.helpers import get_employee_or_raise, get_skill_or_raise
 
-from app.models.employee import Employee
 from app.models.employee_skill import EmployeeSkill
-from app.models.skill import Skill
 
 from app.schemas.employee_skill import (
     EmployeeSkillCreate,
@@ -15,9 +13,9 @@ from app.schemas.employee_skill import (
 
 from app.core.exceptions import (
     EmployeeSkillNotFoundError,
-    SkillNotFoundError,
     EmployeeSkillAlreadyExistsError,
 )
+from backend.app.crud import position_skill
 
 
 
@@ -31,13 +29,7 @@ def add_skill_to_employee(
     get_employee_or_raise(db, employee_id)    
 
     # Check if the skill exists
-    skill = (
-        db.query(Skill)
-        .filter(Skill.id == employee_skill.skill_id)
-        .first()
-    )
-    if not skill:
-        raise SkillNotFoundError()
+    get_skill_or_raise(db, position_skill.skill_id)
 
     # Check if the employee already has the skill
     existing = (

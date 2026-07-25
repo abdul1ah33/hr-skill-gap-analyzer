@@ -7,6 +7,9 @@ from app.core.exceptions import (
     SkillNotFoundError,
     EmployeeSkillAlreadyExistsError,
     EmployeeSkillNotFoundError,
+    PositionNotFoundError,
+    PositionSkillNotFoundError,
+    PositionSkillAlreadyExistsError,
 )
 
 
@@ -44,5 +47,35 @@ def register_exception_handlers(app: FastAPI):
     ):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(PositionNotFoundError)
+    async def position_not_found_handler(
+        request: Request,
+        exc: PositionNotFoundError,
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(PositionSkillNotFoundError)
+    async def position_skill_not_found_handler(
+        request: Request,
+        exc: PositionSkillNotFoundError,
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(PositionSkillAlreadyExistsError)
+    async def position_skill_already_exists_handler(
+        request: Request,
+        exc: PositionSkillAlreadyExistsError,
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": str(exc)},
         )
