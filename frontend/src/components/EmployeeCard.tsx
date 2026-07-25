@@ -91,14 +91,10 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
                 <h4 className="detail-section-title">Personal Information</h4>
                 <div className="detail-items">
                   <div className="detail-item">
-                    <span className="detail-label">Work Email</span>
+                    <span className="detail-label">Email Address</span>
                     <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Mail size={14} className="text-muted" /> {employee.email}
+                      <Mail size={14} className="text-muted" /> {employee.email || "N/A"}
                     </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Personal Email</span>
-                    <span className="detail-value">{employee.personalEmail || "N/A"}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Phone</span>

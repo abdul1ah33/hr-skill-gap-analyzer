@@ -1,14 +1,26 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Users, 
   Building2, 
   Briefcase, 
-  Award 
+  Award,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export const Navbar: React.FC = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const displayName = user?.username || user?.email || "HR Manager";
+
   return (
     <div className="sidebar">
       <div className="sidebar-logo">
@@ -29,7 +41,7 @@ export const Navbar: React.FC = () => {
       <ul className="sidebar-menu">
         <li>
           <NavLink 
-            to="/" 
+            to="/dashboard" 
             className={({ isActive }) => `sidebar-link ${isActive ? "active" : ""}`}
             end
           >
@@ -78,9 +90,17 @@ export const Navbar: React.FC = () => {
       <div className="sidebar-footer">
         <div className="user-avatar">HR</div>
         <div className="user-info">
-          <span className="user-name">HR Manager</span>
-          <span className="user-role">Administrator</span>
+          <span className="user-name">{displayName}</span>
+          <span className="user-role">HR Admin</span>
         </div>
+        <button 
+          onClick={handleLogout} 
+          className="logout-btn" 
+          title="Logout"
+          aria-label="Logout"
+        >
+          <LogOut size={18} />
+        </button>
       </div>
     </div>
   );

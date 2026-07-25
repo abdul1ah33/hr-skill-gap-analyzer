@@ -68,8 +68,8 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
                 <td>
                   <div className="employee-cell">
                     <div className="employee-initials">
-                      {emp.firstName[0]}
-                      {emp.lastName[0]}
+                      {emp.firstName ? emp.firstName[0] : "E"}
+                      {emp.lastName ? emp.lastName[0] : ""}
                     </div>
                     <div className="employee-name-stack">
                       <span className="employee-fullname">

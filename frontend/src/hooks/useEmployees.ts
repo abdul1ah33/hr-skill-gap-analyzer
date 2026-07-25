@@ -166,11 +166,10 @@ export const useEmployees = () => {
           skillData = JSON.parse(storedSkills);
         } else {
           skillData = [
-            { id: 1, name: "React", category: "Technical", description: "React UI library" },
-            { id: 2, name: "TypeScript", category: "Technical", description: "Typed JavaScript" },
-            { id: 3, name: "Python", category: "Technical", description: "General programming" },
-            { id: 4, name: "Recruiting", category: "HR", description: "Talent acquisition" },
-            { id: 5, name: "UI/UX Design", category: "Design", description: "User interface design" }
+            { id: 1, name: "React", category: "Frontend", description: "UI Framework" },
+            { id: 2, name: "TypeScript", category: "Language", description: "Typed JavaScript" },
+            { id: 3, name: "Python", category: "Backend", description: "Programming Language" },
+            { id: 4, name: "Node.js", category: "Backend", description: "JavaScript Runtime" }
           ];
           localStorage.setItem("hr_skills", JSON.stringify(skillData));
         }
@@ -265,21 +264,26 @@ export const useEmployees = () => {
   // Filtered employees
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => {
-      const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase();
-      const email = emp.email.toLowerCase();
-      const empNum = emp.employeeNumber.toLowerCase();
+      if (!emp) return false;
+      const firstName = emp.firstName || "";
+      const lastName = emp.lastName || "";
+      const fullName = `${firstName} ${lastName}`.toLowerCase();
+      const email = (emp.email || "").toLowerCase();
+      const empNum = (emp.employeeNumber || "").toLowerCase();
+      const search = (searchQuery || "").toLowerCase();
+
       const matchesSearch = 
-        fullName.includes(searchQuery.toLowerCase()) || 
-        email.includes(searchQuery.toLowerCase()) ||
-        empNum.includes(searchQuery.toLowerCase());
+        fullName.includes(search) || 
+        email.includes(search) ||
+        empNum.includes(search);
 
       const matchesDept = 
         filterDepartment === "all" || 
-        emp.departmentId.toString() === filterDepartment;
+        (emp.departmentId !== undefined && emp.departmentId !== null && emp.departmentId.toString() === filterDepartment);
 
       const matchesStatus = 
         filterStatus === "all" || 
-        emp.status.toLowerCase() === filterStatus.toLowerCase();
+        (emp.status || "").toLowerCase() === filterStatus.toLowerCase();
 
       return matchesSearch && matchesDept && matchesStatus;
     });
@@ -348,31 +352,31 @@ export const useEmployees = () => {
 
   const addSkill = async (skill: Partial<Skill>) => {
     try {
-      let newSkill: Skill;
-      try {
-        const res = await svc.createSkill(skill);
-        newSkill = res.data;
-      } catch {
-        newSkill = { ...skill, id: skills.length > 0 ? Math.max(...skills.map(s => s.id || 0)) + 1 : 1 } as Skill;
-      }
-      const updated = [...skills, newSkill];
-      setSkills(updated);
-      localStorage.setItem("hr_skills", JSON.stringify(updated));
+      const res = await svc.createSkill(skill);
+      setSkills(prev => [...prev, res.data]);
     } catch (err: any) {
       setError(err.message || "Failed to add skill");
+      throw err;
+    }
+  };
+
+  const editSkill = async (id: number, skill: Partial<Skill>) => {
+    try {
+      const res = await svc.updateSkill(id, skill);
+      setSkills(prev => prev.map(s => s.id === id ? res.data : s));
+    } catch (err: any) {
+      setError(err.message || "Failed to update skill");
+      throw err;
     }
   };
 
   const deleteSkill = async (id: number) => {
     try {
-      try {
-        await svc.deleteSkill(id);
-      } catch {}
-      const updated = skills.filter(s => s.id !== id);
-      setSkills(updated);
-      localStorage.setItem("hr_skills", JSON.stringify(updated));
+      await svc.deleteSkill(id);
+      setSkills(prev => prev.filter(s => s.id !== id));
     } catch (err: any) {
       setError(err.message || "Failed to delete skill");
+      throw err;
     }
   };
 
@@ -399,6 +403,7 @@ export const useEmployees = () => {
     addPosition,
     deletePosition,
     addSkill,
+    editSkill,
     deleteSkill
   };
 };

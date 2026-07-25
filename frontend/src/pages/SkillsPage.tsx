@@ -5,12 +5,14 @@ import { Award, Edit2, Trash2 } from "lucide-react";
 interface SkillsPageProps {
   skills: Skill[];
   addSkill: (skill: Partial<Skill>) => Promise<void>;
+  editSkill: (id: number, skill: Partial<Skill>) => Promise<void>;
   deleteSkill: (id: number) => Promise<void>;
 }
 
 export const SkillsPage: React.FC<SkillsPageProps> = ({
   skills,
   addSkill,
+  editSkill,
   deleteSkill,
 }) => {
   const [name, setName] = useState("");
@@ -22,24 +24,19 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({
     e.preventDefault();
     if (!name.trim()) return;
 
-    if (editingId !== null) {
-      const storedSkills = localStorage.getItem("hr_skills");
-      if (storedSkills) {
-        const list = JSON.parse(storedSkills) as Skill[];
-        const index = list.findIndex(s => s.id === editingId);
-        if (index !== -1) {
-          list[index] = { id: editingId, name, category, description };
-          localStorage.setItem("hr_skills", JSON.stringify(list));
-          window.location.reload();
-          return;
-        }
+    try {
+      if (editingId !== null) {
+        await editSkill(editingId, { name, category, description });
+        setEditingId(null);
+      } else {
+        await addSkill({ name, category, description });
       }
+      setName("");
+      setDescription("");
+      setCategory("Technical");
+    } catch (err) {
+      console.error("Error saving skill", err);
     }
-
-    await addSkill({ name, category, description });
-    setName("");
-    setDescription("");
-    setCategory("Technical");
   };
 
   const handleEditClick = (skill: Skill) => {

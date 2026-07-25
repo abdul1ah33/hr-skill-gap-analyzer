@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import String, Text, DateTime, ForeignKey
+from sqlalchemy import String, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -24,14 +24,6 @@ class Department(Base):
         nullable=True
     )
 
-    manager_employee_id = mapped_column(
-        ForeignKey(
-            "employees.id",
-            use_alter=True,
-            name="fk_departments_manager"
-        ),
-        nullable=True
-    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
@@ -52,7 +44,4 @@ class Department(Base):
         back_populates="department",
         foreign_keys="Employee.department_id"
     )
-
-    manager: Mapped[Employee | None] = relationship(
-        foreign_keys=[manager_employee_id]
-    )
+

@@ -5,6 +5,7 @@ from .position import Position
 from .employee import Employee
 from .skill import Skill
 from .employee_skill import EmployeeSkill
+from .position_skill import PositionSkill
 from .course import Course
 from .course_skill import CourseSkill
 from .assessment import Assessment
