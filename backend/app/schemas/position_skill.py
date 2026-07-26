@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.employee_skill import SkillLevel
 
@@ -17,6 +17,10 @@ class SkillSimple(BaseModel):
 class PositionSkillBase(BaseModel):
     skill_id: int
     required_skill_level: SkillLevel
+    importance: int = Field(
+        ge=1,
+        le=10,
+    )
     is_essential: bool = True
     short_description: Optional[str] = None
 
@@ -27,6 +31,11 @@ class PositionSkillCreate(PositionSkillBase):
 
 class PositionSkillUpdate(BaseModel):
     required_skill_level: Optional[SkillLevel] = None
+    importance: Optional[int] = Field(
+        default=None,
+        ge=1,
+        le=10,
+    )
     is_essential: Optional[bool] = None
     short_description: Optional[str] = None
 
@@ -37,6 +46,7 @@ class PositionSkillResponse(BaseModel):
     skill_id: int
 
     required_skill_level: SkillLevel
+    importance: int
     is_essential: bool
     short_description: Optional[str] = None
 

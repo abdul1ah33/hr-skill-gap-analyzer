@@ -47,6 +47,11 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
+        sa.Column(
+            "importance",
+            sa.Integer(),
+            nullable=False,
+        ),
         sa.Column("is_essential", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("short_description", sa.Text(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),

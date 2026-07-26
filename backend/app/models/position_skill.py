@@ -45,6 +45,10 @@ class PositionSkill(Base):
         nullable=False,
     )
 
+    importance: Mapped[int] = mapped_column(
+        nullable=False,
+    )
+
     is_essential: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
