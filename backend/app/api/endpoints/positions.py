@@ -16,14 +16,14 @@ from app.crud.position import (
     delete_position,
     get_position_count,
 )
-from app.schemas.position_skill import PositionSkillBase
-from app.schemas.skill import SkillResponse
-from app.crud.position_skill import (
-    get_position_skills,
-    add_skill_to_position,
-    remove_skill_from_position,
-)
-from app.crud.skill import get_skill
+# from app.schemas.position_skill import PositionSkillBase
+# from app.schemas.skill import SkillResponse
+# from app.crud.position_skill import (
+#     get_position_skills,
+#     add_skill_to_position,
+#     remove_skill_from_position,
+# )
+# from app.crud.skill import get_skill
 
 from app.auth.dependencies import get_current_hr
 
@@ -94,47 +94,47 @@ def delete_position_route(position_id: int, db: Session = Depends(get_db)):
 
 # ─── NESTED POSITION SKILLS ENDPOINTS ──────────────────────────────────────────
 
-@router.get("/{position_id}/skills", response_model=list[SkillResponse])
-def get_position_skills_route(position_id: int, db: Session = Depends(get_db)):
-    position = get_position(db, position_id)
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
-    return get_position_skills(db, position_id)
+# @router.get("/{position_id}/skills", response_model=list[SkillResponse])
+# def get_position_skills_route(position_id: int, db: Session = Depends(get_db)):
+#     position = get_position(db, position_id)
+#     if not position:
+#         raise HTTPException(status_code=404, detail="Position not found")
+#     return get_position_skills(db, position_id)
 
 
-@router.post("/{position_id}/skills")
-def add_position_skill_route(
-    position_id: int,
-    pos_skill: PositionSkillBase,
-    db: Session = Depends(get_db),
-):
-    position = get_position(db, position_id)
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
+# @router.post("/{position_id}/skills")
+# def add_position_skill_route(
+#     position_id: int,
+#     pos_skill: PositionSkillBase,
+#     db: Session = Depends(get_db),
+# ):
+#     position = get_position(db, position_id)
+#     if not position:
+#         raise HTTPException(status_code=404, detail="Position not found")
 
-    skill = get_skill(db, pos_skill.skill_id)
-    if not skill:
-        raise HTTPException(status_code=404, detail="Skill not found")
+#     skill = get_skill(db, pos_skill.skill_id)
+#     if not skill:
+#         raise HTTPException(status_code=404, detail="Skill not found")
 
-    added = add_skill_to_position(db, position_id, pos_skill.skill_id)
-    if not added:
-        raise HTTPException(status_code=400, detail="Skill already linked to this position.")
+#     added = add_skill_to_position(db, position_id, pos_skill.skill_id)
+#     if not added:
+#         raise HTTPException(status_code=400, detail="Skill already linked to this position.")
 
-    return {"message": "Skill added to position"}
+#     return {"message": "Skill added to position"}
 
 
-@router.delete("/{position_id}/skills/{skill_id}")
-def remove_position_skill_route(
-    position_id: int,
-    skill_id: int,
-    db: Session = Depends(get_db),
-):
-    position = get_position(db, position_id)
-    if not position:
-        raise HTTPException(status_code=404, detail="Position not found")
+# @router.delete("/{position_id}/skills/{skill_id}")
+# def remove_position_skill_route(
+#     position_id: int,
+#     skill_id: int,
+#     db: Session = Depends(get_db),
+# ):
+#     position = get_position(db, position_id)
+#     if not position:
+#         raise HTTPException(status_code=404, detail="Position not found")
 
-    removed = remove_skill_from_position(db, position_id, skill_id)
-    if not removed:
-        raise HTTPException(status_code=404, detail="Skill link not found")
+#     removed = remove_skill_from_position(db, position_id, skill_id)
+#     if not removed:
+#         raise HTTPException(status_code=404, detail="Skill link not found")
 
-    return {"message": "Skill removed from position"}
+#     return {"message": "Skill removed from position"}

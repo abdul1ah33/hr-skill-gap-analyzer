@@ -15,19 +15,19 @@ from app.crud.employee import (
     delete_employee,
     get_employee_count,
 )
-from app.schemas.employee_skill import (
-    EmployeeSkillCreate,
-    EmployeeSkillUpdate,
-    EmployeeSkillResponse,
-)
-from app.crud.employee_skill import (
-    get_employee_skills,
-    add_skill_to_employee,
-    update_employee_skill,
-    remove_skill_from_employee,
-    get_employee_skills,
-)
-from app.crud.skill import get_skill
+# from app.schemas.employee_skill import (
+#     EmployeeSkillCreate,
+#     EmployeeSkillUpdate,
+#     EmployeeSkillResponse,
+# )
+# from app.crud.employee_skill import (
+#     get_employee_skills,
+#     add_skill_to_employee,
+#     update_employee_skill,
+#     remove_skill_from_employee,
+#     get_employee_skills,
+# )
+# from app.crud.skill import get_skill
 
 from app.auth.dependencies import get_current_hr
 
@@ -138,76 +138,76 @@ def delete_employee_route(
 
 # ─── NESTED EMPLOYEE SKILLS ENDPOINTS ──────────────────────────────────────────
 
-@router.get("/{employee_id}/skills", response_model=list[EmployeeSkillResponse])
-def get_employee_skills_route(employee_id: int, db: Session = Depends(get_db)):
-    employee = get_employee(db, employee_id)
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
-    return get_employee_skills(db, employee_id)
+# @router.get("/{employee_id}/skills", response_model=list[EmployeeSkillResponse])
+# def get_employee_skills_route(employee_id: int, db: Session = Depends(get_db)):
+#     employee = get_employee(db, employee_id)
+#     if not employee:
+#         raise HTTPException(status_code=404, detail="Employee not found")
+#     return get_employee_skills(db, employee_id)
 
 
-@router.post("/{employee_id}/skills", response_model=EmployeeSkillResponse, status_code=201)
-def add_employee_skill_route(
-    employee_id: int,
-    employee_skill: EmployeeSkillCreate,
-    db: Session = Depends(get_db),
-):
-    employee = get_employee(db, employee_id)
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
+# @router.post("/{employee_id}/skills", response_model=EmployeeSkillResponse, status_code=201)
+# def add_employee_skill_route(
+#     employee_id: int,
+#     employee_skill: EmployeeSkillCreate,
+#     db: Session = Depends(get_db),
+# ):
+#     employee = get_employee(db, employee_id)
+#     if not employee:
+#         raise HTTPException(status_code=404, detail="Employee not found")
     
-    skill = get_skill(db, employee_skill.skill_id)
-    if not skill:
-        raise HTTPException(status_code=404, detail="Skill not found")
+#     skill = get_skill(db, employee_skill.skill_id)
+#     if not skill:
+#         raise HTTPException(status_code=404, detail="Skill not found")
         
-    existing = get_employee_skill(db, employee_id, employee_skill.skill_id)
-    if existing:
-        raise HTTPException(status_code=400, detail="Employee already has this skill.")
+#     existing = get_employee_skill(db, employee_id, employee_skill.skill_id)
+#     if existing:
+#         raise HTTPException(status_code=400, detail="Employee already has this skill.")
         
-    return add_skill_to_employee(db, employee_id, employee_skill)
+#     return add_skill_to_employee(db, employee_id, employee_skill)
 
 
-@router.put("/{employee_id}/skills/{skill_id}", response_model=EmployeeSkillResponse)
-def update_employee_skill_route(
-    employee_id: int,
-    skill_id: int,
-    employee_skill: EmployeeSkillUpdate,
-    db: Session = Depends(get_db),
-):
-    employee = get_employee(db, employee_id)
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
+# @router.put("/{employee_id}/skills/{skill_id}", response_model=EmployeeSkillResponse)
+# def update_employee_skill_route(
+#     employee_id: int,
+#     skill_id: int,
+#     employee_skill: EmployeeSkillUpdate,
+#     db: Session = Depends(get_db),
+# ):
+#     employee = get_employee(db, employee_id)
+#     if not employee:
+#         raise HTTPException(status_code=404, detail="Employee not found")
         
-    existing = get_employee_skill(db, employee_id, skill_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Employee skill association not found")
+#     existing = get_employee_skill(db, employee_id, skill_id)
+#     if not existing:
+#         raise HTTPException(status_code=404, detail="Employee skill association not found")
         
-    if employee_skill.skill_id is not None and employee_skill.skill_id != skill_id:
-        # Check if the new skill exists
-        skill = get_skill(db, employee_skill.skill_id)
-        if not skill:
-            raise HTTPException(status_code=404, detail="New skill not found")
-        # Check uniqueness for the new pair
-        duplicate_check = get_employee_skill(db, employee_id, employee_skill.skill_id)
-        if duplicate_check:
-            raise HTTPException(status_code=400, detail="Employee already has this skill.")
+#     if employee_skill.skill_id is not None and employee_skill.skill_id != skill_id:
+#         # Check if the new skill exists
+#         skill = get_skill(db, employee_skill.skill_id)
+#         if not skill:
+#             raise HTTPException(status_code=404, detail="New skill not found")
+#         # Check uniqueness for the new pair
+#         duplicate_check = get_employee_skill(db, employee_id, employee_skill.skill_id)
+#         if duplicate_check:
+#             raise HTTPException(status_code=400, detail="Employee already has this skill.")
             
-    updated = update_employee_skill(db, employee_id, skill_id, employee_skill)
-    return updated
+#     updated = update_employee_skill(db, employee_id, skill_id, employee_skill)
+#     return updated
 
 
-@router.delete("/{employee_id}/skills/{skill_id}")
-def remove_employee_skill_route(
-    employee_id: int,
-    skill_id: int,
-    db: Session = Depends(get_db),
-):
-    employee = get_employee(db, employee_id)
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee not found")
+# @router.delete("/{employee_id}/skills/{skill_id}")
+# def remove_employee_skill_route(
+#     employee_id: int,
+#     skill_id: int,
+#     db: Session = Depends(get_db),
+# ):
+#     employee = get_employee(db, employee_id)
+#     if not employee:
+#         raise HTTPException(status_code=404, detail="Employee not found")
         
-    removed = remove_skill_from_employee(db, employee_id, skill_id)
-    if not removed:
-        raise HTTPException(status_code=404, detail="Employee skill association not found")
+#     removed = remove_skill_from_employee(db, employee_id, skill_id)
+#     if not removed:
+#         raise HTTPException(status_code=404, detail="Employee skill association not found")
         
-    return {"message": "Skill removed from employee"}
+#     return {"message": "Skill removed from employee"}
