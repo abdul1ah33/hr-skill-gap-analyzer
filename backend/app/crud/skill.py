@@ -45,3 +45,14 @@ def delete_skill(db: Session, skill_id: int) -> Skill | None:
 
 def get_skill_count(db: Session) -> int:
     return db.query(Skill).count()
+
+
+def get_skill_by_name(
+    db: Session,
+    name: str,
+) -> Skill | None:
+    return (
+        db.query(Skill)
+        .filter(Skill.name.ilike(name))
+        .first()
+    )

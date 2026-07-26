@@ -1,8 +1,4 @@
-import sys
-import os
 import json
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from agents.job_normalizer import OccupationNormalizer
 from agents.skill_selector import SkillSelector

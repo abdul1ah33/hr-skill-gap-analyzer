@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.core.paths
+
 from app.auth.router import router as auth_router
 
 from app.api.endpoints.employees import router as employee_router

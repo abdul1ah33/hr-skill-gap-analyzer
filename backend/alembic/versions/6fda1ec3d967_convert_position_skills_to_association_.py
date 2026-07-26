@@ -54,9 +54,23 @@ def upgrade() -> None:
         ),
         sa.Column("is_essential", sa.Boolean(), nullable=False, server_default=sa.true()),
         sa.Column("short_description", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-        sa.UniqueConstraint("position_id", "skill_id"),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(timezone=True),
+            nullable=False,
+            server_default=sa.func.now(),
+        ),
+        sa.UniqueConstraint(
+            "position_id",
+            "skill_id",
+            name="uq_position_skill",
+        ),
     )
 
 
