@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 
 from ai.position_skill_generator import PositionSkillGenerator
 
+from app.core.exceptions import PositionSkillAlreadyExistsError
+
 from app.crud.skill import (
     get_skill_by_name,
     create_skill,
@@ -38,11 +40,14 @@ class AIPositionSkillService:
         position_id: int,
         position_title: str,
     ):
+        created_position_skills = []
         # Generate skills using the AI model
         generated = self.generator.generate(position_title)
 
         # Create or get skills in the database and associate them with the position
-        for skill_data in generated["skills"]:
+        skills = generated.get("skills", [])
+
+        for skill_data in skills:
             # Check if the skill already exists
             existing_skill = get_skill_by_name(db, skill_data["name"])
 
@@ -50,21 +55,28 @@ class AIPositionSkillService:
                 skill_id = existing_skill.id
             else:
                 # Create a new skill
-                new_skill = SkillCreate(name=skill_data["name"], category=skill_data["category"])
+                new_skill = SkillCreate(name=skill_data["name"], category=skill_data.get("category"))
                 created_skill = create_skill(db, new_skill)
                 skill_id = created_skill.id
 
             # Associate the skill with the position
-            add_skill_to_position(
-                db,
-                position_id,
-                PositionSkillCreate(
-                    skill_id=skill_id,
-                    required_skill_level=score_to_skill_level(
-                        skill_data["required_level"]
+            try:
+                position_skill = add_skill_to_position(
+                    db,
+                    position_id,
+                    PositionSkillCreate(
+                        skill_id=skill_id,
+                        required_skill_level=score_to_skill_level(
+                            skill_data.get("required_level", 50)
+                        ),
+                        importance=skill_data.get("importance", 5),
+                        is_essential=skill_data.get("is_essential", True),
+                        short_description=skill_data.get("short_description"),
                     ),
-                    importance=skill_data["importance"],
-                    is_essential=skill_data["is_essential"],
-                    short_description=skill_data["short_description"],
-                ),
-            )
+                )
+                created_position_skills.append(position_skill)
+
+            except PositionSkillAlreadyExistsError:
+                continue
+
+        return created_position_skills
