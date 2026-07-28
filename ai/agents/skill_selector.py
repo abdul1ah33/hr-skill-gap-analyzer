@@ -1,12 +1,7 @@
 import json
 import re
-import sys
-import os
 
-from agents.ollama_model import OllamaModel
-
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, PROJECT_ROOT)
+from ai.agents.ollama_model import OllamaModel
 
 
 class SkillSelector:

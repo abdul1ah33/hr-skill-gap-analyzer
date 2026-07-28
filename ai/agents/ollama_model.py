@@ -1,9 +1,3 @@
-import sys
-import os
-
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, PROJECT_ROOT)
-
 import json
 import requests
 from typing import Optional, Dict, List
@@ -15,7 +9,7 @@ class OllamaModel:
         model: str = "llama3.2:latest",
         base_url: str = "http://localhost:11434",
         temperature: float = 0.2,
-        max_tokens: int = 512,
+        max_tokens: int = 1500,
     ):
         self.base_url = base_url
         self.model = model

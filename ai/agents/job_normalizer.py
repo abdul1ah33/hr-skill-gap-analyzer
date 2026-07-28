@@ -1,6 +1,5 @@
 import json
-import agents.ollama_model
-from ollama_model import OllamaModel
+from ai.agents.ollama_model import OllamaModel
 
 
 class OccupationNormalizer:

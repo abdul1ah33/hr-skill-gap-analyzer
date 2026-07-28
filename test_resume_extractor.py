@@ -4,8 +4,9 @@ import json
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from services.pdf_text_service import PDFService
-from agents.resume_extractor import ResumeExtractor, OllamaModel
+from ai.services.pdf_text_service import PDFService
+from ai.agents.resume_extractor import ResumeExtractor
+from ai.agents.ollama_model import OllamaModel
 
 
 def main():
