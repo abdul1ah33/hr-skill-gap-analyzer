@@ -1,7 +1,7 @@
 import json
 import re
 
-from ollama_model import OllamaModel
+from ai.agents.ollama_model import OllamaModel
 
 
 class SkillSelector:

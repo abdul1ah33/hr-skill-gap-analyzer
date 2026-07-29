@@ -12,6 +12,7 @@ from app.api.endpoints.skills import router as skill_router
 from app.api.endpoints.me import router as me_router
 from app.api.endpoints.employee_skill import router as employee_skill_router
 from app.api.endpoints.position_skill import router as position_skill_router
+from app.api.endpoints.resume import router as resume_router
 
 from app.core.exception_handlers import register_exception_handlers
 
@@ -80,6 +81,12 @@ app.include_router(
     position_skill_router,
     prefix="/positions/{position_id}/skills",
     tags=["Position Skills"],
+)
+
+app.include_router(
+    resume_router,
+    prefix="/resume",
+    tags=["Resume Import"],
 )
 
 # ─── Health check ─────────────────────────────────────────────────────────────

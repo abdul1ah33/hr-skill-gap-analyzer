@@ -28,13 +28,17 @@ class ResumeImportService:
 
         resume_data = self.extractor.extract(resume_text)
 
-        employee = self._create_employee(
-            db,
-            resume_data,
-        )
+        try:
+            employee = self._create_employee(
+                db,
+                resume_data,
+            )
 
-        return employee
-
+            return employee
+        
+        except Exception:
+            db.rollback()
+            raise
 
 
     def _create_employee(
@@ -50,8 +54,7 @@ class ResumeImportService:
         if not department:
             department = Department(name=department_name)
             db.add(department)
-            db.commit()
-            db.refresh(department)
+            db.flush()
 
         # Create or get the position
         position_title = resume_data.get("position_title")
@@ -63,23 +66,20 @@ class ResumeImportService:
                 department_id=department.id,
             )
             db.add(position)
-            db.commit()
-            db.refresh(position)
+            db.flush()
 
-        # Create the employee
+        # Create employee
         employee = Employee(
             first_name=resume_data.get("first_name"),
             last_name=resume_data.get("last_name"),
             email=resume_data.get("email"),
             phone=resume_data.get("phone"),
-
             department_id=department.id,
             position_id=position.id,
         )
 
         db.add(employee)
-        db.commit()
-        db.refresh(employee)
+        db.flush()
 
         # Skill level mapping
         level_mapping = {
@@ -89,25 +89,24 @@ class ResumeImportService:
             "EXPERT": SkillLevel.EXPERT,
         }
 
-        # Add skills
         for skill_data in resume_data.get("skills", []):
 
             skill_name = skill_data.get("name")
+            if not skill_name:
+                continue
+
             skill_level = level_mapping.get(
                 skill_data.get("level", "Beginner").upper(),
                 SkillLevel.BEGINNER,
             )
 
-            # Create or get the skill
             skill = db.query(Skill).filter_by(name=skill_name).first()
 
             if not skill:
                 skill = Skill(name=skill_name)
                 db.add(skill)
-                db.commit()
-                db.refresh(skill)
+                db.flush()
 
-            # Prevent duplicate employee skills
             existing = (
                 db.query(EmployeeSkill)
                 .filter_by(
@@ -130,5 +129,6 @@ class ResumeImportService:
             db.add(employee_skill)
 
         db.commit()
+        db.refresh(employee)
 
         return employee
