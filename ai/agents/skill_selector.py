@@ -1,7 +1,7 @@
 import json
 import re
 
-from ai.agents.ollama_model import OllamaModel
+from ollama_model import OllamaModel
 
 
 class SkillSelector:
@@ -71,6 +71,7 @@ For EACH skill include:
 - category
 - importance (1-10)
 - required_level (0-100)
+- is_essential (true if selected from Essential Skills, false if selected from Optional Skills)
 - short_description
 
 Return ONLY ONE valid JSON object.
@@ -93,18 +94,20 @@ Example:
 {{
   "skills": [
     {{
-      "name": "Python",
-      "category": "Programming",
-      "importance": 10,
-      "required_level": 90,
-      "short_description": "Develop backend software using Python."
+        "name": "Python",
+        "category": "Programming",
+        "importance": 10,
+        "required_level": 90,
+        "is_essential": true,
+        "short_description": "Develop backend software using Python."
     }},
     {{
-      "name": "SQL",
-      "category": "Database",
-      "importance": 9,
-      "required_level": 85,
-      "short_description": "Query and manage relational databases."
+        "name": "Docker",
+        "category": "DevOps",
+        "importance": 6,
+        "required_level": 60,
+        "is_essential": false,
+        "short_description": "..."
     }}
   ]
 }}

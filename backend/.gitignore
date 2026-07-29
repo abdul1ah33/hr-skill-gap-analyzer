@@ -45,3 +45,7 @@ build/
 # Misc
 *.tmp
 *.swp
+
+# docx & pdf files
+*.docx
+*.pdf

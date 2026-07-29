@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.crud.position import create_position
+from app.crud.position import create_position, get_positions
 from app.schemas.position import PositionCreate
 from app.services.ai_position_skill_service import AIPositionSkillService
 
@@ -10,7 +10,7 @@ class PositionService:
     def __init__(self):
         self.ai = AIPositionSkillService()
 
-    def create_position(
+    def create_position_and_generate_skills(
         self,
         db: Session,
         position_data: PositionCreate,
@@ -30,3 +30,16 @@ class PositionService:
             print(f"AI skill generation failed: {e}")
 
         return position
+
+    def regenerate_all_position_skills(
+        self,
+        db: Session,
+    ):
+        positions = get_positions(db)
+
+        for position in positions:
+            self.ai.generate_for_position(
+                db=db,
+                position_id=position.id,
+                position_title=position.title,
+            )

@@ -40,7 +40,7 @@ def create_position_route(
             detail="Department not found",
         )
 
-    return position_service.create_position(
+    return position_service.create_position_and_generate_skills(
         db=db,
         position_data=position,
     )

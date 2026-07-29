@@ -1,6 +1,6 @@
 import app.core.paths
 
-from app.services.ai_position_service import generate_position_skills
+from app.services.ai_position_skill_service import generate_position_skills
 
 
 result = generate_position_skills(
