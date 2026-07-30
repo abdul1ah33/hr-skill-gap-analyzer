@@ -1,0 +1,51 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Environment Variables
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+htmlcov/
+
+# SQLAlchemy / Alembic
+*.db
+*.sqlite3
+
+# Node (Frontend)
+node_modules/
+dist/
+build/
+
+# Misc
+*.tmp
+*.swp
+
+# docx & pdf files
+*.docx
+*.pdf

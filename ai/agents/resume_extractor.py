@@ -1,86 +1,39 @@
+import sys
+import os
+
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, PROJECT_ROOT)
 import json
-from ai.agents.ollama_model import OllamaModel
+from ollama_model import OllamaModel
 
 class ResumeExtractor:
     def __init__(self, llm: OllamaModel):
         self.llm = llm
 
     def extract(self, resume_text: str):
-        prompt = f"""
+        prompt = """
         You are an expert HR resume parser.
 
-        Rules:
+        Extract ONLY the following fields.
 
-        - The candidate's full name is usually at the top of the resume.
-        - Split the full name into first_name and last_name.
-        - Example:
-            "Ahmed Hassan"
-            ->
-            first_name = "Ahmed"
-            last_name = "Hassan"
-
-        - If there are more than two names:
-            "Ahmed Mohamed Hassan"
-            ->
-            first_name = "Ahmed"
-            last_name = "Hassan"
-
-        - Never leave first_name null if a person's name exists.
-
-        {resume_text}
-
-        Return ONLY valid JSON.
+        Return VALID JSON.
 
         {{
             "first_name": "",
             "last_name": "",
             "email": "",
             "phone": "",
-            "department": "",
-            "position_title": "",
-
-            "years_experience": 0,
-
-            "skills": [
-                {{
-                    "name": "",
-                    "level": "Beginner | Intermediate | Advanced | Expert"
-                }}
-            ],
-
-            "education": [
-                {{
-                    "degree": "",
-                    "institution": "",
-                    "graduation_year": null
-                }}
-            ],
-
-            "certifications": [
-                {{
-                    "name": "",
-                    "issuer": ""
-                }}
-            ]
+            "position": "",
+            "skills": [],
+            "years_experience": null,
+            "education": [],
+            "certifications": []
         }}
 
-        If the department is not explicitly mentioned, infer it from the candidate's job title (e.g. HR Specialist → Human Resources).
+        Resume:
 
-        If information is missing, use null or an empty list.
-
-        Return ONLY valid JSON.
-
-        Rules:
-
-        - Do not wrap JSON in markdown.
-        - Do not explain anything.
-        - Missing values must be null.
-        - Skills level must be one of:
-            Beginner
-            Intermediate
-            Advanced
-            Expert
-        """
+        {resume_text}
+        """.format(resume_text=resume_text)
 
         response = self.llm.generate(prompt)
 

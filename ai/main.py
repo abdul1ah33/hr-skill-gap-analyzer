@@ -14,7 +14,8 @@ titles = [
     "Wa7sh el AI",
     "Teneeen el Chemistry Science",
     "3afreet Data",
-    "3anteel backend"
+    "3anteel backend",
+    "Flyer airplane"
 ]
 
 for title in titles:
