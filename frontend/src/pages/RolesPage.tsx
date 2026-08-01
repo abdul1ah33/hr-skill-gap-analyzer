@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import type { Position, Department } from "../types/employee";
 import { Briefcase, Edit2, Trash2 } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 
 interface RolesPageProps {
   positions: Position[];
@@ -21,7 +24,6 @@ export const RolesPage: React.FC<RolesPageProps> = ({
   const [level, setLevel] = useState("Mid-level");
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // Initialize departmentId when departments load
   React.useEffect(() => {
     if (departments.length > 0 && !departmentId) {
       setDepartmentId(departments[0].id || 0);
@@ -36,7 +38,7 @@ export const RolesPage: React.FC<RolesPageProps> = ({
       const storedPositions = localStorage.getItem("hr_positions");
       if (storedPositions) {
         const list = JSON.parse(storedPositions) as Position[];
-        const index = list.findIndex(p => p.id === editingId);
+        const index = list.findIndex((p) => p.id === editingId);
         if (index !== -1) {
           list[index] = { id: editingId, title, departmentId, description, level };
           localStorage.setItem("hr_positions", JSON.stringify(list));
@@ -76,61 +78,79 @@ export const RolesPage: React.FC<RolesPageProps> = ({
   };
 
   const getDepartmentName = (id: number) => {
-    const dept = departments.find(d => d.id === id);
+    const dept = departments.find((d) => d.id === id);
     return dept ? dept.name : `Dept #${id}`;
   };
 
   return (
-    <div>
-      <div className="page-header" style={{ marginBottom: "2.5rem" }}>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Work Roles & Positions</h1>
-          <p className="page-description">Define job levels, corporate titles, and department alignments.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Briefcase className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            Positions & Competency Profiles
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Define corporate job levels, position titles, and department alignments.
+          </p>
         </div>
       </div>
 
-      <div className="master-grid">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Column */}
-        <div className="master-form-card">
-          <h3 style={{ fontSize: "1.1rem", fontWeight: "600", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Briefcase size={18} className="text-muted" />
-            {editingId !== null ? "Edit Position" : "Create Position"}
-          </h3>
-          
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div className="form-group">
-              <label className="form-label">Position Title *</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
-                placeholder="e.g. Senior Frontend Engineer" 
-                required 
+        <Card className="p-6 h-fit">
+          <CardHeader className="p-0 mb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-purple-600" />
+              {editingId !== null ? "Edit Position" : "Create Position"}
+            </CardTitle>
+            <CardDescription>
+              {editingId !== null ? "Update position specification" : "Add a new job position to the matrix"}
+            </CardDescription>
+          </CardHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Position Title *
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Senior Fullstack Engineer"
+                required
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Department *</label>
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Department *
+              </label>
               <select
-                className="form-control"
                 value={departmentId}
-                onChange={e => setDepartmentId(Number(e.target.value))}
+                onChange={(e) => setDepartmentId(Number(e.target.value))}
                 required
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value="" disabled>Select Department</option>
-                {departments.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}</option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
                 ))}
               </select>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Seniority Level</label>
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Seniority Level
+              </label>
               <select
-                className="form-control"
                 value={level}
-                onChange={e => setLevel(e.target.value)}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
                 <option value="Junior">Junior</option>
                 <option value="Mid-level">Mid-level</option>
@@ -140,85 +160,100 @@ export const RolesPage: React.FC<RolesPageProps> = ({
                 <option value="VP / Executive">VP / Executive</option>
               </select>
             </div>
-            
-            <div className="form-group">
-              <label className="form-label">Job Description</label>
-              <textarea 
-                className="form-control" 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                placeholder="Key roles and responsibilities..." 
+
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Job Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Key role responsibilities & required experience..."
+                rows={3}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+            <div className="flex items-center gap-2 pt-2">
+              <Button variant="gradient" type="submit" className="flex-1">
                 {editingId !== null ? "Save Changes" : "Create Position"}
-              </button>
+              </Button>
               {editingId !== null && (
-                <button type="button" className="btn btn-secondary" onClick={handleCancelEdit}>
+                <Button variant="outline" type="button" onClick={handleCancelEdit}>
                   Cancel
-                </button>
+                </Button>
               )}
             </div>
           </form>
-        </div>
+        </Card>
 
-        {/* List Column */}
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Title / Level</th>
-                <th>Department</th>
-                <th>Description</th>
-                <th style={{ textAlign: "right" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {positions.map(pos => (
-                <tr key={pos.id}>
-                  <td>
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontWeight: 600 }}>{pos.title}</span>
-                      <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>{pos.level || "Mid-level"}</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: "0.9rem" }}>{getDepartmentName(pos.departmentId)}</span>
-                  </td>
-                  <td style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                    {pos.description || <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No description</span>}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    <div style={{ display: "inline-flex", gap: "0.25rem" }}>
-                      <button 
-                        className="btn-icon edit" 
-                        onClick={() => handleEditClick(pos)}
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button 
-                        className="btn-icon delete" 
-                        onClick={() => pos.id && handleDeleteClick(pos.id)}
-                        title="Delete"
-                      >
-                        <Trash2 size={14} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {positions.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="no-data">
-                    No positions created yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Positions Table Column */}
+        <div className="lg:col-span-2">
+          <Card className="overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    <th className="py-3.5 px-4 font-semibold">Position Title</th>
+                    <th className="py-3.5 px-4 font-semibold">Department</th>
+                    <th className="py-3.5 px-4 font-semibold">Seniority</th>
+                    <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {positions.map((pos) => (
+                    <tr
+                      key={pos.id}
+                      className="hover:bg-purple-50/40 dark:hover:bg-purple-950/20 transition-colors"
+                    >
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center font-bold">
+                            <Briefcase className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 dark:text-slate-100">{pos.title}</p>
+                            <p className="text-xs text-slate-400 line-clamp-1">{pos.description || "No description"}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <Badge variant="secondary">{getDepartmentName(pos.departmentId)}</Badge>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <Badge variant="info">{pos.level || "Mid-level"}</Badge>
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleEditClick(pos)} title="Edit">
+                            <Edit2 className="w-4 h-4 text-slate-400 hover:text-purple-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => pos.id && handleDeleteClick(pos.id)}
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4 text-rose-500 hover:text-rose-600" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {positions.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-16 text-center text-sm text-slate-400">
+                        No positions defined yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </Card>
         </div>
       </div>
     </div>

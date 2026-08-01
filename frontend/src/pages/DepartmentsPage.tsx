@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import type { Department } from "../types/employee";
-import { Edit2, Trash2, Building2 } from "lucide-react";
+import { Building2, Edit2, Trash2, Users } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
+import { motion } from "framer-motion";
 
 interface DepartmentsPageProps {
   departments: Department[];
@@ -22,44 +26,15 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
     if (!name.trim()) return;
 
     if (editingId !== null) {
-      // In a real app we'd have updateDepartment service call. For now, since hook supports add/delete:
-      // Let's implement local editing by delete & re-add, or we can just run addDepartment.
-      // Wait, we can edit in the local state or mock it.
-      // Let's just create/re-create or notify the user. To keep it simple, we support Add and Delete, 
-      // but let's make Add/Edit form update local storage or call addDepartment.
-      // Wait! Let's update hook to have updateDepartment if editing. Let's look at useEmployees hook.
-      // It has `addDepartment` and `deleteDepartment`. We can delete and re-add or we can just support
-      // adding and deleting for now, or edit it in localStorage directly inside this page, then trigger refresh.
-      // Yes! Since hook fetches from localStorage, we can write directly to localStorage and trigger reload.
-      // Let's do that or keep it simple. Let's do a direct write to localStorage and call window.location.reload() or hook's fetchData().
-      // Wait, the hook exposes `addDepartment` and `deleteDepartment` which handles updating localStorage.
-      // Let's modify the department list directly if editing, then save to localStorage and call window.location.reload() or similar,
-      // or we can just delete the old one and add the new one.
-      // Actually, deleting and adding is simple, but editing directly in localStorage is cleaner:
-      const stored = localStorage.getItem("hr_departments");
-      if (stored) {
-        const depts: Department[] = JSON.parse(stored);
-        const updated = depts.map(d => d.id === editingId ? { ...d, name, description } : d);
-        localStorage.setItem("hr_departments", JSON.stringify(updated));
-      }
-      setEditingId(null);
-      window.dispatchEvent(new Event("storage")); // Notify other listeners
-      // Quick way to refresh: since hook reads from localStorage on mount, we can just trigger a reload or refresh state.
-      // Let's just reload the page or trigger fetch. To avoid reload, we can just delete & re-add:
-      // Actually, if we just call deleteDepartment and then addDepartment, the ID changes, but it works!
-      // Let's just do that to be safe, or call window.location.reload().
-      // Wait, reload is fast and ensures database/localStorage sync! Let's do reload.
       const storedDepts = localStorage.getItem("hr_departments");
       if (storedDepts) {
         const list = JSON.parse(storedDepts) as Department[];
-        if (editingId) {
-          const index = list.findIndex(d => d.id === editingId);
-          if (index !== -1) {
-            list[index] = { id: editingId, name, description };
-            localStorage.setItem("hr_departments", JSON.stringify(list));
-            window.location.reload();
-            return;
-          }
+        const index = list.findIndex((d) => d.id === editingId);
+        if (index !== -1) {
+          list[index] = { id: editingId, name, description };
+          localStorage.setItem("hr_departments", JSON.stringify(list));
+          window.location.reload();
+          return;
         }
       }
     }
@@ -90,111 +65,135 @@ export const DepartmentsPage: React.FC<DepartmentsPageProps> = ({
   };
 
   return (
-    <div>
-      <div className="page-header" style={{ marginBottom: "2.5rem" }}>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Departments Directory</h1>
-          <p className="page-description">Configure business units and organizational structures.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+            Departments & Divisions
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Configure business units and organizational structures across the company.
+          </p>
         </div>
       </div>
 
-      <div className="master-grid">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Form Column */}
-        <div className="master-form-card">
-          <h3 style={{ fontSize: "1.1rem", fontWeight: "600", marginBottom: "1.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Building2 size={18} className="text-muted" />
-            {editingId !== null ? "Edit Department" : "Create Department"}
-          </h3>
-          
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            <div className="form-group">
-              <label className="form-label">Department Name *</label>
-              <input 
-                type="text" 
-                className="form-control" 
-                value={name} 
-                onChange={e => setName(e.target.value)} 
-                placeholder="e.g. Sales & Support" 
-                required 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Description</label>
-              <textarea 
-                className="form-control" 
-                value={description} 
-                onChange={e => setDescription(e.target.value)} 
-                placeholder="Brief summary of department responsibilities..." 
+        <Card className="p-6 h-fit">
+          <CardHeader className="p-0 mb-4">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-purple-600" />
+              {editingId !== null ? "Edit Department" : "Create Department"}
+            </CardTitle>
+            <CardDescription>
+              {editingId !== null ? "Update department details" : "Add a new organizational department"}
+            </CardDescription>
+          </CardHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Department Name *
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Engineering & Product"
+                required
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
 
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+            <div>
+              <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief summary of department scope and responsibilities..."
+                rows={3}
+                className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <Button variant="gradient" type="submit" className="flex-1">
                 {editingId !== null ? "Save Changes" : "Create Department"}
-              </button>
+              </Button>
               {editingId !== null && (
-                <button type="button" className="btn btn-secondary" onClick={handleCancelEdit}>
+                <Button variant="outline" type="button" onClick={handleCancelEdit}>
                   Cancel
-                </button>
+                </Button>
               )}
             </div>
           </form>
-        </div>
+        </Card>
 
-        {/* List Column */}
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Department</th>
-                <th>Description</th>
-                <th style={{ textAlign: "right" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {departments.map(dept => (
-                <tr key={dept.id}>
-                  <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <div className="employee-initials" style={{ width: "34px", height: "34px", borderRadius: "var(--radius-sm)", background: "rgba(99, 102, 241, 0.1)", border: "none" }}>
-                        <Building2 size={16} style={{ color: "var(--accent-indigo)" }} />
+        {/* Department Grid List */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {departments.map((dept, idx) => (
+            <motion.div
+              key={dept.id || idx}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.05 }}
+            >
+              <Card className="p-5 flex flex-col justify-between h-full hover:border-purple-500/40 transition-all group">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                        <Building2 className="w-5 h-5" />
                       </div>
-                      <span style={{ fontWeight: 600 }}>{dept.name}</span>
+                      <div>
+                        <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          {dept.name}
+                        </h3>
+                        <Badge variant="secondary" className="mt-0.5">
+                          ID: #{dept.id}
+                        </Badge>
+                      </div>
                     </div>
-                  </td>
-                  <td style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                    {dept.description || <span style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No description</span>}
-                  </td>
-                  <td style={{ textAlign: "right" }}>
-                    <div style={{ display: "inline-flex", gap: "0.25rem" }}>
-                      <button 
-                        className="btn-icon edit" 
-                        onClick={() => handleEditClick(dept)}
-                        title="Edit"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button 
-                        className="btn-icon delete" 
+
+                    <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                      <Button variant="ghost" size="icon" onClick={() => handleEditClick(dept)} title="Edit">
+                        <Edit2 className="w-4 h-4 text-slate-400 hover:text-purple-600" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => dept.id && handleDeleteClick(dept.id)}
                         title="Delete"
                       >
-                        <Trash2 size={14} />
-                      </button>
+                        <Trash2 className="w-4 h-4 text-rose-500 hover:text-rose-600" />
+                      </Button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {departments.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="no-data">
-                    No departments created yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                  </div>
+
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 line-clamp-2">
+                    {dept.description || "No description specified for this department."}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 mt-4 text-xs font-semibold text-slate-500">
+                  <span className="flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5 text-purple-500" /> Active Division
+                  </span>
+                  <Badge variant="success">Operational</Badge>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+
+          {departments.length === 0 && (
+            <div className="col-span-full py-16 text-center text-sm text-slate-400">
+              No departments created yet. Use the form on the left to add one!
+            </div>
+          )}
         </div>
       </div>
     </div>

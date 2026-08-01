@@ -4,6 +4,7 @@ from .department import Department
 from .position import Position
 from .employee import Employee
 from .skill import Skill
+from .skill_alias import SkillAlias
 from .employee_skill import EmployeeSkill
 from .position_skill import PositionSkill
 from .course import Course

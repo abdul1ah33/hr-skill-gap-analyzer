@@ -4,7 +4,7 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 import json
-from ollama_model import OllamaModel
+from ai.agents.ollama_model import OllamaModel
 
 class ResumeExtractor:
     def __init__(self, llm: OllamaModel):

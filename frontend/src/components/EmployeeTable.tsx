@@ -1,6 +1,8 @@
 import React from "react";
 import type { Employee, Department, Position } from "../types/employee";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, Mail, ArrowUpDown } from "lucide-react";
+import { Badge } from "./ui/Badge";
+import { Button } from "./ui/Button";
 
 interface EmployeeTableProps {
   employees: Employee[];
@@ -29,93 +31,153 @@ export const EmployeeTable: React.FC<EmployeeTableProps> = ({
     return pos ? pos.title : `Role #${id}`;
   };
 
-  const getStatusBadgeClass = (status: string) => {
+  const getStatusVariant = (status: string) => {
     switch (status?.toLowerCase()) {
       case "active":
-        return "badge badge-active";
+        return "success";
       case "on leave":
       case "leave":
-        return "badge badge-on-leave";
+        return "warning";
       case "terminated":
       case "inactive":
-        return "badge badge-terminated";
+        return "danger";
       default:
-        return "badge";
+        return "secondary";
     }
   };
 
   return (
-    <div className="table-container">
+    <div className="w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-md">
       {employees.length === 0 ? (
-        <div className="no-data">
-          <p>No employees found matching the search criteria.</p>
+        <div className="py-16 text-center text-sm text-slate-500 dark:text-slate-400">
+          No employees found matching the search criteria.
         </div>
       ) : (
-        <table className="custom-table">
-          <thead>
-            <tr>
-              <th>Employee</th>
-              <th>Email</th>
-              <th>Department</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th style={{ textAlign: "right" }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map((emp) => (
-              <tr key={emp.id}>
-                <td>
-                  <div className="employee-cell">
-                    <div className="employee-initials">
-                      {emp.firstName ? emp.firstName[0] : "E"}
-                      {emp.lastName ? emp.lastName[0] : ""}
-                    </div>
-                    <div className="employee-name-stack">
-                      <span className="employee-fullname">
-                        {emp.firstName} {emp.lastName}
-                      </span>
-                      <span className="employee-number">{emp.employeeNumber}</span>
-                    </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <th className="py-3.5 px-4 font-semibold">
+                  <div className="flex items-center gap-1 cursor-pointer">
+                    Employee <ArrowUpDown className="w-3 h-3" />
                   </div>
-                </td>
-                <td>{emp.email}</td>
-                <td>{getDepartmentName(emp.departmentId)}</td>
-                <td>{getPositionTitle(emp.roleId)}</td>
-                <td>
-                  <span className={getStatusBadgeClass(emp.status)}>
-                    {emp.status}
-                  </span>
-                </td>
-                <td style={{ textAlign: "right" }}>
-                  <div style={{ display: "inline-flex", gap: "0.25rem" }}>
-                    <button
-                      className="btn-icon view"
-                      onClick={() => onView(emp)}
-                      title="View Details"
-                    >
-                      <Eye size={16} />
-                    </button>
-                    <button
-                      className="btn-icon edit"
-                      onClick={() => onEdit(emp)}
-                      title="Edit"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      className="btn-icon delete"
-                      onClick={() => emp.id && onDelete(emp.id)}
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
+                </th>
+                <th className="py-3.5 px-4 font-semibold">Department</th>
+                <th className="py-3.5 px-4 font-semibold">Position</th>
+                <th className="py-3.5 px-4 font-semibold">Skills Matrix</th>
+                <th className="py-3.5 px-4 font-semibold">Status</th>
+                <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+              {employees.map((emp) => {
+                const initials = `${emp.firstName?.[0] || "E"}${emp.lastName?.[0] || ""}`;
+                const deptName = getDepartmentName(emp.departmentId);
+                const roleTitle = getPositionTitle(emp.roleId);
+
+                return (
+                  <tr
+                    key={emp.id}
+                    className="hover:bg-purple-50/40 dark:hover:bg-purple-950/20 transition-colors group"
+                  >
+                    {/* Employee Profile Cell */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-gradient-purple flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
+                          {initials}
+                        </div>
+                        <div>
+                          <p
+                            onClick={() => onView(emp)}
+                            className="font-bold text-slate-900 dark:text-slate-100 hover:text-purple-600 dark:hover:text-purple-400 cursor-pointer transition-colors"
+                          >
+                            {emp.firstName} {emp.lastName}
+                          </p>
+                          <p className="text-xs text-slate-400 font-mono flex items-center gap-1">
+                            <span>{emp.employeeNumber}</span> •{" "}
+                            <Mail className="w-3 h-3 inline" /> {emp.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Department */}
+                    <td className="py-3.5 px-4">
+                      <Badge variant="secondary" className="font-medium">
+                        {deptName}
+                      </Badge>
+                    </td>
+
+                    {/* Position */}
+                    <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300">
+                      {roleTitle}
+                    </td>
+
+                    {/* Skills Chips */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {emp.skills && emp.skills.length > 0 ? (
+                          emp.skills.slice(0, 3).map((skill) => (
+                            <span
+                              key={skill}
+                              className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40"
+                            >
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">No skills listed</span>
+                        )}
+                        {emp.skills && emp.skills.length > 3 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
+                            +{emp.skills.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-3.5 px-4">
+                      <Badge variant={getStatusVariant(emp.status)}>
+                        {emp.status}
+                      </Badge>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onView(emp)}
+                          title="View Employee Profile Drawer"
+                        >
+                          <Eye className="w-4 h-4 text-slate-500 hover:text-purple-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(emp)}
+                          title="Edit Employee"
+                        >
+                          <Edit className="w-4 h-4 text-slate-500 hover:text-purple-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => emp.id && onDelete(emp.id)}
+                          title="Delete Employee"
+                        >
+                          <Trash2 className="w-4 h-4 text-rose-500 hover:text-rose-600" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

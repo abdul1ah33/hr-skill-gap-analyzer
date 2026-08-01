@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .position_skill import PositionSkill
+    from .skill_alias import SkillAlias
 
 
 class Skill(Base):
@@ -57,4 +58,10 @@ class Skill(Base):
 
     position_skills: Mapped[list["PositionSkill"]] = relationship(
         back_populates="skill",
+    )
+
+    aliases: Mapped[list["SkillAlias"]] = relationship(
+        "SkillAlias",
+        back_populates="skill",
+        cascade="all, delete-orphan",
     )

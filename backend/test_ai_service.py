@@ -1,10 +1,19 @@
 import app.core.paths
 
-from app.services.ai_position_skill_service import generate_position_skills
+from app.db.database import SessionLocal
+from app.models.position import Position
+from app.services.ai_position_skill_service import AIPositionSkillService
 
+db = SessionLocal()
 
-result = generate_position_skills(
-    "Senior Python Backend Engineer"
+position = db.get(Position, 6)
+
+service = AIPositionSkillService()
+
+service.generate_for_position(
+    db=db,
+    position_id=position.id,
+    position_title=position.title,
 )
 
-print(result)
+print("Done!")

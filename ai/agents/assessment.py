@@ -4,17 +4,24 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, PROJECT_ROOT)
 import json
-from ollama_model import OllamaModel
+from ai.agents.ollama_model import OllamaModel
 
 class Assess():
     def __init__(self, llm: OllamaModel):
             self.llm = llm
 
     def assess(self, matched, missing, needs_improvement, employee_skills):
+
+
+        print("Matched:", matched)
+        print("Missing:", missing)
+        print("Needs Improvement:", needs_improvement)
+
         prompt = f"""
             You are a senior HR consultant.
 
             The skill comparison has ALREADY been completed.
+            The lists are already sorted by priority. Do not reorder them.
             Do NOT recalculate, infer, or modify any of the analysis.
             Use ONLY the information below.
 
@@ -39,13 +46,20 @@ class Assess():
             Provide a brief summary of the employee's readiness.
 
             ## Strengths
-            Mention the matched skills.
+            Use ONLY the skills listed under "Matched Skills".
+
+            - If the list contains one or more skills, mention all of them.
+            - Do NOT write "None" if the list is not empty.
+            - Do NOT invent additional strengths.
 
             ## Skill Gaps
             Discuss the missing skills and why they matter.
 
             ## Development Areas
             Discuss the skills needing improvement, mentioning the current and required levels.
+            Use the provided skill levels exactly as written
+            (Beginner, Intermediate, Advanced, Expert).
+            Do NOT convert them into numbers.
 
             ## Training Priorities
             Rank the top priorities.

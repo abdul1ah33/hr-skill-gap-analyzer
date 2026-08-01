@@ -1,4 +1,7 @@
 from app.services.pdf_text_service import PDFService
+
+import app.core.paths
+
 from ai.agents.resume_extractor import ResumeExtractor
 from ai.agents.ollama_model import OllamaModel
 

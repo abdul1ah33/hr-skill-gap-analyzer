@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Employee, Department, Position } from "../types/employee";
-import { X, Calendar, DollarSign, Briefcase, Award, GraduationCap, MapPin, Mail, Phone, ShieldCheck } from "lucide-react";
+import { Drawer } from "./ui/Drawer";
+import { Badge } from "./ui/Badge";
+import { Button } from "./ui/Button";
+import {
+  Briefcase,
+  Award,
+  Sparkles,
+  User,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface EmployeeCardProps {
   employee: Employee | null;
@@ -19,7 +28,10 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
   positions,
   employees,
 }) => {
-  if (!isOpen || !employee) return null;
+  const [activeTab, setActiveTab] = useState<"overview" | "skills" | "employment" | "ai">("overview");
+  const navigate = useNavigate();
+
+  if (!employee) return null;
 
   const getDepartmentName = (id: number) => {
     const dept = departments.find((d) => d.id === id);
@@ -32,173 +44,173 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
   };
 
   const getManagerName = (id?: number) => {
-    if (!id) return "None (Top Level)";
+    if (!id) return "Top Executive";
     const mgr = employees.find((e) => e.id === id);
     return mgr ? `${mgr.firstName} ${mgr.lastName}` : `Manager #${id}`;
-  };
-
-  const getStatusBadgeClass = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "active":
-        return "badge badge-active";
-      case "on leave":
-      case "leave":
-        return "badge badge-on-leave";
-      case "terminated":
-      case "inactive":
-        return "badge badge-terminated";
-      default:
-        return "badge";
-    }
   };
 
   const initials = `${employee.firstName?.[0] || ""}${employee.lastName?.[0] || ""}`;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content" style={{ maxWidth: "700px" }}>
-        <div className="modal-header">
-          <h3 className="modal-title">Employee Profile Card</h3>
-          <button className="modal-close" onClick={onClose}>
-            <X size={20} />
-          </button>
+    <Drawer
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`${employee.firstName} ${employee.lastName}`}
+      subtitle={`${getPositionTitle(employee.roleId)} • ${getDepartmentName(employee.departmentId)}`}
+    >
+      {/* Header Profile Banner */}
+      <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-purple-900/10 via-purple-500/10 to-indigo-900/10 border border-purple-500/20">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-purple flex items-center justify-center text-white font-black text-xl shadow-lg shadow-purple-500/30 flex-shrink-0">
+          {initials}
         </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+              {employee.firstName} {employee.lastName}
+            </h3>
+            <Badge variant={employee.status === "Active" ? "success" : "warning"}>
+              {employee.status || "Active"}
+            </Badge>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+            {employee.employeeNumber} • {employee.email}
+          </p>
+        </div>
+      </div>
 
-        <div className="modal-body">
-          <div className="detail-grid">
-            <div className="detail-avatar-container">
-              <div className="detail-avatar">{initials}</div>
-              <span className={getStatusBadgeClass(employee.status)}>
-                {employee.status}
-              </span>
-              <span style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: "0.25rem" }}>
-                {employee.employeeNumber}
-              </span>
-            </div>
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800 pb-2">
+        {[
+          { id: "overview", label: "Overview", icon: User },
+          { id: "skills", label: "Skills Stack", icon: Award },
+          { id: "employment", label: "Employment", icon: Briefcase },
+          { id: "ai", label: "AI Assessment", icon: Sparkles },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl transition-all ${
+                isActive
+                  ? "bg-purple-600 text-white shadow-md shadow-purple-500/20"
+                  : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
 
-            <div className="detail-sections">
+      {/* Tab Content */}
+      {activeTab === "overview" && (
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Personal Details</h4>
+            <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
-                <h2 style={{ fontSize: "1.5rem", fontWeight: "700", marginBottom: "0.25rem" }}>
-                  {employee.firstName} {employee.lastName}
-                </h2>
-                <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                  <Briefcase size={16} /> {getPositionTitle(employee.roleId)}
-                </p>
+                <span className="text-slate-400 block">Email</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{employee.email}</span>
               </div>
-
-              {/* Personal Information */}
-              <div className="detail-section">
-                <h4 className="detail-section-title">Personal Information</h4>
-                <div className="detail-items">
-                  <div className="detail-item">
-                    <span className="detail-label">Email Address</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Mail size={14} className="text-muted" /> {employee.email || "N/A"}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Phone</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Phone size={14} className="text-muted" /> {employee.phone || "N/A"}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Gender & DoB</span>
-                    <span className="detail-value">
-                      {employee.gender || "N/A"} {employee.birthDate ? `| ${employee.birthDate}` : ""}
-                    </span>
-                  </div>
-                  <div className="detail-item" style={{ gridColumn: "span 2" }}>
-                    <span className="detail-label">Address</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "flex-start", gap: "0.3rem" }}>
-                      <MapPin size={14} style={{ marginTop: "3px" }} className="text-muted" /> {employee.address || "N/A"}
-                    </span>
-                  </div>
-                </div>
+              <div>
+                <span className="text-slate-400 block">Phone</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{employee.phone || "N/A"}</span>
               </div>
-
-              {/* Employment Information */}
-              <div className="detail-section">
-                <h4 className="detail-section-title">Employment Information</h4>
-                <div className="detail-items">
-                  <div className="detail-item">
-                    <span className="detail-label">Department</span>
-                    <span className="detail-value">{getDepartmentName(employee.departmentId)}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Reports To (Manager)</span>
-                    <span className="detail-value">{getManagerName(employee.managerId)}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Employment Type</span>
-                    <span className="detail-value">{employee.employmentType || "Full-time"}</span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Hire Date</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Calendar size={14} className="text-muted" /> {employee.hireDate}
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Salary (Monthly)</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.1rem" }}>
-                      <DollarSign size={14} className="text-muted" /> {employee.salary?.toLocaleString() || "0"}
-                    </span>
-                  </div>
-                </div>
+              <div>
+                <span className="text-slate-400 block">Gender & DoB</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{employee.gender || "N/A"} {employee.birthDate ? `(${employee.birthDate})` : ""}</span>
               </div>
-
-              {/* AI & Talent Profiles */}
-              <div className="detail-section">
-                <h4 className="detail-section-title">AI & Skills Information</h4>
-                <div className="detail-items">
-                  <div className="detail-item">
-                    <span className="detail-label">Experience</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <ShieldCheck size={14} className="text-muted" /> {employee.yearsExperience || 0} Years
-                    </span>
-                  </div>
-                  <div className="detail-item">
-                    <span className="detail-label">Education</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <GraduationCap size={14} className="text-muted" /> {employee.educationLevel || "N/A"}
-                    </span>
-                  </div>
-                  <div className="detail-item" style={{ gridColumn: "span 2" }}>
-                    <span className="detail-label">Certifications</span>
-                    <span className="detail-value" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <Award size={14} className="text-muted" /> {employee.certifications || "None"}
-                    </span>
-                  </div>
-                  <div className="detail-item" style={{ gridColumn: "span 2" }}>
-                    <span className="detail-label">Skills Stack</span>
-                    <div className="skills-tags-container" style={{ marginTop: "0.5rem" }}>
-                      {employee.skills && employee.skills.length > 0 ? (
-                        employee.skills.map((skill) => (
-                          <span className="skill-tag" key={skill} style={{ border: "none", backgroundColor: "rgba(99,102,241,0.15)", color: "var(--accent-indigo)", fontWeight: 500 }}>
-                            {skill}
-                          </span>
-                        ))
-                      ) : (
-                        <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                          No skills assigned.
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <span className="text-slate-400 block">Address</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{employee.address || "N/A"}</span>
               </div>
             </div>
           </div>
         </div>
-        
-        <div className="modal-footer">
-          <button className="btn btn-primary" onClick={onClose}>
-            Close Profile
-          </button>
+      )}
+
+      {activeTab === "skills" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Verified Skills Stack</h4>
+            <Badge variant="primary">{employee.skills?.length || 0} Skills</Badge>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            {employee.skills && employee.skills.length > 0 ? (
+              employee.skills.map((skill, idx) => (
+                <div
+                  key={skill}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 hover:border-purple-500/30 transition-all"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{skill}</span>
+                  </div>
+                  <Badge variant={idx % 2 === 0 ? "success" : "info"}>
+                    {idx % 2 === 0 ? "Expert" : "Advanced"}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-slate-400 italic py-4 text-center">No skill tags assigned yet.</p>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+
+      {activeTab === "employment" && (
+        <div className="space-y-4 text-xs">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-slate-400 block">Department</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{getDepartmentName(employee.departmentId)}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block">Position Title</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{getPositionTitle(employee.roleId)}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block">Manager</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{getManagerName(employee.managerId)}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block">Hire Date</span>
+                <span className="font-medium text-slate-800 dark:text-slate-200">{employee.hireDate}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "ai" && (
+        <div className="space-y-4 text-center py-6">
+          <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-300 mx-auto flex items-center justify-center">
+            <Sparkles className="w-6 h-6 animate-pulse" />
+          </div>
+          <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">AI Skill Gap Assessment Ready</h4>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            Compare {employee.firstName}'s skill stack against position requirements using canonical alias resolution.
+          </p>
+          <Button
+            variant="gradient"
+            onClick={() => {
+              onClose();
+              navigate("/assessment");
+            }}
+            className="gap-2 mx-auto"
+          >
+            <Sparkles className="w-4 h-4" /> Run Full AI Assessment
+          </Button>
+        </div>
+      )}
+    </Drawer>
   );
 };
 

@@ -3,7 +3,9 @@ import type { Employee, Department, Position, Skill } from "../types/employee";
 import EmployeeTable from "../components/EmployeeTable";
 import EmployeeForm from "../components/EmployeeForm";
 import EmployeeCard from "../components/EmployeeCard";
-import { Plus, Search, Filter } from "lucide-react";
+import { Plus, Search, Filter, Users } from "lucide-react";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 
 interface EmployeesPageProps {
   employees: Employee[];
@@ -38,7 +40,6 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
   editEmployee,
   removeEmployee,
 }) => {
-  // Modal states
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isCardOpen, setIsCardOpen] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -72,7 +73,7 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
   };
 
   const handleDeleteClick = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
+    if (window.confirm("Are you sure you want to delete this employee profile?")) {
       try {
         await removeEmployee(id);
       } catch (err) {
@@ -82,36 +83,46 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
   };
 
   return (
-    <div>
-      <div className="page-header">
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="page-title">Employees Directory</h1>
-          <p className="page-description">Manage staff details, departments, and AI skill matrices.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            Employee Management
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            ClickUp-inspired task table & right-side profile drawer with AI skill matrix.
+          </p>
         </div>
-        <button className="btn btn-primary" onClick={handleAddClick}>
-          <Plus size={18} /> Add Employee
-        </button>
+
+        <Button variant="gradient" onClick={handleAddClick} className="gap-2 shadow-lg shadow-purple-500/20">
+          <Plus className="w-4 h-4" /> Add Employee
+        </Button>
       </div>
 
-      <div className="controls-bar">
-        <div className="search-wrapper">
-          <Search size={18} className="search-icon" />
+      {/* Control Bar Filters & Search */}
+      <Card className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Search Input */}
+        <div className="relative w-full md:w-96">
+          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
-            className="search-input"
-            placeholder="Search by name, email, or employee number..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name, email, or employee number..."
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
-        <div className="filters-wrapper">
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Filter size={16} className="text-muted" />
+        {/* Filters */}
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-slate-400" />
             <select
-              className="select-filter"
               value={filterDepartment}
               onChange={(e) => setFilterDepartment(e.target.value)}
+              className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="all">All Departments</option>
               {departments.map((dept) => (
@@ -123,9 +134,9 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
           </div>
 
           <select
-            className="select-filter"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             <option value="all">All Statuses</option>
             <option value="active">Active</option>
@@ -133,8 +144,9 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
             <option value="terminated">Terminated</option>
           </select>
         </div>
-      </div>
+      </Card>
 
+      {/* Main Employee Table */}
       <EmployeeTable
         employees={filteredEmployees}
         departments={departments}
@@ -144,6 +156,7 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
         onView={handleViewClick}
       />
 
+      {/* Add / Edit Form Modal */}
       <EmployeeForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
@@ -155,6 +168,7 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
         employees={employees}
       />
 
+      {/* Right-side Drawer Profile Card */}
       <EmployeeCard
         employee={selectedEmployee}
         isOpen={isCardOpen}
