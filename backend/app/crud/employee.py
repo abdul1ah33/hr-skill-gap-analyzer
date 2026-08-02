@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.employee import Employee
+from app.models.employee_skill import EmployeeSkill
+from app.models.position import Position
+from app.models.position_skill import PositionSkill
 from app.models.user import User
 from app.schemas.employee import EmployeeCreate, EmployeeUpdate
 
@@ -12,7 +15,8 @@ def _base_query(db: Session):
     """
     return db.query(Employee).options(
         selectinload(Employee.department),
-        selectinload(Employee.position),
+        selectinload(Employee.position).selectinload(Position.position_skills).selectinload(PositionSkill.skill),
+        selectinload(Employee.employee_skills).selectinload(EmployeeSkill.skill),
         selectinload(Employee.user).selectinload(User.role),
     )
 

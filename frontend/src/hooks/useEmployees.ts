@@ -385,6 +385,7 @@ export const useEmployees = () => {
     departments,
     positions,
     skills,
+    setSkills,
     loading,
     error,
     searchQuery,

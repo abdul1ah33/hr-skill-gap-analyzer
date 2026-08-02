@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
+from app.models.skill import Skill
 from app.schemas.skill import SkillCreate, SkillUpdate, SkillResponse
 from app.crud.skill import (
     create_skill,
@@ -23,9 +24,6 @@ router = APIRouter(
 @router.post("/", response_model=SkillResponse, status_code=201)
 def create_skill_route(skill: SkillCreate, db: Session = Depends(get_db)):
     # Check uniqueness of name
-    existing = db.query(SkillResponse.model_config.get("model") or None).filter_name_check_needed = False
-    # Let's query by name
-    from app.models.skill import Skill
     db_skill = db.query(Skill).filter(Skill.name == skill.name).first()
     if db_skill:
         raise HTTPException(status_code=400, detail="Skill name already exists.")
@@ -65,9 +63,10 @@ def delete_skill_route(skill_id: int, db: Session = Depends(get_db)):
     skill = get_skill(db, skill_id)
     if not skill:
         raise HTTPException(status_code=404, detail="Skill not found")
-    if skill.employee_skills or skill.positions:
+    # Use .position_skills (correct relation name) instead of .positions
+    if skill.employee_skills or skill.position_skills:
         raise HTTPException(
-            status_code=400, detail="Skill is assigned to employees or positions."
+            status_code=400, detail="Skill is assigned to employees or positions. Remove those assignments first."
         )
     delete_skill(db, skill_id)
     return {"message": "Skill deleted"}

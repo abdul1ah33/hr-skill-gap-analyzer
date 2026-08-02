@@ -222,15 +222,38 @@ export const getPositionSkills = (positionId: number) =>
   api.get<any[]>(`/positions/${positionId}/skills`).then(res => {
     res.data = res.data.map(item => ({
       id: item.id,
-      name: item.name,
-      category: item.category,
-      description: item.description
+      position_id: item.position_id,
+      skill_id: item.skill_id,
+      name: item.skill?.name || "",
+      category: item.skill?.category || "",
+      description: item.skill?.description || "",
+      required_skill_level: item.required_skill_level,
+      importance: item.importance,
+      is_essential: item.is_essential,
+      short_description: item.short_description || "",
     }));
     return res;
   });
 
-export const addPositionSkill = (positionId: number, skillId: number) =>
-  api.post<any>(`/positions/${positionId}/skills`, { skill_id: skillId });
+
+export const addPositionSkill = (
+  positionId: number,
+  skillId: number,
+  requiredLevel: string = "Intermediate",
+  importance: number = 5,
+  isEssential: boolean = true
+) =>
+  api.post<any>(`/positions/${positionId}/skills`, {
+    skill_id: skillId,
+    required_skill_level: requiredLevel,
+    importance,
+    is_essential: isEssential,
+  });
+
 
 export const removePositionSkill = (positionId: number, skillId: number) =>
   api.delete(`/positions/${positionId}/skills/${skillId}`);
+
+export const generatePositionSkills = (positionId: number) =>
+  api.post<{ message: string; generated_count: number }>(`/positions/${positionId}/generate-skills`);
+

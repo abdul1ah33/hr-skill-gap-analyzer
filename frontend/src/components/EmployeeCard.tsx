@@ -141,7 +141,7 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
 
           <div className="grid grid-cols-1 gap-2">
             {employee.skills && employee.skills.length > 0 ? (
-              employee.skills.map((skill, idx) => (
+              employee.skills.map((skill) => (
                 <div
                   key={skill}
                   className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 hover:border-purple-500/30 transition-all"
@@ -152,8 +152,8 @@ export const EmployeeCard: React.FC<EmployeeCardProps> = ({
                     </div>
                     <span className="font-bold text-sm text-slate-900 dark:text-slate-100">{skill}</span>
                   </div>
-                  <Badge variant={idx % 2 === 0 ? "success" : "info"}>
-                    {idx % 2 === 0 ? "Expert" : "Advanced"}
+                  <Badge variant="secondary" className="text-slate-500 dark:text-slate-400">
+                    Proficient
                   </Badge>
                 </div>
               ))

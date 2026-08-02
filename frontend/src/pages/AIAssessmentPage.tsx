@@ -9,11 +9,13 @@ import {
   Download,
   Play,
   ChevronRight,
+  AlertOctagon,
 } from "lucide-react";
 import { Card, CardTitle, CardDescription } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "../api/axios";
 
 interface AIAssessmentPageProps {
   employees: Employee[];
@@ -33,41 +35,63 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
   positions,
 }) => {
   const [selectedEmpId, setSelectedEmpId] = useState<number | "">(employees[0]?.id || "");
+  const [selectedPositionId, setSelectedPositionId] = useState<number | "">("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
+  const [assessmentData, setAssessmentData] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const selectedEmployee = employees.find((e) => e.id === Number(selectedEmpId));
-  const targetPosition = positions.find((p) => p.id === selectedEmployee?.roleId) || positions[0];
+  const targetPosition =
+    positions.find((p) => p.id === Number(selectedPositionId)) ||
+    positions.find((p) => p.id === selectedEmployee?.roleId) ||
+    positions[0];
 
-  const handleRunAssessment = () => {
+  // Auto-select employee's own position when employee changes
+  React.useEffect(() => {
+    if (selectedEmployee) {
+      setSelectedPositionId(selectedEmployee.roleId || "");
+      setReportGenerated(false);
+      setAssessmentData(null);
+      setApiError(null);
+    }
+  }, [selectedEmployee?.id]);
+
+  const handleRunAssessment = async () => {
     if (!selectedEmployee) return;
     setIsProcessing(true);
     setReportGenerated(false);
+    setApiError(null);
 
-    // Simulate AI & Skill Alias Resolution Processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      // Use the axios instance so Authorization header is automatically attached
+      // Pass position_id as a query param so we can assess against a target position
+      const params = selectedPositionId ? { position_id: Number(selectedPositionId) } : {};
+      const { data } = await api.post(
+        `/assessment/employee/${selectedEmployee.id}/assess`,
+        null,
+        { params }
+      );
+      setAssessmentData(data);
       setReportGenerated(true);
-    }, 2000);
+    } catch (error: any) {
+      console.error("Assessment API error:", error);
+      const msg =
+        error?.response?.data?.detail ||
+        error?.message ||
+        "Unknown error";
+      setApiError(`Assessment failed: ${msg}`);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  // Mock Analysis Result leveraging Skill Alias engine
-  const matchedSkills: MatchItem[] = [
-    { skill: "Computer Programming", employeeLevel: "Advanced", requiredLevel: "Intermediate", essential: true, aliasMatched: "Python" },
-    { skill: "Database Management", employeeLevel: "Expert", requiredLevel: "Advanced", essential: true, aliasMatched: "PostgreSQL" },
-    { skill: "Version Control", employeeLevel: "Beginner", requiredLevel: "Intermediate", essential: true, aliasMatched: "Git" },
-  ];
-
-  const needsImprovement: MatchItem[] = [
-    { skill: "Containerization", employeeLevel: "Beginner", requiredLevel: "Advanced", essential: false, aliasMatched: "Docker" },
-  ];
-
-  const missingSkills: MatchItem[] = [
-    { skill: "AI & Machine Learning", employeeLevel: "None", requiredLevel: "Intermediate", essential: false },
-    { skill: "Cloud Architecture", employeeLevel: "None", requiredLevel: "Advanced", essential: true },
-  ];
-
-  const matchPercentage = 78;
+  // Use real assessment data or fallback to mock data
+  const matchedSkills: MatchItem[] = assessmentData?.matched || [];
+  const needsImprovement: MatchItem[] = assessmentData?.needs_improvement || [];
+  const missingSkills: MatchItem[] = assessmentData?.missing || [];
+  const matchPercentage = assessmentData?.match_percentage || 0;
+  const aiReport = assessmentData?.ai_report || null;
 
   return (
     <div className="space-y-6">
@@ -89,6 +113,21 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
           </Button>
         )}
       </div>
+
+      {/* API Error Banner */}
+      {apiError && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm"
+        >
+          <AlertOctagon className="w-5 h-5 flex-shrink-0" />
+          <div>
+            <p className="font-bold">Assessment Error</p>
+            <p className="text-xs opacity-80 mt-0.5">{apiError}</p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Selector Card */}
       <Card className="p-6">
@@ -118,10 +157,20 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
               <label className="font-bold text-xs text-slate-700 dark:text-slate-300 block mb-1.5">
                 2. Target Position Profile
               </label>
-              <div className="px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center justify-between">
-                <span>{targetPosition?.title || "Position Profile"}</span>
-                <Badge variant="primary">{targetPosition?.level || "Mid-level"}</Badge>
-              </div>
+              <select
+                value={selectedPositionId}
+                onChange={(e) => {
+                  setSelectedPositionId(Number(e.target.value));
+                  setReportGenerated(false);
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {positions.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title} ({p.level || "Not specified"})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -214,11 +263,27 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
                 </div>
                 <div>
                   <p className="text-xs font-bold text-purple-300">Overall Match Score</p>
-                  <p className="text-[11px] text-slate-300">Strong candidate alignment</p>
+                  <p className="text-[11px] text-slate-300">
+                    {matchedSkills.length + needsImprovement.length + missingSkills.length === 0
+                      ? "No skills defined for position"
+                      : matchPercentage >= 75
+                      ? "Strong candidate alignment"
+                      : matchPercentage >= 40
+                      ? "Moderate candidate alignment"
+                      : "Low alignment - Gap identified"}
+                  </p>
                 </div>
               </div>
             </div>
           </Card>
+
+          {matchedSkills.length + needsImprovement.length + missingSkills.length === 0 && (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs flex items-center justify-between">
+              <span>
+                <strong>Notice:</strong> The selected position profile has 0 required skills configured in the system. Go to the <strong>Positions</strong> page to assign required skills for an accurate assessment.
+              </span>
+            </div>
+          )}
 
           {/* 3 Columns: Matched, Needs Improvement, Missing */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -261,6 +326,11 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
                     <p className="text-[10px] text-amber-700 dark:text-amber-400 mt-1">
                       Current: {m.employeeLevel} • Required: {m.requiredLevel}
                     </p>
+                    {m.aliasMatched && (
+                      <p className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold mt-0.5">
+                        Matched via profile skill: "{m.aliasMatched}"
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -288,54 +358,140 @@ export const AIAssessmentPage: React.FC<AIAssessmentPageProps> = ({
             </Card>
           </div>
 
-          {/* Recommended Learning Plan Cards */}
-          <Card className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <GraduationCap className="w-6 h-6 text-purple-600" />
-              <div>
-                <CardTitle>Recommended AI Training & Learning Plan</CardTitle>
-                <CardDescription>Tailored learning track based on missing competencies</CardDescription>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+          {/* AI Generated Report */}
+          {aiReport && (
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <GraduationCap className="w-6 h-6 text-purple-600" />
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Cloud Architecture & AWS Mastery</h4>
-                    <Badge variant="danger">High Priority</Badge>
-                  </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Comprehensive training covering cloud infrastructure, microservices design, and serverless deployment.
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">
-                  <span className="text-slate-400">Est. Duration: 4 Weeks</span>
-                  <Button variant="gradient" size="sm" className="gap-1 text-xs">
-                    Assign Course <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
+                  <CardTitle>AI Assessment Report</CardTitle>
+                  <CardDescription>Comprehensive analysis generated by AI</CardDescription>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">Advanced Kubernetes & Orchestration</h4>
-                    <Badge variant="warning">Medium Priority</Badge>
+              <div className="space-y-6">
+                {/* Skill Assessment */}
+                {aiReport["Skill Assessment"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Skill Assessment</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {typeof aiReport["Skill Assessment"] === "string" ? aiReport["Skill Assessment"] : JSON.stringify(aiReport["Skill Assessment"])}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Hands-on lab training on container orchestration, CI/CD integrations, and cluster monitoring.
-                  </p>
-                </div>
-                <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">
-                  <span className="text-slate-400">Est. Duration: 2 Weeks</span>
-                  <Button variant="outline" size="sm" className="gap-1 text-xs">
-                    Assign Course <ChevronRight className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                )}
+
+                {/* Strengths */}
+                {aiReport["Strengths"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Strengths</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {typeof aiReport["Strengths"] === "string" ? aiReport["Strengths"] : JSON.stringify(aiReport["Strengths"])}
+                    </p>
+                  </div>
+                )}
+
+                {/* Skill Gaps */}
+                {aiReport["Skill Gaps"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Skill Gaps</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {typeof aiReport["Skill Gaps"] === "string" ? aiReport["Skill Gaps"] : JSON.stringify(aiReport["Skill Gaps"])}
+                    </p>
+                  </div>
+                )}
+
+                {/* Development Areas */}
+                {aiReport["Development Areas"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Development Areas</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {typeof aiReport["Development Areas"] === "string" ? aiReport["Development Areas"] : JSON.stringify(aiReport["Development Areas"])}
+                    </p>
+                  </div>
+                )}
+
+                {/* Training Priorities */}
+                {aiReport["Training Priorities"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Training Priorities</h4>
+                    <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 list-none">
+                      {Array.isArray(aiReport["Training Priorities"])
+                        ? aiReport["Training Priorities"].map((priority: any, idx: number) => {
+                            let text = "";
+                            let duration = "";
+                            if (typeof priority === "string") {
+                              try {
+                                const parsed = JSON.parse(priority);
+                                text = parsed["Suggested training"] || parsed["training"] || priority;
+                                duration = parsed["Estimated duration"] ? ` (${parsed["Estimated duration"]})` : "";
+                              } catch {
+                                text = priority;
+                              }
+                            } else if (typeof priority === "object" && priority !== null) {
+                              text = priority["Suggested training"] || priority.title || priority.name || JSON.stringify(priority);
+                              duration = priority["Estimated duration"] ? ` (${priority["Estimated duration"]})` : "";
+                            }
+                            return (
+                              <li key={idx} className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0" />
+                                <span className="font-semibold text-slate-800 dark:text-slate-200">{text}</span>
+                                {duration && <span className="text-[10px] text-slate-400">{duration}</span>}
+                              </li>
+                            );
+                          })
+                        : <li className="font-semibold text-slate-800 dark:text-slate-200">{String(aiReport["Training Priorities"])}</li>}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Recommended Learning Plan */}
+                {aiReport["Recommended Learning Plan"] && (
+                  <div>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-3">Recommended Learning Plan</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {Array.isArray(aiReport["Recommended Learning Plan"]) ? (
+                        aiReport["Recommended Learning Plan"].map((plan: any, idx: number) => (
+                          <div key={idx} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                                  {plan["Suggested training"] || plan["training"] || plan["course"] || "Recommended Training"}
+                                </h4>
+                                <Badge variant="primary">{idx === 0 ? "High Priority" : "Medium Priority"}</Badge>
+                              </div>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                                Duration: {plan["Estimated duration"] || plan["duration"] || "N/A"} • Outcome: {plan["Expected outcome"] || plan["outcome"] || "Skill improvement"}
+                              </p>
+                            </div>
+                            <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 text-xs font-semibold">
+                              <span className="text-slate-400">AI Recommended</span>
+                              <Button variant="outline" size="sm" className="gap-1 text-xs">
+                                Assign Course <ChevronRight className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400">
+                          {String(aiReport["Recommended Learning Plan"])}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Final Recommendation */}
+                {aiReport["Final Recommendation"] && (
+                  <div className="p-4 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/40">
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Final Recommendation</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      {typeof aiReport["Final Recommendation"] === "string" ? aiReport["Final Recommendation"] : JSON.stringify(aiReport["Final Recommendation"])}
+                    </p>
+                  </div>
+                )}
               </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </motion.div>
       )}
     </div>

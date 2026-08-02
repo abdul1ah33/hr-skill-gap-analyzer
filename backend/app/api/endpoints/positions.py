@@ -93,3 +93,20 @@ def delete_position_route(position_id: int, db: Session = Depends(get_db)):
 
     delete_position(db, position_id)
     return {"message": "Position deleted"}
+
+
+@router.post("/{position_id}/generate-skills")
+def generate_position_skills_route(position_id: int, db: Session = Depends(get_db)):
+    position = get_position(db, position_id)
+    if not position:
+        raise HTTPException(status_code=404, detail="Position not found")
+
+    skills = position_service.ai.generate_for_position(
+        db=db,
+        position_id=position.id,
+        position_title=position.title,
+    )
+    return {
+        "message": f"Generated {len(skills)} skills for position '{position.title}'",
+        "generated_count": len(skills),
+    }

@@ -15,7 +15,6 @@ from app.core.exceptions import (
     EmployeeSkillNotFoundError,
     EmployeeSkillAlreadyExistsError,
 )
-from app.crud import position_skill
 
 
 
@@ -29,7 +28,7 @@ def add_skill_to_employee(
     get_employee_or_raise(db, employee_id)    
 
     # Check if the skill exists
-    get_skill_or_raise(db, position_skill.skill_id)
+    get_skill_or_raise(db, employee_skill.skill_id)
 
     # Check if the employee already has the skill
     existing = (

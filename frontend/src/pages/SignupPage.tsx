@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
-import { Users, Lock, Mail, User, Eye, EyeOff, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { Lock, Mail, User, Eye, EyeOff, AlertCircle, Loader2, CheckCircle2, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 
 export const SignupPage: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -10,7 +11,6 @@ export const SignupPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const [validationError, setValidationError] = useState("");
   const [backendError, setBackendError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -24,47 +24,24 @@ export const SignupPage: React.FC = () => {
     setBackendError("");
     setSuccessMsg("");
 
-    // Client-side validation
-    if (!username.trim()) {
-      setValidationError("Username is required.");
-      return;
-    }
-    if (!email.trim()) {
-      setValidationError("Email is required.");
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email.trim())) {
-      setValidationError("Please enter a valid email address.");
-      return;
-    }
-    if (!password) {
-      setValidationError("Password is required.");
-      return;
-    }
-    if (password.length < 6) {
-      setValidationError("Password must be at least 6 characters long.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setValidationError("Passwords do not match.");
-      return;
-    }
+    if (!username.trim()) { setValidationError("Username is required."); return; }
+    if (!email.trim()) { setValidationError("Email is required."); return; }
+    if (!/\S+@\S+\.\S+/.test(email.trim())) { setValidationError("Please enter a valid email address."); return; }
+    if (!password) { setValidationError("Password is required."); return; }
+    if (password.length < 6) { setValidationError("Password must be at least 6 characters."); return; }
+    if (password !== confirmPassword) { setValidationError("Passwords do not match."); return; }
 
     setLoading(true);
-
     try {
       await api.post("/auth/signup", {
         username: username.trim(),
         email: email.trim(),
         password: password,
       });
-
-      setSuccessMsg("Account created successfully! Redirecting to login...");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      setSuccessMsg("Account created! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.detail) {
+      if (err.response?.data?.detail) {
         setBackendError(
           typeof err.response.data.detail === "string"
             ? err.response.data.detail
@@ -79,142 +56,163 @@ export const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-header">
-          <div className="auth-logo">
-            <Users size={36} className="gradient-icon" />
-          </div>
-          <h1 className="auth-title">Create Account</h1>
-          <p className="auth-subtitle">Join HR Assist AI platform</p>
-        </div>
-
-        {(validationError || backendError) && (
-          <div className="auth-error-alert">
-            <AlertCircle size={18} />
-            <span>{validationError || backendError}</span>
-          </div>
-        )}
-
-        {successMsg && (
-          <div className="auth-success-alert">
-            <CheckCircle2 size={18} />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label className="form-label" htmlFor="username">
-              Username
-            </label>
-            <div className="input-icon-wrapper">
-              <User size={18} className="input-icon" />
-              <input
-                id="username"
-                type="text"
-                className="form-control with-icon"
-                placeholder="Choose a username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="email">
-              Email Address
-            </label>
-            <div className="input-icon-wrapper">
-              <Mail size={18} className="input-icon" />
-              <input
-                id="email"
-                type="email"
-                className="form-control with-icon"
-                placeholder="your.email@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password
-            </label>
-            <div className="input-icon-wrapper">
-              <Lock size={18} className="input-icon" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                className="form-control with-icon with-end-icon"
-                placeholder="Create a password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-              <button
-                type="button"
-                className="input-end-button"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="form-label" htmlFor="confirmPassword">
-              Confirm Password
-            </label>
-            <div className="input-icon-wrapper">
-              <Lock size={18} className="input-icon" />
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                className="form-control with-icon with-end-icon"
-                placeholder="Confirm password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-              />
-              <button
-                type="button"
-                className="input-end-button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                tabIndex={-1}
-              >
-                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="btn btn-primary auth-submit-btn"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 size={18} className="animate-spin" />
-                Creating Account...
-              </>
-            ) : (
-              "Sign Up"
-            )}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          Already have an account?{" "}
-          <Link to="/login" className="auth-link">
-            Sign In
-          </Link>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden p-4">
+      {/* Background glows */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-700/20 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-purple-700/20 blur-[120px]" />
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="relative z-10 w-full max-w-[420px]"
+      >
+        <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-700/60 rounded-3xl shadow-2xl shadow-black/60 p-8 space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 shadow-lg shadow-purple-900/50 mx-auto">
+              <Sparkles className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-white tracking-tight">Create Account</h1>
+              <p className="text-sm text-slate-400 mt-1">Join HR Assist AI platform</p>
+            </div>
+          </div>
+
+          {/* Error Alert */}
+          {(validationError || backendError) && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm"
+            >
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <span>{validationError || backendError}</span>
+            </motion.div>
+          )}
+
+          {/* Success Alert */}
+          {successMsg && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm"
+            >
+              <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+              <span>{successMsg}</span>
+            </motion.div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Username */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 block">Username</label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-60"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 block">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@company.com"
+                  disabled={loading}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-60"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 block">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password (min 6 chars)"
+                  disabled={loading}
+                  className="w-full pl-10 pr-12 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300 block">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat your password"
+                  disabled={loading}
+                  className="w-full pl-10 pr-12 py-2.5 rounded-xl bg-slate-800/80 border border-slate-700 text-white text-sm placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition-all shadow-lg shadow-purple-900/40 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                "Sign Up"
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className="text-center text-sm text-slate-500">
+            Already have an account?{" "}
+            <Link to="/login" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+              Sign In
+            </Link>
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 };

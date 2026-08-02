@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { UserPlus, Upload, FileText } from "lucide-react";
+import { UserPlus, Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { motion } from "framer-motion";
+import api from "../api/axios";
 
 interface Candidate {
   id: number;
@@ -24,24 +25,79 @@ const INITIAL_CANDIDATES: Candidate[] = [
 export const RecruitmentPage: React.FC = () => {
   const [candidates, setCandidates] = useState<Candidate[]>(INITIAL_CANDIDATES);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const stages: Candidate["stage"][] = ["Applied", "Screened", "Interviewing", "Offered", "Hired"];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setUploadStatus({ type: null, message: '' });
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await api.post('/resume/import', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      // Success - add the new employee to candidates list
+      const newCandidate: Candidate = {
+        id: response.data.employee_id,
+        name: "Imported from Resume",
+        role: "New Position",
+        matchScore: 95,
+        stage: "Applied",
+        skills: ["Imported Skills"],
+      };
+
+      setCandidates((prev) => [newCandidate, ...prev]);
+      setUploadStatus({ type: 'success', message: 'Resume imported successfully! Employee created.' });
+    } catch (error: any) {
+      console.error('Resume upload failed:', error);
+      setUploadStatus({
+        type: 'error',
+        message: error.response?.data?.detail || 'Failed to import resume. Please try again.'
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setIsUploading(true);
-      setTimeout(() => {
-        setIsUploading(false);
-        const newCandidate: Candidate = {
-          id: Date.now(),
-          name: "Parsed Resume Candidate",
-          role: "Senior Engineer",
-          matchScore: 92,
-          stage: "Applied",
-          skills: ["Python", "PostgreSQL", "Docker", "Git"],
-        };
-        setCandidates((prev) => [newCandidate, ...prev]);
-      }, 1500);
+      handleFileUpload(e.target.files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      if (file.type === 'application/pdf' || file.name.endsWith('.docx') || file.name.endsWith('.doc')) {
+        handleFileUpload(file);
+      } else {
+        setUploadStatus({
+          type: 'error',
+          message: 'Please upload a PDF or DOCX file.'
+        });
+      }
     }
   };
 
@@ -60,23 +116,64 @@ export const RecruitmentPage: React.FC = () => {
         </div>
 
         {/* Resume Dropzone Button */}
-        <label className="cursor-pointer">
-          <input type="file" onChange={handleFileUpload} accept=".pdf,.docx" className="hidden" />
-          <Button variant="gradient" className="gap-2 shadow-lg shadow-purple-500/20 pointer-events-none">
+        <div className="flex gap-2">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileInputChange}
+            accept=".pdf,.docx,.doc"
+            className="hidden"
+            disabled={isUploading}
+          />
+          <Button
+            variant="gradient"
+            className="gap-2 shadow-lg shadow-purple-500/20"
+            disabled={isUploading}
+            onClick={() => fileInputRef.current?.click()}
+          >
             <Upload className="w-4 h-4" />
             {isUploading ? "Parsing Resume..." : "Upload Resume (PDF/DOCX)"}
           </Button>
-        </label>
+        </div>
+
+        {/* Upload Status Message */}
+        {uploadStatus.type && (
+          <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
+            uploadStatus.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+              : 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800'
+          }`}>
+            {uploadStatus.type === 'success' ? (
+              <CheckCircle className="w-4 h-4" />
+            ) : (
+              <AlertCircle className="w-4 h-4" />
+            )}
+            <span>{uploadStatus.message}</span>
+          </div>
+        )}
       </div>
 
       {/* Resume Drop Area */}
-      <Card className="p-6 border-dashed border-2 border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/10 text-center">
+      <Card
+        className={`p-6 border-dashed border-2 text-center transition-all cursor-pointer ${
+          isDragging
+            ? 'border-purple-500 bg-purple-100 dark:bg-purple-950/30'
+            : 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/10 hover:border-purple-400 dark:hover:border-purple-800'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => fileInputRef.current?.click()}
+      >
         <div className="max-w-md mx-auto space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center mx-auto">
             <FileText className="w-6 h-6 animate-bounce" />
           </div>
-          <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">Drop Candidate Resumes Here</h3>
+          <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+            {isDragging ? 'Drop Resume Here' : 'Drop Candidate Resumes Here'}
+          </h3>
           <p className="text-xs text-slate-500">AI automatically extracts contact info, experience, and maps skills using Skill Alias Engine.</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Click or drag & drop PDF/DOCX files</p>
         </div>
       </Card>
 

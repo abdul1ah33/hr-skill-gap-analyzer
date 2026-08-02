@@ -12,6 +12,7 @@ interface EmployeesPageProps {
   departments: Department[];
   positions: Position[];
   skills: Skill[];
+  setSkills: (skills: Skill[]) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   filterDepartment: string;
@@ -29,6 +30,7 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
   departments,
   positions,
   skills,
+  setSkills,
   searchQuery,
   setSearchQuery,
   filterDepartment,
@@ -80,6 +82,10 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
         console.error("Error deleting employee", err);
       }
     }
+  };
+
+  const handleSkillAdded = (newSkill: Skill) => {
+    setSkills([...skills, newSkill]);
   };
 
   return (
@@ -166,6 +172,7 @@ export const EmployeesPage: React.FC<EmployeesPageProps> = ({
         positions={positions}
         skills={skills}
         employees={employees}
+        onSkillAdded={handleSkillAdded}
       />
 
       {/* Right-side Drawer Profile Card */}

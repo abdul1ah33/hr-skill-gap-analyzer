@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import type { Employee, Department, Position, Skill } from "../types/employee";
 import { Dialog } from "./ui/Dialog";
 import { Button } from "./ui/Button";
-import { User, Briefcase, Award, Check } from "lucide-react";
+import { User, Briefcase, Award, Check, Plus } from "lucide-react";
+import api from "../api/axios";
 
 interface EmployeeFormProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface EmployeeFormProps {
   positions: Position[];
   skills: Skill[];
   employees: Employee[];
+  onSkillAdded?: (newSkill: Skill) => void;
 }
 
 type FormTab = "personal" | "employment" | "skills";
@@ -26,6 +28,7 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   positions,
   skills,
   employees,
+  onSkillAdded,
 }) => {
   const [activeTab, setActiveTab] = useState<FormTab>("personal");
 
@@ -49,6 +52,8 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
   const [educationLevel, setEducationLevel] = useState("Bachelor's Degree");
   const [certifications, setCertifications] = useState("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [newSkillName, setNewSkillName] = useState("");
+  const [isAddingSkill, setIsAddingSkill] = useState(false);
 
   const filteredPositions = positions.filter((pos) => pos.departmentId === departmentId);
 
@@ -111,6 +116,30 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
       setSelectedSkills(selectedSkills.filter((s) => s !== skillName));
     } else {
       setSelectedSkills([...selectedSkills, skillName]);
+    }
+  };
+
+  const handleAddNewSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSkillName.trim()) return;
+
+    try {
+      const response = await api.post('/skills/', { name: newSkillName.trim() });
+      const newSkill = response.data;
+
+      // Add to selected skills
+      setSelectedSkills([...selectedSkills, newSkill.name]);
+
+      // Notify parent to update skills list
+      if (onSkillAdded) {
+        onSkillAdded(newSkill);
+      }
+
+      setNewSkillName("");
+      setIsAddingSkill(false);
+    } catch (error: any) {
+      console.error('Failed to add skill:', error);
+      alert(error.response?.data?.detail || 'Failed to add skill. It may already exist.');
     }
   };
 
@@ -298,6 +327,65 @@ export const EmployeeForm: React.FC<EmployeeFormProps> = ({
                 })}
               </div>
             </div>
+
+            {/* Add New Skill Section */}
+            <div>
+              {!isAddingSkill ? (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingSkill(true)}
+                  className="flex items-center gap-2 text-xs font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add new skill manually</span>
+                </button>
+              ) : (
+                <form onSubmit={handleAddNewSkill} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSkillName}
+                    onChange={(e) => setNewSkillName(e.target.value)}
+                    placeholder="Enter skill name"
+                    className="flex-1 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs"
+                    autoFocus
+                  />
+                  <Button type="submit" variant="primary" size="sm" className="px-3 py-2 text-xs">
+                    Add
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsAddingSkill(false);
+                      setNewSkillName("");
+                    }}
+                    className="px-3 py-2 text-xs"
+                  >
+                    Cancel
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            {/* Selected Skills Summary */}
+            {selectedSkills.length > 0 && (
+              <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+                <p className="text-xs font-semibold text-purple-700 dark:text-purple-300 mb-2">
+                  Selected Skills ({selectedSkills.length})
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {selectedSkills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs font-medium"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

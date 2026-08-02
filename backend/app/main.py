@@ -14,6 +14,7 @@ from app.api.endpoints.employee_skill import router as employee_skill_router
 from app.api.endpoints.position_skill import router as position_skill_router
 from app.api.endpoints.skill_aliases import router as skill_alias_router
 from app.api.endpoints.resume import router as resume_router
+from app.api.endpoints.assessment import router as assessment_router
 
 from app.core.exception_handlers import register_exception_handlers
 
@@ -94,6 +95,12 @@ app.include_router(
     resume_router,
     prefix="/resume",
     tags=["Resume Import"],
+)
+
+app.include_router(
+    assessment_router,
+    prefix="/assessment",
+    tags=["Assessment"],
 )
 
 # ─── Health check ─────────────────────────────────────────────────────────────

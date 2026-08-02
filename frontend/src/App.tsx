@@ -54,6 +54,7 @@ const HRLayout = () => {
               departments={hrState.departments}
               positions={hrState.positions}
               skills={hrState.skills}
+              setSkills={hrState.setSkills}
               searchQuery={hrState.searchQuery}
               setSearchQuery={hrState.setSearchQuery}
               filterDepartment={hrState.filterDepartment}
@@ -83,6 +84,7 @@ const HRLayout = () => {
             <RolesPage
               positions={hrState.positions}
               departments={hrState.departments}
+              skills={hrState.skills}
               addPosition={hrState.addPosition}
               deletePosition={hrState.deletePosition}
             />
@@ -94,6 +96,7 @@ const HRLayout = () => {
             <RolesPage
               positions={hrState.positions}
               departments={hrState.departments}
+              skills={hrState.skills}
               addPosition={hrState.addPosition}
               deletePosition={hrState.deletePosition}
             />
