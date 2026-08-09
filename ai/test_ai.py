@@ -1,4 +1,4 @@
-from ai.position_skill_generator import PositionSkillGenerator
+from position_skill_generator import PositionSkillGenerator
 
 generator = PositionSkillGenerator()
 
