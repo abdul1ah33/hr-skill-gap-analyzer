@@ -1,5 +1,5 @@
 from app.db.database import SessionLocal
-from app.services.assessment_service import AssessmentService
+from backend.app.services.old.assessment_service import AssessmentService
 
 db = SessionLocal()
 

@@ -15,3 +15,5 @@ from .assessment_question import AssessmentQuestion
 from .assessment_result import AssessmentResult
 from .assessment_answer import AssessmentAnswer
 from .recommendation import Recommendation
+from .education import Education
+from .certification import Certification

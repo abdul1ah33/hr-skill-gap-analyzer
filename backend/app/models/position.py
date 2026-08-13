@@ -22,9 +22,9 @@ class Position(Base):
         nullable=False
     )
 
-    department_id: Mapped[int] = mapped_column(
+    department_id: Mapped[int | None] = mapped_column(
         ForeignKey("departments.id"),
-        nullable=False
+        nullable=True,
     )
 
     description: Mapped[str | None] = mapped_column(
@@ -51,7 +51,7 @@ class Position(Base):
         onupdate=datetime.utcnow
     )
 
-    department: Mapped[Department] = relationship(
+    department: Mapped["Department | None"] = relationship(
         back_populates="positions"
     )
 

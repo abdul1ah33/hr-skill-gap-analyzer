@@ -25,12 +25,24 @@ def _base_query(db: Session):
 
 def create_employee(db: Session, employee: EmployeeCreate) -> Employee:
     db_employee = Employee(**employee.model_dump())
+
     db.add(db_employee)
+
+    # Generate the database ID
+    db.flush()
+
+    # Generate employee number from the database ID
+    db_employee.employee_number = f"EMP{db_employee.id:04d}"
+
     db.commit()
     db.refresh(db_employee)
 
-    # Re-fetch with relationships loaded so the response includes nested data
-    return _base_query(db).filter(Employee.id == db_employee.id).first()
+    # Re-fetch with relationships loaded
+    return (
+        _base_query(db)
+        .filter(Employee.id == db_employee.id)
+        .first()
+    )
 
 
 # ─── Read all ────────────────────────────────────────────────────────────────

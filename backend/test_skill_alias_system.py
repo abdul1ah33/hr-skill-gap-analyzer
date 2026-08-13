@@ -9,8 +9,8 @@ from app.crud.skill_alias import (
     get_alias_by_name,
     get_aliases_for_skill,
 )
-from app.services.skill_alias_service import SkillAliasService
-from app.services.skill_gap_service import SkillGapService
+from backend.app.services.old.skill_alias_service import SkillAliasService
+from backend.app.services.old.skill_gap_service import SkillGapService
 
 
 def test_alias_system():

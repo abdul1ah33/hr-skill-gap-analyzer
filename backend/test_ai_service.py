@@ -2,7 +2,7 @@ import app.core.paths
 
 from app.db.database import SessionLocal
 from app.models.position import Position
-from app.services.ai_position_skill_service import AIPositionSkillService
+from backend.app.services.old.ai_position_skill_service import AIPositionSkillService
 
 db = SessionLocal()
 

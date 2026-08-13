@@ -1,48 +1,90 @@
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    UploadFile,
-    HTTPException,
-)
-from sqlalchemy.orm import Session
-import tempfile
 import os
+import tempfile
+
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
-from app.services.resume_import_service import ResumeImportService
+from app.services.resume_service import ResumeService
 
 
 router = APIRouter()
 
 
-@router.post("/import")
-async def import_resume(
+@router.post("/extract")
+async def extract_resume(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    service = ResumeImportService()
+    """
+    Extract a resume and create the employee in the database.
+    """
 
-    suffix = os.path.splitext(file.filename)[1]
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="No file was provided.",
+        )
 
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=suffix,
-    ) as temp:
+    extension = os.path.splitext(file.filename)[1].lower()
 
-        temp.write(await file.read())
-        temp_path = temp.name
+    if extension not in {".pdf", ".docx"}:
+        raise HTTPException(
+            status_code=400,
+            detail="Only PDF and DOCX files are supported.",
+        )
+
+    temp_path = None
 
     try:
-        employee = service.import_resume(
-            db,
-            temp_path,
+
+        with tempfile.NamedTemporaryFile(
+            delete=False,
+            suffix=extension,
+        ) as temp_file:
+
+            temp_path = temp_file.name
+
+            contents = await file.read()
+            temp_file.write(contents)
+
+        service = ResumeService()
+
+        # AI extraction
+        candidate = service.extract_candidate(temp_path)
+
+        # Save everything to database
+        employee = service.create_employee_from_resume(
+            db=db,
+            candidate=candidate,
         )
 
         return {
-            "message": "Resume imported successfully",
+            "message": "Employee created successfully",
             "employee_id": employee.id,
+            "employee_number": employee.employee_number,
+            "candidate": candidate,
         }
 
+    except ValueError as exc:
+
+        db.rollback()
+
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        )
+
+    except Exception as exc:
+
+        db.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process resume: {str(exc)}",
+        )
+
     finally:
-        os.remove(temp_path)
+
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)

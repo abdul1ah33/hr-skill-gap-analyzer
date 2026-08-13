@@ -16,7 +16,7 @@ from app.crud.position import (
     get_position_count,
 )
 
-from app.services.position_service import PositionService
+from backend.app.services.old.position_service import PositionService
 
 from app.auth.dependencies import get_current_hr
 
@@ -109,4 +109,4 @@ def generate_position_skills_route(position_id: int, db: Session = Depends(get_d
     return {
         "message": f"Generated {len(skills)} skills for position '{position.title}'",
         "generated_count": len(skills),
-    }
+    }

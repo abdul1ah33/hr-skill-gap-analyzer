@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 
 from app.crud.position import create_position, get_positions
 from app.schemas.position import PositionCreate
-from app.services.ai_position_skill_service import AIPositionSkillService
+from backend.app.services.old.ai_position_skill_service import AIPositionSkillService
 
 
 class PositionService:

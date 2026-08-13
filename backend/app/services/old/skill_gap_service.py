@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from app.models.employee_skill import SkillLevel
-from app.services.skill_alias_service import SkillAliasService
+from backend.app.services.old.skill_alias_service import SkillAliasService
 
 
 LEVEL_ORDER = {

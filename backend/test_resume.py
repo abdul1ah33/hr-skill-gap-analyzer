@@ -1,6 +1,6 @@
 import app.core.paths
 
-from app.services.resume_import_service import ResumeImportService
+from backend.app.services.old.resume_import_service import ResumeImportService
 
 service = ResumeImportService()
 

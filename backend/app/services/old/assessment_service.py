@@ -8,7 +8,7 @@ from app.models.employee_skill import EmployeeSkill
 from app.models.position import Position
 from app.models.position_skill import PositionSkill
 
-from app.services.skill_gap_service import SkillGapService
+from backend.app.services.old.skill_gap_service import SkillGapService
 
 from ai.agents.ollama_model import OllamaModel
 from ai.agents.assessment import Assess

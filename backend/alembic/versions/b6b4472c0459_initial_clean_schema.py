@@ -1,8 +1,8 @@
-"""Initial schema
+"""initial clean schema
 
-Revision ID: 9dcb8f314760
+Revision ID: b6b4472c0459
 Revises: 
-Create Date: 2026-06-30 02:49:12.463522
+Create Date: 2026-08-13 02:34:55.065762
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '9dcb8f314760'
+revision: str = 'b6b4472c0459'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,10 +37,8 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('manager_employee_id', sa.Integer(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['manager_employee_id'], ['employees.id'], name='fk_departments_manager', use_alter=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
@@ -56,8 +54,6 @@ def upgrade() -> None:
     op.create_table('skills',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('category', sa.String(length=100), nullable=True),
-    sa.Column('description', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
@@ -84,50 +80,75 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['department_id'], ['departments.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('skill_aliases',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('skill_id', sa.Integer(), nullable=False),
+    sa.Column('alias', sa.String(length=100), nullable=False),
+    sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['skill_id'], ['skills.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_skill_aliases_alias'), 'skill_aliases', ['alias'], unique=True)
     op.create_table('employees',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('employee_number', sa.String(length=20), nullable=False),
     sa.Column('first_name', sa.String(length=100), nullable=False),
     sa.Column('last_name', sa.String(length=100), nullable=False),
-    sa.Column('work_email', sa.String(length=100), nullable=False),
-    sa.Column('personal_email', sa.String(length=100), nullable=True),
+    sa.Column('email', sa.String(length=100), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=True),
     sa.Column('gender', sa.String(length=20), nullable=True),
-    sa.Column('birth_date', sa.Date(), nullable=True),
-    sa.Column('hire_date', sa.Date(), nullable=True),
-    sa.Column('employment_type', sa.String(length=30), nullable=True),
-    sa.Column('employment_status', sa.String(length=30), nullable=True),
-    sa.Column('salary', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('years_experience', sa.Integer(), nullable=True),
     sa.Column('department_id', sa.Integer(), nullable=False),
     sa.Column('position_id', sa.Integer(), nullable=False),
-    sa.Column('manager_id', sa.Integer(), nullable=True),
-    sa.Column('profile_picture', sa.String(length=255), nullable=True),
-    sa.Column('address', sa.Text(), nullable=True),
-    sa.Column('emergency_contact', sa.String(length=255), nullable=True),
-    sa.Column('national_id', sa.String(length=50), nullable=True),
     sa.Column('notes', sa.Text(), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['department_id'], ['departments.id'], ),
-    sa.ForeignKeyConstraint(['manager_id'], ['employees.id'], ),
     sa.ForeignKeyConstraint(['position_id'], ['positions.id'], ),
     sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
     sa.UniqueConstraint('employee_number'),
-    sa.UniqueConstraint('national_id'),
-    sa.UniqueConstraint('work_email')
+    sa.UniqueConstraint('phone')
+    )
+    op.create_table('position_skills',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('position_id', sa.Integer(), nullable=False),
+    sa.Column('skill_id', sa.Integer(), nullable=False),
+    sa.Column('required_skill_level', sa.Enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', name='skilllevel'), nullable=False),
+    sa.Column('importance', sa.Integer(), nullable=False),
+    sa.Column('is_essential', sa.Boolean(), nullable=False),
+    sa.Column('short_description', sa.String(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.ForeignKeyConstraint(['position_id'], ['positions.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['skill_id'], ['skills.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('position_id', 'skill_id')
+    )
+    op.create_table('certifications',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('employee_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=255), nullable=False),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('education',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('employee_id', sa.Integer(), nullable=False),
+    sa.Column('description', sa.String(length=255), nullable=False),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
     )
     op.create_table('employee_skills',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('employee_id', sa.Integer(), nullable=False),
     sa.Column('skill_id', sa.Integer(), nullable=False),
-    sa.Column('level', sa.Integer(), nullable=True),
-    sa.Column('years_experience', sa.Integer(), nullable=True),
-    sa.Column('verified', sa.Boolean(), nullable=False),
-    sa.Column('last_assessed', sa.Date(), nullable=True),
+    sa.Column('level', sa.Enum('BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT', name='skilllevel'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
-    sa.ForeignKeyConstraint(['skill_id'], ['skills.id'], ),
+    sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['skill_id'], ['skills.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('employee_id', 'skill_id')
     )
@@ -154,7 +175,6 @@ def upgrade() -> None:
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.Column('employee_id', sa.Integer(), nullable=True),
     sa.Column('last_login', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['employee_id'], ['employees.id'], ),
@@ -245,7 +265,12 @@ def downgrade() -> None:
     op.drop_table('users')
     op.drop_table('recommendations')
     op.drop_table('employee_skills')
+    op.drop_table('education')
+    op.drop_table('certifications')
+    op.drop_table('position_skills')
     op.drop_table('employees')
+    op.drop_index(op.f('ix_skill_aliases_alias'), table_name='skill_aliases')
+    op.drop_table('skill_aliases')
     op.drop_table('positions')
     op.drop_table('course_skills')
     op.drop_table('skills')

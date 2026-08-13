@@ -1,19 +1,27 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import (
-    String,
-    Text,
-    Date,
-    DateTime,
-    ForeignKey,
-    Numeric,
-)
+from sqlalchemy import String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from .department import Department
+    from .position import Position
+    from .user import User
+    from .employee_skill import EmployeeSkill
+    from .assessment_result import AssessmentResult
+    from .recommendation import Recommendation
+    from .role import Role
+    from .education import Education
+    from .certification import Certification
+    from .course_skill import CourseSkill
+    from .assessment_skill import AssessmentSkill
+    from .position_skill import PositionSkill
+    from .skill_alias import SkillAlias
 
 
 class Employee(Base):
@@ -21,11 +29,21 @@ class Employee(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    employee_number: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)
+    employee_number: Mapped[str] = mapped_column(
+        String(20),
+        unique=True,
+        nullable=False,
+    )
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    first_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    last_name: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
     email: Mapped[str] = mapped_column(
         String(100),
@@ -33,23 +51,20 @@ class Employee(Base):
         nullable=False,
     )
 
-    phone: Mapped[str | None] = mapped_column(String(20), unique=True)
+    phone: Mapped[str | None] = mapped_column(
+        String(20),
+        unique=True,
+    )
 
-    gender: Mapped[str | None] = mapped_column(String(20))
+    gender: Mapped[str | None] = mapped_column(
+        String(20)
+    )
 
-    birth_date: Mapped[date | None] = mapped_column(Date)
+    years_experience: Mapped[int | None] = mapped_column()
 
-    hire_date: Mapped[date | None] = mapped_column(Date)
-
-    employment_type: Mapped[str | None] = mapped_column(String(30))
-
-    employment_status: Mapped[str | None] = mapped_column(String(30))
-
-    salary: Mapped[float | None] = mapped_column(Numeric(10, 2))
-
-    department_id: Mapped[int] = mapped_column(
+    department_id: Mapped[int | None] = mapped_column(
         ForeignKey("departments.id"),
-        nullable=False,
+        nullable=True,
     )
 
     position_id: Mapped[int] = mapped_column(
@@ -57,19 +72,9 @@ class Employee(Base):
         nullable=False,
     )
 
-
-    profile_picture: Mapped[str | None] = mapped_column(String(255))
-
-    address: Mapped[str | None] = mapped_column(Text)
-
-    emergency_contact: Mapped[str | None] = mapped_column(String(255))
-
-    national_id: Mapped[str | None] = mapped_column(
-        String(50),
-        unique=True,
+    notes: Mapped[str | None] = mapped_column(
+        Text
     )
-
-    notes: Mapped[str | None] = mapped_column(Text)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -82,16 +87,14 @@ class Employee(Base):
         onupdate=datetime.utcnow,
     )
 
-    department: Mapped["Department"] = relationship(
+    department: Mapped["Department | None"] = relationship(
         back_populates="employees",
         foreign_keys=[department_id],
     )
 
     position: Mapped["Position"] = relationship(
-        back_populates="employees"
+        back_populates="employees",
     )
-
-
 
     user: Mapped["User | None"] = relationship(
         back_populates="employee",
@@ -99,6 +102,16 @@ class Employee(Base):
     )
 
     employee_skills: Mapped[list["EmployeeSkill"]] = relationship(
+        back_populates="employee",
+        cascade="all, delete-orphan",
+    )
+
+    education: Mapped[list["Education"]] = relationship(
+        back_populates="employee",
+        cascade="all, delete-orphan",
+    )
+
+    certifications: Mapped[list["Certification"]] = relationship(
         back_populates="employee",
         cascade="all, delete-orphan",
     )
@@ -112,8 +125,6 @@ class Employee(Base):
         back_populates="employee",
         cascade="all, delete-orphan",
     )
-
-    # ─── Computed properties ─────────────────────────────────────────────────
 
     @property
     def role(self) -> Optional["Role"]:

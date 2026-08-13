@@ -1,4 +1,4 @@
-from app.services.pdf_text_service import PDFService
+from backend.app.services.old.pdf_text_service import PDFService
 
 import app.core.paths
 import logging

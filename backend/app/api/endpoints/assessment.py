@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from app.dependencies import get_db
-from app.services.assessment_service import AssessmentService
+from backend.app.services.old.assessment_service import AssessmentService
 from app.auth.dependencies import get_current_hr
 
 
