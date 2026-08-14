@@ -1,0 +1,13 @@
+                    Routes
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+        /login              ProtectedRoute
+          │                       │
+     LoginPage              DashboardLayout
+                                  │
+                         ┌────────┼────────┐
+                         │        │        │
+                    /dashboard /employees /skills
+                         │        │        │
+                    Dashboard Employees Skills

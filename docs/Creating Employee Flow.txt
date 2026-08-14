@@ -1,0 +1,40 @@
+             AddEmployeePage
+                    │
+                    │ User fills form
+                    ▼
+              handleSubmit()
+                    │
+                    ▼
+            createEmployee()
+                    │
+                    ▼
+              employeeService
+                    │
+                    ▼
+             api.post(...)
+                    │
+                    ▼
+               Axios
+                    │
+              JWT interceptor
+                    │
+                    ▼
+             POST /employees/
+                    │
+                    ▼
+                FastAPI
+                    │
+                    ▼
+              PostgreSQL
+                    │
+                    ▼
+             Created Employee
+                    │
+                    ▼
+                Axios
+                    │
+                    ▼
+              React receives
+                    │
+                    ▼
+          navigate("/employees")

@@ -1,0 +1,23 @@
+                    Login
+                      │
+                      ▼
+                  Dashboard
+                      │
+             ┌────────┴────────┐
+             ▼                 ▼
+        Employees          Assessment
+             │                 │
+             ▼                 ▼
+       Employee Data      Job Description
+                               │
+                               ▼
+                         Skill Extraction
+                               │
+                               ▼
+                        Global Skills
+                               │
+                               ▼
+                         Gap Analysis
+                               │
+                               ▼
+                         Recommendations
