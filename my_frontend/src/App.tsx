@@ -7,6 +7,7 @@ import SkillsPage from "./pages/SkillsPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import AddEmployeePage from "./pages/AddEmployeePage";
 import EmployeeDetailsPage from "./pages/EmployeeDetailsPage";
+import EditEmployeePage from "./pages/EditEmployeePage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/add" element={<AddEmployeePage /> } />
             <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+            <Route path="/employees/:id/edit" element={<EditEmployeePage />} />
           </Route>
 
         </Route>

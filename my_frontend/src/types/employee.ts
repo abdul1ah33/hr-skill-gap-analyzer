@@ -74,3 +74,16 @@ export interface CreateEmployeeRequest {
   emergency_contact: string;
   notes: string;
 }
+
+export interface EmployeeUpdate {
+  employee_number?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string | null;
+  gender?: string | null;
+  years_experience?: number | null;
+  department_id?: number | null;
+  position_id?: number;
+  notes?: string | null;
+}
