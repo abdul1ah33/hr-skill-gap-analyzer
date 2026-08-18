@@ -8,6 +8,27 @@ export interface Position {
   title: string;
 }
 
+export interface Skill {
+  id: number;
+  name: string;
+}
+
+export interface EmployeeSkill {
+  id: number;
+  level: string;
+  skill: Skill;
+}
+
+export interface Education {
+  id: number;
+  description: string;
+}
+
+export interface Certification {
+  id: number;
+  name: string;
+}
+
 export interface Employee {
   employee_number: string;
 
@@ -32,6 +53,10 @@ export interface Employee {
 
   department: Department;
   position: Position;
+
+  employee_skills: EmployeeSkill[];
+  education: Education[];
+  certifications: Certification[];
 }
 
 export interface CreateEmployeeRequest {

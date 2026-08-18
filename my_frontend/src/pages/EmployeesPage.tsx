@@ -110,7 +110,9 @@ function EmployeesPage() {
                     </TableCell>
 
                     <TableCell>
-                      {employee.first_name} {employee.last_name}
+                      <Link to={`/employees/${employee.id}`}>
+                        {employee.first_name} {employee.last_name}
+                      </Link>
                     </TableCell>
 
                     <TableCell>

@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPage";
 import SkillsPage from "./pages/SkillsPage";
 import EmployeesPage from "./pages/EmployeesPage";
 import AddEmployeePage from "./pages/AddEmployeePage";
+import EmployeeDetailsPage from "./pages/EmployeeDetailsPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -22,6 +23,7 @@ function App() {
             <Route path="/skills" element={<SkillsPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/employees/add" element={<AddEmployeePage /> } />
+            <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
           </Route>
 
         </Route>

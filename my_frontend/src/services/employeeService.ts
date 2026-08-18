@@ -7,6 +7,16 @@ export async function getEmployees(): Promise<Employee[]> {
   return response.data;
 }
 
+export async function getEmployeeById(
+  id: number
+): Promise<Employee> {
+  const response = await api.get<Employee>(
+    `/employees/${id}`
+  );
+
+  return response.data;
+}
+
 export async function createEmployee(
   employee: CreateEmployeeRequest
 ): Promise<Employee> {

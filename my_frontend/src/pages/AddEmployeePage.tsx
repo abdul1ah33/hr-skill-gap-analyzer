@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { extractResume } from "../services/resumeService";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +21,7 @@ import {
 } from "../schemas/employeeSchema";
 
 import type { z } from "zod";
+import { useState } from "react";
 
 type CreateEmployeeForm = z.infer<
   typeof createEmployeeSchema
@@ -27,6 +30,7 @@ type CreateEmployeeForm = z.infer<
 function AddEmployeePage() {
   const navigate = useNavigate();
 
+  const [uploadingResume, setUploadingResume] = useState(false);
   const {
     register,
     handleSubmit,
@@ -34,6 +38,41 @@ function AddEmployeePage() {
   } = useForm<CreateEmployeeForm>({
     resolver: zodResolver(createEmployeeSchema),
   });
+
+  const handleResumeUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const extension = file.name
+      .substring(file.name.lastIndexOf("."))
+      .toLowerCase();
+
+    if (extension !== ".pdf" && extension !== ".docx") {
+      alert("Only PDF and DOCX files are supported.");
+      return;
+    }
+
+    try {
+      setUploadingResume(true);
+
+      const result = await extractResume(file);
+
+      navigate(`/employees/${result.employee_id}`);
+
+    } catch (error) {
+      console.error(error);
+
+      alert("Failed to process the resume.");
+
+    } finally {
+      setUploadingResume(false);
+    }
+  };
 
   async function onSubmit(data: CreateEmployeeForm) {
     try {
@@ -62,9 +101,30 @@ function AddEmployeePage() {
     }
   }
 
+
   return (
     <div>
       <h1>Add Employee</h1>
+
+      <div>
+        <label
+          htmlFor="resume-upload"
+          className="inline-flex cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          {uploadingResume
+            ? "Processing Resume..."
+            : "Add from PDF / DOCX"}
+        </label>
+
+        <input
+          id="resume-upload"
+          type="file"
+          accept=".pdf,.docx"
+          onChange={handleResumeUpload}
+          disabled={uploadingResume}
+          className="hidden"
+        />
+      </div>
 
       <Card>
         <CardHeader>
