@@ -7,6 +7,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
+
 class DepartmentSimple(BaseModel):
     id: int
     name: str
@@ -31,7 +32,14 @@ class RoleSimple(BaseModel):
 class SkillSimple(BaseModel):
     id: int
     name: str
-    proficiency: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EmployeeSkillSimple(BaseModel):
+    id: int
+    skill: SkillSimple
+    level: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -89,6 +97,7 @@ class EmployeeResponse(EmployeeBase):
     position: Optional[PositionSimple] = None
     role: Optional[RoleSimple] = None
 
+    employee_skills: list[EmployeeSkillSimple] = []
     education: list[EducationSimple] = []
     certifications: list[CertificationSimple] = []
 
