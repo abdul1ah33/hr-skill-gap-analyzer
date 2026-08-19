@@ -72,7 +72,7 @@ def update_employee(
         return None
 
     # Only update fields that were explicitly provided (not None)
-    update_data = employee.model_dump(exclude_none=True)
+    update_data = employee.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_employee, field, value)
 

@@ -15,15 +15,20 @@ import {
 } from "../components/ui/card";
 import FormField from "../components/FormField";
 
+import { getDepartments } from "../services/departmentService";
+import { getPositions } from "../services/positionService";
+
+import type { Department } from "../types/department";
+import type { Position } from "../types/position";
 
 import { getEmployeeById, updateEmployee } from "../services/employeeService";
 import type { Employee } from "../types/employee";
 import {
-  createEmployeeSchema,
+  updateEmployeeSchema,
 } from "../schemas/employeeSchema";
 
-type CreateEmployeeForm = z.infer<
-  typeof createEmployeeSchema
+type UpdateEmployeeForm = z.infer<
+  typeof updateEmployeeSchema
 >;
 
 function EditEmployeePage() {
@@ -31,17 +36,19 @@ function EditEmployeePage() {
   const { id } = useParams();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-    } = useForm<CreateEmployeeForm>({
-    resolver: zodResolver(createEmployeeSchema),
+    } = useForm<UpdateEmployeeForm>({
+    resolver: zodResolver(updateEmployeeSchema),
   });
 
-  async function onSubmit(data: CreateEmployeeForm) {
+  async function onSubmit(data: UpdateEmployeeForm) {
     try {
         await updateEmployee(Number(id), data);
 
@@ -68,17 +75,37 @@ function EditEmployeePage() {
             last_name: data.last_name,
             email: data.email,
             phone: data.phone ?? "",
+            department_id: data.department_id ?? null,
+            position_id: data.position_id,
+            notes: data.notes ?? "",
         });
         })
         .catch((error) => {
         console.error(error);
         });
     }, [id, reset]);
-
-  if (!employee) {
-    return <p>Loading...</p>;
-  }
-
+    
+    useEffect(() => {
+        Promise.all([
+        getDepartments(),
+        getPositions(),
+    ])
+        .then(([departmentsData, positionsData]) => {
+        setDepartments(departmentsData);
+        setPositions(positionsData);
+        })
+        .catch((error) => {
+            console.error(
+                "Failed to load departments and positions:",
+                error
+            );
+        });
+    }, []);
+    
+      if (!employee) {
+        return <p>Loading...</p>;
+      }
+    
   return (
     <div>
       <h1>Edit Employee</h1>
@@ -127,6 +154,58 @@ function EditEmployeePage() {
                 <Input
                 type="text"
                 {...register("phone")}
+                />
+            </FormField>
+
+            <FormField
+            label="Department"
+            error={errors.department_id?.message}
+            >
+            <select
+                {...register("department_id", {
+                setValueAs: (value) =>
+                    value === "" ? null : Number(value),
+                })}
+            >
+                <option value="">No Department</option>
+
+                {departments.map((department) => (
+                <option
+                    key={department.id}
+                    value={department.id}
+                >
+                    {department.name}
+                </option>
+                ))}
+            </select>
+            </FormField>
+
+            <FormField
+            label="Position"
+            error={errors.position_id?.message}
+            >
+            <select {...register("position_id", {
+                valueAsNumber: true,
+            })}>
+                <option value="">Select Position</option>
+
+                {positions.map((position) => (
+                <option
+                    key={position.id}
+                    value={position.id}
+                >
+                    {position.title}
+                </option>
+                ))}
+            </select>
+            </FormField>
+
+            <FormField
+                label="Notes"
+                error={errors.notes?.message}
+                >
+                <textarea
+                    {...register("notes")}
                 />
             </FormField>
 

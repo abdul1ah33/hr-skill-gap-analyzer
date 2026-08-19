@@ -23,4 +23,14 @@ export const createEmployeeSchema = z.object({
     .regex(
       /^[0-9+\-\s()]+$/,
       "Please enter a valid phone number"
-    )});
+)});
+
+export const updateEmployeeSchema = z.object({
+  first_name: z.string().min(1),
+  last_name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  department_id: z.number().nullable().optional(),
+  position_id: z.number(),
+  notes: z.string().optional(),
+});

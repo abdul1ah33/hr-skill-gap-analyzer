@@ -12,7 +12,7 @@ class DepartmentSimple(BaseModel):
 
 class PositionBase(BaseModel):
     title: str
-    department_id: int
+    department_id: Optional[int] = None
     description: Optional[str] = None
     level: Optional[str] = None
     salary_grade: Optional[str] = None
