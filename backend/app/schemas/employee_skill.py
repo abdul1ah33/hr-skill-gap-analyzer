@@ -16,8 +16,6 @@ class SkillSimple(BaseModel):
 class EmployeeSkillBase(BaseModel):
     skill_id: int
     level: Optional[SkillLevel] = None
-    years_experience: Optional[int] = Field(default=None, ge=0)
-    verified: bool = False
 
 class EmployeeSkillCreate(EmployeeSkillBase):
     pass

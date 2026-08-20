@@ -10,12 +10,32 @@ import {
 } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 
+import {
+  addEmployeeSkill,
+  updateEmployeeSkill,
+  deleteEmployeeSkill,
+} from "../services/employeeSkillService";
+
+import { getSkills } from "../services/skillService";
+import type { Skill } from "../types/employee";
+import type { SkillLevel } from "../types/employeeSkills";
+
 
 function EmployeeDetailsPage() {
   const { id } = useParams();
 
-  const [employee, setEmployee] =
-    useState<Employee | null>(null);
+  const [employee, setEmployee] = useState<Employee | null>(null);
+
+  // for add skill to employee form   
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [showAddSkill, setShowAddSkill] = useState(false);  
+  const [selectedSkillId, setSelectedSkillId] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState<SkillLevel>("Beginner");
+  const [addingSkill, setAddingSkill] = useState(false);
+
+  // for editing skill
+  const [editingSkillId, setEditingSkillId] = useState<number | null>(null);
+  const [editingLevel, setEditingLevel] = useState<SkillLevel>("Beginner");
 
   useEffect(() => {
     if (!id) {
@@ -29,9 +49,117 @@ function EmployeeDetailsPage() {
       });
   }, [id]);
 
+    useEffect(() => {
+    getSkills()
+        .then(setSkills)
+        .catch((error) => {
+        console.error("Failed to load skills:", error);
+        });
+    }, []);
+
+    async function handleAddSkill() {
+    if (!employee || !selectedSkillId) {
+        return;
+    }
+
+    try {
+        setAddingSkill(true);
+
+        const newEmployeeSkill = await addEmployeeSkill(
+        employee.id,
+        {
+            skill_id: Number(selectedSkillId),
+            level: selectedLevel,
+        }
+        );
+
+        setEmployee({
+        ...employee,
+        employee_skills: [
+            ...employee.employee_skills,
+            newEmployeeSkill,
+        ],
+        });
+
+        setSelectedSkillId("");
+        setSelectedLevel("Beginner");
+        setShowAddSkill(false);
+    } catch (error) {
+        console.error("Failed to add employee skill:", error);
+    } finally {
+        setAddingSkill(false);
+    }
+    }
+
+    async function handleUpdateSkill(
+        skillId: number
+        ) {
+        if (!employee) {
+            return;
+        }
+
+        try {
+            const updatedSkill = await updateEmployeeSkill(
+            employee.id,
+            skillId,
+            {
+                level: editingLevel,
+            }
+            );
+
+            setEmployee({
+            ...employee,
+            employee_skills: employee.employee_skills.map(
+                (employeeSkill) =>
+                employeeSkill.skill.id === skillId
+                    ? updatedSkill
+                    : employeeSkill
+            ),
+            });
+
+            setEditingSkillId(null);
+        } catch (error) {
+            console.error(
+            "Failed to update employee skill:",
+            error
+            );
+        }
+    }
+
+    async function handleDeleteSkill(
+    skillId: number
+    ) {
+    if (!employee) {
+        return;
+    }
+
+    try {
+        await deleteEmployeeSkill(
+        employee.id,
+        skillId
+        );
+
+        setEmployee({
+        ...employee,
+        employee_skills:
+            employee.employee_skills.filter(
+            (employeeSkill) =>
+                employeeSkill.skill.id !== skillId
+            ),
+        });
+    } catch (error) {
+        console.error(
+        "Failed to delete employee skill:",
+        error
+        );
+    }
+    }
+
   if (!employee) {
     return <p>Loading...</p>;
   }
+
+
 
     return (
     <div className="space-y-6">
@@ -133,33 +261,197 @@ function EmployeeDetailsPage() {
         </Card>
 
         <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Skills</CardTitle>
+
+            <Button
+            type="button"
+            onClick={() => setShowAddSkill(!showAddSkill)}
+            >
+            {showAddSkill ? "Cancel" : "Add Skill"}
+            </Button>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="space-y-4">
+
+            {showAddSkill && (
+            <div className="border rounded-md p-4 space-y-4">
+
+                <div>
+                <label>Skill</label>
+
+                <select
+                    value={selectedSkillId}
+                    onChange={(event) =>
+                    setSelectedSkillId(event.target.value)
+                    }
+                >
+                    <option value="">
+                    Select Skill
+                    </option>
+
+                    {skills.map((skill) => (
+                    <option
+                        key={skill.id}
+                        value={skill.id}
+                    >
+                        {skill.name}
+                    </option>
+                    ))}
+                </select>
+                </div>
+
+                <div>
+                <label>Level</label>
+
+                <select
+                    value={selectedLevel}
+                    onChange={(event) =>
+                    setSelectedLevel(
+                        event.target.value as SkillLevel
+                    )
+                    }
+                >
+                    <option value="Beginner">
+                    Beginner
+                    </option>
+
+                    <option value="Intermediate">
+                    Intermediate
+                    </option>
+
+                    <option value="Advanced">
+                    Advanced
+                    </option>
+
+                    <option value="Expert">
+                    Expert
+                    </option>
+                </select>
+                </div>
+
+                <Button
+                type="button"
+                onClick={handleAddSkill}
+                disabled={!selectedSkillId || addingSkill}
+                >
+                {addingSkill ? "Adding..." : "Add Skill"}
+                </Button>
+
+            </div>
+            )}
+
             {employee.employee_skills.length === 0 ? (
             <p className="text-muted-foreground">
                 No skills found.
             </p>
             ) : (
             <div className="space-y-3">
-                {employee.employee_skills.map((employeeSkill) => (
+            {employee.employee_skills.map(
+            (employeeSkill) => (
                 <div
-                    key={employeeSkill.id}
-                    className="flex items-center justify-between"
+                key={employeeSkill.id}
+                className="flex items-center justify-between border rounded-md p-3"
                 >
-                    <p>
+                <div>
+                    <p className="font-medium">
                     {employeeSkill.skill.name}
                     </p>
-
-                    <p className="text-muted-foreground">
-                    {employeeSkill.level}
-                    </p>
                 </div>
-                ))}
+
+                {editingSkillId === employeeSkill.id ? (
+                    <div className="flex items-center gap-2">
+
+                    <select
+                        value={editingLevel}
+                        onChange={(event) =>
+                        setEditingLevel(
+                            event.target.value as SkillLevel
+                        )
+                        }
+                    >
+                        <option value="Beginner">
+                        Beginner
+                        </option>
+
+                        <option value="Intermediate">
+                        Intermediate
+                        </option>
+
+                        <option value="Advanced">
+                        Advanced
+                        </option>
+
+                        <option value="Expert">
+                        Expert
+                        </option>
+                    </select>
+
+                    <Button
+                        type="button"
+                        onClick={() =>
+                        handleUpdateSkill(
+                            employeeSkill.skill.id
+                        )
+                        }
+                    >
+                        Save
+                    </Button>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                        setEditingSkillId(null)
+                        }
+                    >
+                        Cancel
+                    </Button>
+
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+
+                    <span className="text-muted-foreground">
+                        {employeeSkill.level}
+                    </span>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                        setEditingSkillId(
+                            employeeSkill.id
+                        );
+
+                        setEditingLevel(
+                            employeeSkill.level as SkillLevel
+                        );
+                        }}
+                    >
+                        Edit
+                    </Button>
+
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() =>
+                        handleDeleteSkill(
+                            employeeSkill.skill.id
+                        )
+                        }
+                    >
+                        Remove
+                    </Button>
+
+                </div>
+      )}
+    </div>
+  )
+)}
             </div>
             )}
+
         </CardContent>
         </Card>
 

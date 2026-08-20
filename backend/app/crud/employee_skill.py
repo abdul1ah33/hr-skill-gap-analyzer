@@ -49,9 +49,6 @@ def add_skill_to_employee(
         **employee_skill.model_dump(),
     )
 
-    # Add the new entry to the database
-    if db_employee_skill.verified:
-        db_employee_skill.last_assessed = date.today()
 
     db.add(db_employee_skill)
     db.commit()
