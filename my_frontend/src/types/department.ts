@@ -4,3 +4,7 @@ export interface Department {
   created_at: string;
   updated_at: string;
 }
+
+export interface CreateDepartmentData {
+  name: string;
+}

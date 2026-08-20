@@ -27,6 +27,10 @@ function DashboardLayout() {
           <div>
             <Link to="/skills">Skills</Link>
           </div>
+          
+          <div>
+            <Link to="/departments">Departments</Link>
+          </div>
 
           <div>
             <button onClick={handleLogout}>
