@@ -22,8 +22,6 @@ function DepartmentsPage() {
     useState<Department[]>([]);
 
   const [name, setName] = useState("");
-  const [description, setDescription] =
-    useState("");
 
   const [loading, setLoading] =
     useState(true);
@@ -68,7 +66,6 @@ function DepartmentsPage() {
       ]);
 
       setName("");
-      setDescription("");
     } catch (error) {
       console.error(
         "Failed to create department:",

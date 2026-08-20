@@ -23,13 +23,13 @@ function DashboardLayout() {
           <div>
             <Link to="/employees">Employees</Link>
           </div>
-
-          <div>
-            <Link to="/skills">Skills</Link>
-          </div>
           
           <div>
             <Link to="/departments">Departments</Link>
+          </div>
+
+          <div>
+            <Link to="/positions">Positions</Link>
           </div>
 
           <div>
