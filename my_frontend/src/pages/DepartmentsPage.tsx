@@ -76,30 +76,34 @@ function DepartmentsPage() {
     }
   }
 
-  async function handleDelete(
+    async function handleDelete(
     departmentId: number
-  ) {
-    try {
-      await deleteDepartment(departmentId);
+    ) {
+    const confirmed = window.confirm(
+        "Are you sure you want to delete this department?"
+    );
 
-      setDepartments((current) =>
-        current.filter(
-          (department) =>
-            department.id !== departmentId
-        )
-      );
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        await deleteDepartment(departmentId);
+
+        await loadDepartments();
     } catch (error: any) {
-      console.error(
+        console.error(
         "Failed to delete department:",
         error
-      );
+        );
 
-      alert(
-        error.response?.data?.detail ??
-          "This department cannot be deleted."
-      );
+        if (error.response?.data?.detail) {
+        alert(error.response.data.detail);
+        } else {
+        alert("Failed to delete department.");
+        }
     }
-  }
+    }
 
   if (loading) {
     return <p>Loading...</p>;
