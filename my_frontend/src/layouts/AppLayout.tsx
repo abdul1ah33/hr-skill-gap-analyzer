@@ -7,8 +7,9 @@ import {
   Settings,
   Search,
   Bell,
+  LogOut,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 const navigation = [
   {
@@ -39,6 +40,13 @@ const navigation = [
 ];
 
 export default function AppLayout() {
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    localStorage.removeItem("access_token");
+    navigate("/login");
+  }
+
   return (
     <div className="flex min-h-screen w-full" style={{ background: "#f0f2f8" }}>
       {/* Sidebar */}
@@ -134,7 +142,7 @@ export default function AppLayout() {
             >
               HR
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold" style={{ color: "#1a1a2e" }}>
                 HR Manager
               </p>
@@ -142,6 +150,14 @@ export default function AppLayout() {
                 Administrator
               </p>
             </div>
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
+            >
+              <LogOut style={{ width: "15px", height: "15px", color: "#ef4444" }} />
+            </button>
           </div>
         </div>
       </aside>
