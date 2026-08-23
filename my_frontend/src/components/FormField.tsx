@@ -1,5 +1,5 @@
 interface FormFieldProps {
-  label: string;
+  label?: string;
   error?: string;
   children: React.ReactNode;
 }
@@ -11,15 +11,19 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div>
-      <label>{label}</label>
+      {label && (
+        <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+          {label}
+        </label>
+      )}
 
       {children}
 
       {error && (
-        <p>{error}</p>
+        <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>{error}</p>
       )}
     </div>
   );
 }
 
-export default FormField;
+export default FormField;

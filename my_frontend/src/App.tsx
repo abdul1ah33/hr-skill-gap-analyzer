@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import DashboardLayout from "./layouts/DashboardLayout";
+import AppLayout from "./layouts/AppLayout";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -21,16 +21,17 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
 
-          <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/skills" element={<SkillsPage />} />
-            <Route path="/employees" element={<EmployeesPage />} />
-            <Route path="/employees/add" element={<AddEmployeePage /> } />
-            <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
-            <Route path="/employees/:id/edit" element={<EditEmployeePage />} />
-            <Route path="/departments" element={<DepartmentsPage />} />
-            <Route path="/positions" element={<PositionsPage />} />
-          </Route>
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/skills" element={<SkillsPage />} />
+              <Route path="/employees" element={<EmployeesPage />} />
+              <Route path="/employees/add" element={<AddEmployeePage /> } />
+              <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
+              <Route path="/employees/:id/edit" element={<EditEmployeePage />} />
+              <Route path="/departments" element={<DepartmentsPage />} />
+              <Route path="/positions" element={<PositionsPage />} />
+            </Route>
+
 
         </Route>
 
