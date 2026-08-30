@@ -11,6 +11,7 @@ from app.api.endpoints.positions import router as position_router
 from app.api.endpoints.skills import router as skill_router
 from app.api.endpoints.me import router as me_router
 from app.api.endpoints.employee_skill import router as employee_skill_router
+# from backend.app.api.endpoints.old.position_skill import router as position_skill_router
 from app.api.endpoints.position_skill import router as position_skill_router
 from app.api.endpoints.skill_aliases import router as skill_alias_router
 from app.api.endpoints.resume import router as resume_router
@@ -87,7 +88,7 @@ app.include_router(
 
 app.include_router(
     position_skill_router,
-    prefix="/positions/{position_id}/skills",
+    prefix="/positionSkills",
     tags=["Position Skills"],
 )
 

@@ -1,105 +1,98 @@
-import requests
+# import requests
 
-class EscoService:
+# class EscoService:
 
-    BASE_URL = "https://ec.europa.eu/esco/api"
+#     BASE_URL = "https://ec.europa.eu/esco/api"
 
-    def __init__(self):
-        self.session = requests.Session()
+#     def __init__(self):
+#         self.session = requests.Session()
 
-    # ----------------------------------------------------
-    # Search Occupation
-    # ----------------------------------------------------
+#     # ----------------------------------------------------
+#     # Search Occupation
+#     # ----------------------------------------------------
 
-    def search_occupation(self, occupation_name):
+#     def search_occupation(self, occupation_name):
 
-        response = self.session.get(
-            f"{self.BASE_URL}/search",
-            params={
-                "text": occupation_name,
-                "type": "occupation",
-                "language": "en",
-                "limit": 1,
-                "selectedVersion": "latest"
-            }
-        )
+#         response = self.session.get(
+#             f"{self.BASE_URL}/search",
+#             params={
+#                 "text": occupation_name,
+#                 "type": "occupation",
+#                 "language": "en",
+#                 "limit": 1,
+#                 "selectedVersion": "latest"
+#             }
+#         )
 
-        response.raise_for_status()
+#         response.raise_for_status()
 
-        data = response.json()
+#         data = response.json()
 
-        results = data.get("_embedded", {}).get("results", [])
+#         results = data.get("_embedded", {}).get("results", [])
 
-        if not results:
-            return None
+#         if not results:
+#             return None
 
-        return results[0]
+#         return results[0]
 
-    # ----------------------------------------------------
-    # Get Occupation Details
-    # ----------------------------------------------------
+#     # ----------------------------------------------------
+#     # Get Occupation Details
+#     # ----------------------------------------------------
 
-    def get_occupation(self, occupation_uri):
+#     def get_occupation(self, occupation_uri):
 
-        response = self.session.get(
-            f"{self.BASE_URL}/resource/occupation",
-            params={
-                "uri": occupation_uri,
-                "language": "en",
-                "selectedVersion": "latest"
-            }
-        )
+#         response = self.session.get(
+#             f"{self.BASE_URL}/resource/occupation",
+#             params={
+#                 "language": "en",
+#                 "selectedVersion": "latest"
+#             }
+#             timeout=10
+#         )
 
-        response.raise_for_status()
+#         response.raise_for_status()
 
-        return response.json()
+#         return response.json()
 
-    # ----------------------------------------------------
-    # Extract Skills
-    # ----------------------------------------------------
+#     # ----------------------------------------------------
+#     # Extract Skills
+#     # ----------------------------------------------------
 
-    def get_skills(self, occupation_uri):
+#     def get_skills(self, occupation_uri):
 
-        occupation = self.get_occupation(occupation_uri)
+#         occupation = self.get_occupation(occupation_uri)
 
-        links = occupation.get("_links", {})
+#         links = occupation.get("_links", {})
 
-        skills = {
-            "essential": [],
-            "optional": []
-        }
+#         skills = {
+#             "essential": [],
+#             "optional": []
+#         }
 
-        # Essential Skills
-        for skill in links.get("hasEssentialSkill", []):
-            skills["essential"].append({
-                "title": skill["title"],
-                "uri": skill["uri"]
-            })
+#         # Essential Skills
+#         for skill in links.get("hasEssentialSkill", []):
+#             skills["essential"].append(skill["title"])
 
-        # Optional Skills
-        for skill in links.get("hasOptionalSkill", []):
-            skills["optional"].append({
-                "title": skill["title"],
-                "uri": skill["uri"]
-            })
+#         # Optional Skills
+#         for skill in links.get("hasOptionalSkill", []):
+#             skills["optional"].append(skill["title"])
 
-        return skills
+#         return skills
 
-    # ----------------------------------------------------
-    # Complete Pipeline
-    # ----------------------------------------------------
+#     # ----------------------------------------------------
+#     # Complete Pipeline
+#     # ----------------------------------------------------
 
-    def get_role_skills(self, occupation_name):
+#     def get_role_skills(self, occupation_name):
 
-        occupation = self.search_occupation(occupation_name)
+#         occupation = self.search_occupation(occupation_name)
 
-        if occupation is None:
-            return None
+#         if occupation is None:
+#             return None
 
-        occupation_uri = occupation["uri"]
+#         occupation_uri = occupation["uri"]
 
-        return {
-            "occupation": occupation["title"],
-            "uri": occupation_uri,
-            "skills": self.get_skills(occupation_uri)
-        }
+#         return {
+#             "occupation": occupation["title"],
+#             "skills": self.get_skills(occupation_uri)
+#         }

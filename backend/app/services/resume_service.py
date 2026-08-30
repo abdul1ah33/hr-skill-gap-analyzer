@@ -1,3 +1,4 @@
+import logging
 import os
 
 from sqlalchemy.orm import Session
@@ -11,6 +12,8 @@ from app.models.skill import Skill
 from app.models.employee_skill import EmployeeSkill, SkillLevel
 from app.models.education import Education
 from app.models.certification import Certification
+
+logger = logging.getLogger(__name__)
 
 
 class ResumeService:
@@ -60,6 +63,8 @@ class ResumeService:
             .filter(Position.title.ilike(position_title))
             .first()
         )
+
+        position_is_new = position is None
 
         if not position:
             position = Position(
@@ -158,5 +163,22 @@ class ResumeService:
         db.commit()
 
         db.refresh(employee)
+
+        # ---------------------------------------------------------
+        # 7. Generate position skills for newly created positions
+        # ---------------------------------------------------------
+
+        if position_is_new:
+            try:
+                from app.services.position_skill_service import PositionSkillService
+                PositionSkillService().generate_position_skills(
+                    db=db,
+                    position_id=position.id,
+                )
+            except Exception:
+                logger.exception(
+                    "Auto skill generation failed for new position '%s'",
+                    position_title,
+                )
 
         return employee

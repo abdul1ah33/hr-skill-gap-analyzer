@@ -1,0 +1,47 @@
+                    HR Manager
+                        │
+                        ▼
+             Job Description / Position
+                        │
+                        ▼
+                Position Extraction
+                        │
+                        ▼
+                  Job Title
+                        │
+                        ▼
+                  ┌──────────┐
+                  │   ESCO   │
+                  │   API    │
+                  └────┬─────┘
+                       │
+                       ▼
+                Raw ESCO Skills
+                       │
+                       ▼
+             ┌──────────────────┐
+             │   THIS FILE      │
+             │     Gemini       │
+             └────────┬─────────┘
+                      │
+                      ▼
+             Perfect Employee
+                 Profile
+                      │
+          ┌───────────┴───────────┐
+          ▼                       ▼
+     Required Skill          Required Level
+       Python                  Advanced
+       SQL                     Intermediate
+       AWS                     Beginner
+       ML                      Advanced
+          │
+          ▼
+       Compare against
+       employee's skills
+          │
+          ▼
+       Skill Gaps
+          │
+          ▼
+    HR Feedback / Recommendations

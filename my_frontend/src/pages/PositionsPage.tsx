@@ -1,15 +1,21 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { getPositions, createPosition, deletePosition } from "../services/positionService";
+import {
+  getPositions,
+  createPosition,
+  updatePosition,
+  deletePosition,
+} from "../services/positionService";
 import { getDepartments } from "../services/departmentService";
 
 import type { Position } from "../types/position";
 import type { Department } from "../types/department";
 
-import { BriefcaseBusiness, Plus, Trash2 } from "lucide-react";
+import { BriefcaseBusiness, Check, ChevronRight, Pencil, Plus, Trash2, X } from "lucide-react";
 
 function PositionsPage() {
   const [positions, setPositions] = useState<Position[]>([]);
@@ -19,14 +25,17 @@ function PositionsPage() {
   const [departmentId, setDepartmentId] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Inline rename state
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [savingRename, setSavingRename] = useState(false);
+
   async function loadData() {
     try {
-      const [positionsData, departmentsData] =
-        await Promise.all([
-          getPositions(),
-          getDepartments(),
-        ]);
-
+      const [positionsData, departmentsData] = await Promise.all([
+        getPositions(),
+        getDepartments(),
+      ]);
       setPositions(positionsData);
       setDepartments(departmentsData);
     } catch (error) {
@@ -41,10 +50,7 @@ function PositionsPage() {
   async function handleCreatePosition(event: React.FormEvent) {
     event.preventDefault();
 
-    if (!title.trim()) {
-      return;
-    }
-
+    if (!title.trim()) return;
     if (!departmentId) {
       alert("Please select a department.");
       return;
@@ -52,15 +58,12 @@ function PositionsPage() {
 
     try {
       setLoading(true);
-
       await createPosition({
         title: title.trim(),
         department_id: Number(departmentId),
       });
-
       setTitle("");
       setDepartmentId("");
-
       await loadData();
     } catch (error) {
       console.error("Failed to create position:", error);
@@ -69,14 +72,38 @@ function PositionsPage() {
     }
   }
 
+  function startRename(position: Position) {
+    setEditingId(position.id);
+    setEditingTitle(position.title);
+  }
+
+  function cancelRename() {
+    setEditingId(null);
+    setEditingTitle("");
+  }
+
+  async function handleRename(positionId: number) {
+    const trimmed = editingTitle.trim();
+    if (!trimmed) return;
+
+    try {
+      setSavingRename(true);
+      await updatePosition(positionId, { title: trimmed });
+      await loadData();
+      setEditingId(null);
+      setEditingTitle("");
+    } catch (error) {
+      console.error("Failed to rename position:", error);
+    } finally {
+      setSavingRename(false);
+    }
+  }
+
   async function handleDeletePosition(positionId: number) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this position?"
     );
-
-    if (!confirmed) {
-      return;
-    }
+    if (!confirmed) return;
 
     try {
       await deletePosition(positionId);
@@ -112,13 +139,22 @@ function PositionsPage() {
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
-        <h2 className="mb-4 text-base font-semibold" style={{ color: "#1a1a2e" }}>
+        <h2
+          className="mb-4 text-base font-semibold"
+          style={{ color: "#1a1a2e" }}
+        >
           Add Position
         </h2>
 
-        <form onSubmit={handleCreatePosition} className="flex flex-wrap items-end gap-3">
+        <form
+          onSubmit={handleCreatePosition}
+          className="flex flex-wrap items-end gap-3"
+        >
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+            <label
+              className="text-xs font-medium"
+              style={{ color: "#6b7280" }}
+            >
               Position Title
             </label>
             <Input
@@ -131,7 +167,10 @@ function PositionsPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+            <label
+              className="text-xs font-medium"
+              style={{ color: "#6b7280" }}
+            >
               Department
             </label>
             <select
@@ -158,7 +197,10 @@ function PositionsPage() {
             type="submit"
             disabled={loading}
             className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)", border: "none" }}
+            style={{
+              background: "linear-gradient(135deg, #6c63ff, #a78bfa)",
+              border: "none",
+            }}
           >
             <Plus style={{ width: "16px", height: "16px" }} />
             {loading ? "Creating..." : "Add Position"}
@@ -175,19 +217,23 @@ function PositionsPage() {
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
-        <div
-          className="px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
-        >
-          <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>
+        <div className="px-6 py-4" style={{ borderBottom: "1px solid #e8eaf0" }}>
+          <h2
+            className="text-base font-semibold"
+            style={{ color: "#1a1a2e" }}
+          >
             All Positions
           </h2>
         </div>
 
         {positions.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16">
-            <BriefcaseBusiness style={{ width: "40px", height: "40px", color: "#e8eaf0" }} />
-            <p className="text-sm" style={{ color: "#9ca3af" }}>No positions found.</p>
+            <BriefcaseBusiness
+              style={{ width: "40px", height: "40px", color: "#e8eaf0" }}
+            />
+            <p className="text-sm" style={{ color: "#9ca3af" }}>
+              No positions found.
+            </p>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: "#f0f2f8" }}>
@@ -196,31 +242,115 @@ function PositionsPage() {
                 key={position.id}
                 className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-[#fafbff]"
               >
-                <div className="flex items-center gap-3">
+                {/* Left: icon + name/dept (or rename input) */}
+                <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div
-                    className="flex h-9 w-9 items-center justify-center rounded-xl"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
                     style={{ background: "#ede8ff" }}
                   >
-                    <BriefcaseBusiness style={{ width: "16px", height: "16px", color: "#6c63ff" }} />
+                    <BriefcaseBusiness
+                      style={{ width: "16px", height: "16px", color: "#6c63ff" }}
+                    />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>
-                      {position.title}
-                    </p>
-                    <p className="text-xs" style={{ color: "#9ca3af" }}>
-                      {position.department?.name ?? "No department"}
-                    </p>
-                  </div>
+
+                  {editingId === position.id ? (
+                    /* Inline rename */
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRename(position.id);
+                          if (e.key === "Escape") cancelRename();
+                        }}
+                        className="rounded-xl text-sm"
+                        style={{
+                          border: "1px solid #6c63ff",
+                          background: "#f0f2f8",
+                          maxWidth: "240px",
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRename(position.id)}
+                        disabled={savingRename}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-green-50 disabled:opacity-50"
+                        title="Save"
+                      >
+                        <Check
+                          style={{ width: "14px", height: "14px", color: "#16a34a" }}
+                        />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelRename}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-red-50"
+                        title="Cancel"
+                      >
+                        <X
+                          style={{ width: "14px", height: "14px", color: "#ef4444" }}
+                        />
+                      </button>
+                    </div>
+                  ) : (
+                    /* Normal display — click name to go to details */
+                    <Link
+                      to={`/positions/${position.id}`}
+                      className="min-w-0 flex-1 group"
+                    >
+                      <p
+                        className="text-sm font-semibold group-hover:text-[#6c63ff] transition-colors"
+                        style={{ color: "#1a1a2e" }}
+                      >
+                        {position.title}
+                      </p>
+                      <p className="text-xs" style={{ color: "#9ca3af" }}>
+                        {position.department?.name ?? "No department"}
+                      </p>
+                    </Link>
+                  )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDeletePosition(position.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
-                  title="Delete position"
-                >
-                  <Trash2 style={{ width: "15px", height: "15px", color: "#ef4444" }} />
-                </button>
+                {/* Right: action buttons */}
+                {editingId !== position.id && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    {/* View details */}
+                    <Link
+                      to={`/positions/${position.id}`}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#ede8ff]"
+                      title="View skills"
+                    >
+                      <ChevronRight
+                        style={{ width: "15px", height: "15px", color: "#6c63ff" }}
+                      />
+                    </Link>
+
+                    {/* Rename */}
+                    <button
+                      type="button"
+                      onClick={() => startRename(position)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#ede8ff]"
+                      title="Rename position"
+                    >
+                      <Pencil
+                        style={{ width: "14px", height: "14px", color: "#6c63ff" }}
+                      />
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePosition(position.id)}
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
+                      title="Delete position"
+                    >
+                      <Trash2
+                        style={{ width: "15px", height: "15px", color: "#ef4444" }}
+                      />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -231,5 +361,3 @@ function PositionsPage() {
 }
 
 export default PositionsPage;
-
-
