@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.services.skill_gap_service import SkillGapService
+
 from app.dependencies import get_db
 from app.schemas.employee import (
     EmployeeCreate,
