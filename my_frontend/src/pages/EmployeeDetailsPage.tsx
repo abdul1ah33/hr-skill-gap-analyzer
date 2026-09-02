@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getEmployeeById } from "../services/employeeService";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getEmployeeById, deleteEmployee } from "../services/employeeService";
 import type { Employee } from "../types/employee";
 import { Button } from "../components/ui/button";
 
@@ -37,6 +37,7 @@ const levelColors: Record<string, { bg: string; color: string }> = {
 
 function EmployeeDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [employee, setEmployee] = useState<Employee | null>(null);
 
@@ -70,6 +71,23 @@ function EmployeeDetailsPage() {
         console.error("Failed to load skills:", error);
       });
   }, []);
+
+  async function handleDeleteEmployee() {
+    if (!employee) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${employee.first_name} ${employee.last_name}? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await deleteEmployee(employee.id);
+      navigate("/employees");
+    } catch (error: any) {
+      const msg = error?.response?.data?.detail ?? "Failed to delete employee.";
+      alert(msg);
+    }
+  }
 
   async function handleAddSkill() {
     if (!employee || !selectedSkillId) {
@@ -194,15 +212,27 @@ function EmployeeDetailsPage() {
             </div>
           </div>
 
-          <Link to={`/employees/${employee.id}/edit`}>
+          <div className="flex items-center gap-2">
+            <Link to={`/employees/${employee.id}/edit`}>
+              <Button
+                className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)", border: "none" }}
+              >
+                <Pencil style={{ width: "14px", height: "14px" }} />
+                Edit Employee
+              </Button>
+            </Link>
+
             <Button
+              type="button"
+              onClick={handleDeleteEmployee}
               className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)", border: "none" }}
+              style={{ background: "linear-gradient(135deg, #ef4444, #f87171)", border: "none" }}
             >
-              <Pencil style={{ width: "14px", height: "14px" }} />
-              Edit Employee
+              <Trash2 style={{ width: "14px", height: "14px" }} />
+              Delete
             </Button>
-          </Link>
+          </div>
         </div>
 
         {/* Info grid */}

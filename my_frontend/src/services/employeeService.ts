@@ -39,3 +39,7 @@ export async function updateEmployee(
 
   return response.data;
 }
+
+export async function deleteEmployee(id: number): Promise<void> {
+  await api.delete(`/employees/${id}`);
+}

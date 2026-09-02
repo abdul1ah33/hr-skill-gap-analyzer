@@ -85,6 +85,11 @@ You are an expert Staff AI Engineer and HR Data Specialist. Your objective is to
 
 4. PRIORITY ASSIGNMENT
    - Look at the input JSON. Maintain the priority of the skill ("Essential" or "Optional") based on which list it originated from.
+
+5. SKILL AUGMENTATION (ADD MISSING ESSENTIALS)
+   - ESCO data is often incomplete. Identify if any absolute, industry-standard core skills are missing for the provided job_title.
+   - ADD these missing mandatory skills to the output.
+   - Assign them a priority of "Essential" and infer the correct target_proficiency based on the role's seniority.
 """
 
 
@@ -188,26 +193,30 @@ if __name__ == "__main__":
         exit(1)
 
     # 1. Define inputs representing realistic, noisy ESCO API outputs
-    target_job = "Senior Machine Learning Engineer"
+    # target_job = "Senior Machine Learning Engineer"
     
-    raw_esco_data = {
-        "essential": [
-            "use internet", 
-            "use python programming", 
-            "work in teams", 
-            "machine learning algorithms", 
-            "deep learning frameworks",
-            "communicate effectively",
-            "mathematical modelling"
-        ],
-        "optional": [
-            "use computers", 
-            "cloud computer services", 
-            "basic database management",
-            "read documents",
-            "containerization orchestration"
-        ]
-    }
+    # raw_esco_data = {
+    #     "essential": [
+    #         "use internet", 
+    #         "use python programming", 
+    #         "work in teams", 
+    #         "machine learning algorithms", 
+    #         "deep learning frameworks",
+    #         "communicate effectively",
+    #         "mathematical modelling"
+    #     ],
+    #     "optional": [
+    #         "use computers", 
+    #         "cloud computer services", 
+    #         "basic database management",
+    #         "read documents",
+    #         "containerization orchestration"
+    #     ]
+    # }
+
+    target_job = 'Backend Software Engineer'
+
+    raw_esco_data = {'essential': ['technical drawings', 'ICT debugging tools', 'interpret technical requirements', 'define technical requirements', 'project management', 'integrated development environment software', 'manage engineering project', 'engineering principles', 'use software libraries', 'create flowchart diagram', 'debug software', 'engineering processes', 'analyse software specifications', 'use software design patterns', 'provide technical documentation', 'tools for software configuration management', 'use technical drawing software', 'computer programming', 'perform scientific research', 'develop automated migration methods', 'identify customer requirements', 'develop software prototype', 'utilise computer-aided software engineering tools'], 'optional': ['Ruby (computer programming)', 'Scratch (computer programming)', 'design user interface', 'STAF', 'Java (computer programming)', 'Python (computer programming)', 'adapt to changes in technological development plans', 'Pascal (computer programming)', 'COBOL', 'Jenkins (tools for software configuration management)', 'migrate existing data', 'Lisp', 'Groovy', 'CoffeeScript', 'Ansible', 'Microsoft Visual C++', 'ASP.NET', 'PHP', 'utilise machine learning', 'Apache Maven', 'C#', 'Swift (computer programming)', 'Haskell', 'C++', 'use automatic programming', 'Visual Studio .NET', 'Xcode', 'Erlang', 'Assembly (computer programming)', 'use concurrent programming', 'Salt (tools for software configuration management)', 'AJAX', 'use functional programming', 'KDevelop', 'Eclipse (integrated development environment software)', 'use object-oriented programming', 'Scala', 'JavaScript', 'ICT security legislation', 'SAS language', 'Prolog (computer programming)', 'Common Lisp', 'ABAP', 'MATLAB', 'object-oriented modelling', 'R', 'integrate system components', 'ML (computer programming)', 'Objective-C', 'TypeScript', 'Smalltalk (computer programming)', 'use logic programming', 'software anomalies', 'APL', 'VBScript', 'OpenEdge Advanced Business Language', 'develop creative ideas', 'SAP R3', 'Puppet (tools for software configuration management)', 'World Wide Web Consortium standards', 'Internet of Things', 'Perl', 'collect customer feedback on applications']}
 
     # 2. Execute the function
     profile = generate_perfect_profile(
