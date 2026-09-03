@@ -16,6 +16,7 @@ import type { SkillLevel } from "../types/employeeSkills";
 
 import {
   ArrowLeft,
+  BarChart3,
   Pencil,
   Plus,
   Trash2,
@@ -213,6 +214,16 @@ function EmployeeDetailsPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link to={`/gap-analysis/${employee.id}`}>
+              <Button
+                className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #fbbf24)", border: "none" }}
+              >
+                <BarChart3 style={{ width: "14px", height: "14px" }} />
+                Gap Analysis
+              </Button>
+            </Link>
+
             <Link to={`/employees/${employee.id}/edit`}>
               <Button
                 className="flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-md hover:opacity-90"

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.services.skill_gap_service import SkillGapService
+from app.core.config import GEMINI_API_KEY
+from app.services.gap_analysis_service import SkillGapService
 
 from app.dependencies import get_db
 from app.schemas.employee import (
@@ -35,7 +36,7 @@ from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(
-    dependencies=[Depends(get_current_hr)]
+    # dependencies=[Depends(get_current_hr)]
 )
 
 
@@ -136,6 +137,45 @@ def delete_employee_route(
         raise HTTPException(status_code=404, detail="Employee not found")
 
     return {"message": "Employee deleted"}
+
+
+
+# ─── GET /employees/{employee_id}/skill-gap ──────────────────────────────────
+
+@router.get(
+    "/{employee_id}/skill-gap",
+    summary="Generate employee skill gap analysis",
+)
+def employee_skill_gap_route(
+    employee_id: int,
+    db: Session = Depends(get_db),
+):
+    if not GEMINI_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="Gemini API key is not configured.",
+        )
+
+    service = SkillGapService()
+
+    try:
+        return service.generate_employee_gap_analysis(
+            db=db,
+            employee_id=employee_id,
+            api_key=GEMINI_API_KEY,
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=404,
+            detail=str(e),
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
 
 
 # ─── NESTED EMPLOYEE SKILLS ENDPOINTS ──────────────────────────────────────────

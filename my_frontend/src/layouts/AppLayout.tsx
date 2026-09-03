@@ -8,6 +8,7 @@ import {
   Search,
   Bell,
   LogOut,
+  BarChart3,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
@@ -31,6 +32,11 @@ const navigation = [
     name: "Positions",
     path: "/positions",
     icon: BriefcaseBusiness,
+  },
+  {
+    name: "Gap Analysis",
+    path: "/gap-analysis",
+    icon: BarChart3,
   },
   {
     name: "Skills",

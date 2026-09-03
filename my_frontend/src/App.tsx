@@ -11,6 +11,8 @@ import EditEmployeePage from "./pages/EditEmployeePage";
 import DepartmentsPage from "./pages/DepartmentsPage";
 import PositionsPage from "./pages/PositionsPage";
 import PositionDetailsPage from "./pages/PositionDetailsPage";
+import GapAnalysisPage from "./pages/GapAnalysisPage";
+import GapAnalysisResultPage from "./pages/GapAnalysisResultPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -32,6 +34,8 @@ function App() {
               <Route path="/departments" element={<DepartmentsPage />} />
               <Route path="/positions" element={<PositionsPage />} />
               <Route path="/positions/:id" element={<PositionDetailsPage />} />
+              <Route path="/gap-analysis" element={<GapAnalysisPage />} />
+              <Route path="/gap-analysis/:id" element={<GapAnalysisResultPage />} />
             </Route>
 
 

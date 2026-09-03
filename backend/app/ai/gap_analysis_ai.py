@@ -33,21 +33,20 @@ logging.getLogger("google_genai").setLevel(logging.ERROR)
 # Pydantic Schemas for Output Enforcement
 # -----------------------------------------------------------------------------
 class UpskillRecommendation(BaseModel):
-    skill: str = Field(
+    skill: str = Field(..., description="Name of the skill.")
+    gap_type: Literal["Needs Improvement", "Unmatched"] = Field(..., description="Categorization of the gap.")
+    priority: Literal["Essential", "Optional"] = Field(..., description="Priority extracted directly from the input.")
+    tactical_steps: List[str] = Field(
         ..., 
-        description="Name of the skill."
+        description="Exactly 3 simple, bite-sized, highly actionable steps to bridge the specific gap."
     )
-    gap_type: Literal["Needs Improvement", "Unmatched"] = Field(
+    estimated_timeline: str = Field(
         ..., 
-        description="Categorization of the gap."
+        description="Realistic time required to bridge this gap (e.g., '2-4 weeks', '3-6 months')."
     )
-    priority: Literal["Essential", "Optional"] = Field(
+    suggested_resources: List[str] = Field(
         ..., 
-        description="Priority extracted directly from the input."
-    )
-    tactical_steps: str = Field(
-        ..., 
-        description="1-3 precise, actionable sentences tailored EXACTLY to the delta (e.g., moving from Intermediate to Advanced)."
+        description="Specific types of resources or real-world platforms (e.g., 'Coursera course on X', 'Internal mentorship', 'Build a CRUD app')."
     )
 
 
@@ -89,7 +88,10 @@ class GapAnalysisReport(BaseModel):
         default_factory=list,
         description="Analysis of the candidate's additional skills."
     )
-
+    core_strengths: List[str] = Field(
+        default_factory=list,
+        description="2-3 bullet points summarizing the candidate's strongest matching skills and how they anchor the employee in this new role."
+    )
 
 # -----------------------------------------------------------------------------
 # Constants & Configuration
@@ -98,14 +100,17 @@ SYSTEM_INSTRUCTION = """You are an elite Executive HR AI and Technical Manager. 
 You will output a strictly structured JSON report.
 
 CRITICAL RULES:
-1. UNDERSTAND THE DELTA: Moving a skill from "Beginner" to "Intermediate" requires fundamentally different actionable steps than moving from "Null" to "Beginner", or "Intermediate" to "Advanced". Your `tactical_steps` MUST reflect this exact gap. No generic advice. Reference advanced concepts if moving to Advanced, or foundational concepts if starting from Null.
+1. UNDERSTAND THE DELTA & KEEP IT ACTIONABLE: Moving from "Beginner" to "Intermediate" requires different steps than "Null" to "Beginner". Your `tactical_steps` MUST be a list of 3 simple, bite-sized actions. Do not use corporate fluff. Give exact, practical instructions (e.g., "Build a microservice using X", "Shadow a senior engineer on Y").
 2. RESPECT PRIORITY: A gap in an "Essential" skill is a critical blocker. A gap in an "Optional" skill is a minor nice-to-have. Your `readiness_score` and `managerial_summary` MUST heavily weigh Essential gaps as red flags, while treating Optional gaps as minor considerations.
 3. EXECUTIVE SUMMARY: The `managerial_summary` must be exactly 2-3 sentences. It must be objective, highlighting the biggest Essential gaps or praising a strong match. Do not fluff.
-4. BONUS SKILLS: Evaluate `additional_skills`. If a backend developer has "React", that's a cross-functional bonus (Fullstack potential). If they have "Carpentry", it is irrelevant. Flag `is_relevant` accordingly.
+4. BONUS SKILLS: Evaluate `additional_skills`. If a backend developer has "React", that's a cross-functional bonus (Fullstack potential). Expand on how the organization could use the bonus skills to their advantage. If they have "Carpentry", it is irrelevant. Flag `is_relevant` accordingly.
 5. READINESS SCORE: Output an integer from 0-100.
    - 90-100: Almost perfect match.
    - 70-89: Needs minor upskilling (usually missing optionals or 1 tier gap in essential).
-   - <70: Major upskilling needed (missing essential skills entirely)."""
+   - <70: Major upskilling needed (missing essential skills entirely).
+6. TIMELINES & RESOURCES: Be highly realistic with the `estimated_timeline`. A jump from "Null" to "Advanced" takes months; "Intermediate" to "Advanced" might take weeks. For `suggested_resources`, name realistic learning mediums (e.g., Coursera, AWS Certifications, internal code reviews).
+7. STRENGTHS: Synthesize the employee's `matched` skills into 2-3 `core_strengths` that prove they have a solid foundation for this role.
+8. upskill_pathways: Make sure to output at least 5-6 skills in the upskill_pathways putting the essential first then the optional so that the employee would always have something to improve. Don't hallucinate extra skills if there isn't any."""
 
 # LLM model version
 TARGET_MODEL = "gemini-3.5-flash-lite"
