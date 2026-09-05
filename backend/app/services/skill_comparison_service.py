@@ -206,7 +206,7 @@ class SkillComparisonService:
                 result["unmatched"].append(
                     {
                         "skill": skill_name,
-                        "employee_level": None,
+                        "employee_level": "None",
                         "required_level": required_level,
                         "priority": priority,
                     }

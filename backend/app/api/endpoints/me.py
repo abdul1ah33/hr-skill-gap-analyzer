@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import get_current_employee, get_current_user
+from app.auth.dependencies import get_current_employee, get_current_hr, get_current_user
 from app.models.user import User
 from app.schemas.employee import EmployeeResponse
 from app.schemas.employee_skill import EmployeeSkillResponse
@@ -10,7 +10,7 @@ from app.dependencies import get_db
 
 
 router = APIRouter(
-    dependencies=[Depends(get_current_hr)]
+    # dependencies=[Depends(get_current_hr)]
 )
 
 

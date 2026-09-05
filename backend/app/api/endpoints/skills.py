@@ -17,7 +17,7 @@ from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(
-    dependencies=[Depends(get_current_hr)]
+    # dependencies=[Depends(get_current_hr)]
 )
 
 

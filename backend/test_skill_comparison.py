@@ -21,7 +21,7 @@ def main():
             employee_id=employee_id,
         )
 
-        # ==========================================
+        # ===========================s===============
         print("\n" + "=" * 60)
         print("PHASE C - SKILL COMPARISON RESULT")
         print("=" * 60)

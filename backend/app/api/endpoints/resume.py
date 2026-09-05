@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.services.resume_service import ResumeService
+from backend.app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(
