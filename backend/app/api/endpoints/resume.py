@@ -8,7 +8,9 @@ from app.dependencies import get_db
 from app.services.resume_service import ResumeService
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(get_current_hr)]
+)
 
 
 @router.post("/extract")

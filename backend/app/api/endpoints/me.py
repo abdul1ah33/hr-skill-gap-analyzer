@@ -9,7 +9,9 @@ from app.crud.employee_skill import get_employee_skills
 from app.dependencies import get_db
 
 
-router = APIRouter()
+router = APIRouter(
+    dependencies=[Depends(get_current_hr)]
+)
 
 
 @router.get(
