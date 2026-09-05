@@ -175,12 +175,12 @@ function EmployeesPage() {
                   </TableCell>
 
                   <TableCell className="px-6 py-4">
-                    {employee.department?.name ? (
+                    {(employee.department?.name || employee.position?.department?.name) ? (
                       <span
                         className="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium"
                         style={{ background: "#ede8ff", color: "#6c63ff" }}
                       >
-                        {employee.department.name}
+                        {employee.department?.name || employee.position?.department?.name}
                       </span>
                     ) : (
                       <span className="text-sm" style={{ color: "#d1d5db" }}>—</span>

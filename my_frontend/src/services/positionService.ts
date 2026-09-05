@@ -30,3 +30,8 @@ export async function updatePosition(
 export async function deletePosition(positionId: number): Promise<void> {
   await api.delete(`/positions/${positionId}`);
 }
+
+export async function getPositionCount(): Promise<number> {
+  const response = await api.get<{ count: number }>("/positions/count");
+  return response.data.count;
+}

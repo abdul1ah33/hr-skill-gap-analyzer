@@ -43,3 +43,8 @@ export async function updateEmployee(
 export async function deleteEmployee(id: number): Promise<void> {
   await api.delete(`/employees/${id}`);
 }
+
+export async function getEmployeeCount(): Promise<number> {
+  const response = await api.get<{ count: number }>("/employees/count");
+  return response.data.count;
+}

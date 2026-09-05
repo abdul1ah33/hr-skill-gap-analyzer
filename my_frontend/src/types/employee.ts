@@ -6,6 +6,7 @@ export interface Department {
 export interface Position {
   id: number;
   title: string;
+  department?: Department;
 }
 
 export interface Skill {
@@ -68,7 +69,7 @@ export interface CreateEmployeeRequest {
   employment_type: string;
   employment_status: string;
   salary: string;
-  department_id: number;
+  department_id?: number | null;
   position_id: number;
   address: string;
   emergency_contact: string;

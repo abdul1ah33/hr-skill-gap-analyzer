@@ -15,7 +15,11 @@ def _base_query(db: Session):
     """
     return db.query(Employee).options(
         selectinload(Employee.department),
-        selectinload(Employee.position).selectinload(Position.position_skills).selectinload(PositionSkill.skill),
+        selectinload(Employee.position)
+            .selectinload(Position.position_skills)
+            .selectinload(PositionSkill.skill),
+        selectinload(Employee.position)
+            .selectinload(Position.department),
         selectinload(Employee.employee_skills).selectinload(EmployeeSkill.skill),
         selectinload(Employee.education),
         selectinload(Employee.certifications),

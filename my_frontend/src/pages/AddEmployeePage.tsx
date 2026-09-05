@@ -12,8 +12,13 @@ import FormField from "../components/FormField";
 import { createEmployee } from "../services/employeeService";
 import { createEmployeeSchema } from "../schemas/employeeSchema";
 
+import { getDepartments } from "../services/departmentService";
+import { getPositions } from "../services/positionService";
+import type { Department } from "../types/department";
+import type { Position } from "../types/position";
+
 import type { z } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileUp, ArrowLeft, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -23,6 +28,20 @@ function AddEmployeePage() {
   const navigate = useNavigate();
 
   const [uploadingResume, setUploadingResume] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [positions, setPositions] = useState<Position[]>([]);
+
+  useEffect(() => {
+    Promise.all([getDepartments(), getPositions()])
+      .then(([departmentsData, positionsData]) => {
+        setDepartments(departmentsData);
+        setPositions(positionsData);
+      })
+      .catch((error) => {
+        console.error("Failed to load departments and positions:", error);
+      });
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -71,8 +90,6 @@ function AddEmployeePage() {
         employment_type: "",
         employment_status: "",
         salary: "0",
-        department_id: 1,
-        position_id: 1,
         address: "",
         emergency_contact: "",
         notes: "",
@@ -228,6 +245,62 @@ function AddEmployeePage() {
                 style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
               />
             </FormField>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+                Department
+              </label>
+              <FormField error={errors.department_id?.message}>
+                <select
+                  {...register("department_id", {
+                    setValueAs: (value) => (value === "" ? null : Number(value)),
+                  })}
+                  className="w-full rounded-xl px-3 py-2 text-sm"
+                  style={{
+                    border: "1px solid #e8eaf0",
+                    background: "#f0f2f8",
+                    color: "#1a1a2e",
+                    outline: "none",
+                    height: "38px",
+                  }}
+                >
+                  <option value="">No Department</option>
+                  {departments.map((department) => (
+                    <option key={department.id} value={department.id}>
+                      {department.name}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+                Position
+              </label>
+              <FormField error={errors.position_id?.message}>
+                <select
+                  {...register("position_id", { valueAsNumber: true })}
+                  className="w-full rounded-xl px-3 py-2 text-sm"
+                  style={{
+                    border: "1px solid #e8eaf0",
+                    background: "#f0f2f8",
+                    color: "#1a1a2e",
+                    outline: "none",
+                    height: "38px",
+                  }}
+                >
+                  <option value="">Select Position</option>
+                  {positions.map((position) => (
+                    <option key={position.id} value={position.id}>
+                      {position.title}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+            </div>
           </div>
 
           <div className="pt-2">

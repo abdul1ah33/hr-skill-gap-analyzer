@@ -24,3 +24,8 @@ export async function deleteDepartment(
     `/departments/${departmentId}`
   );
 }
+
+export async function getDepartmentCount(): Promise<number> {
+  const response = await api.get<{ count: number }>("/departments/count");
+  return response.data.count;
+}

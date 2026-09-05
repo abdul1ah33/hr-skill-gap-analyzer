@@ -25,10 +25,11 @@ function PositionsPage() {
   const [departmentId, setDepartmentId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Inline rename state
+  // Inline edit state
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const [savingRename, setSavingRename] = useState(false);
+  const [editingDepartmentId, setEditingDepartmentId] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
 
   async function loadData() {
     try {
@@ -72,30 +73,34 @@ function PositionsPage() {
     }
   }
 
-  function startRename(position: Position) {
+  function startEdit(position: Position) {
     setEditingId(position.id);
     setEditingTitle(position.title);
+    setEditingDepartmentId(position.department_id ? String(position.department_id) : "");
   }
 
-  function cancelRename() {
+  function cancelEdit() {
     setEditingId(null);
     setEditingTitle("");
+    setEditingDepartmentId("");
   }
 
-  async function handleRename(positionId: number) {
+  async function handleSaveEdit(positionId: number) {
     const trimmed = editingTitle.trim();
     if (!trimmed) return;
 
     try {
-      setSavingRename(true);
-      await updatePosition(positionId, { title: trimmed });
+      setSavingEdit(true);
+      await updatePosition(positionId, { 
+        title: trimmed,
+        department_id: editingDepartmentId ? Number(editingDepartmentId) : undefined
+      });
       await loadData();
-      setEditingId(null);
-      setEditingTitle("");
+      cancelEdit();
     } catch (error) {
-      console.error("Failed to rename position:", error);
+      console.error("Failed to edit position:", error);
     } finally {
-      setSavingRename(false);
+      setSavingEdit(false);
     }
   }
 
@@ -254,27 +259,45 @@ function PositionsPage() {
                   </div>
 
                   {editingId === position.id ? (
-                    /* Inline rename */
+                    /* Inline edit */
                     <div className="flex items-center gap-2 flex-1">
-                      <Input
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleRename(position.id);
-                          if (e.key === "Escape") cancelRename();
-                        }}
-                        className="rounded-xl text-sm"
-                        style={{
-                          border: "1px solid #6c63ff",
-                          background: "#f0f2f8",
-                          maxWidth: "240px",
-                        }}
-                        autoFocus
-                      />
+                      <div className="flex flex-col gap-1 w-full max-w-[240px]">
+                        <Input
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveEdit(position.id);
+                            if (e.key === "Escape") cancelEdit();
+                          }}
+                          className="rounded-xl text-sm h-8"
+                          style={{
+                            border: "1px solid #6c63ff",
+                            background: "#f0f2f8",
+                          }}
+                          autoFocus
+                          placeholder="Position title"
+                        />
+                        <select
+                          value={editingDepartmentId}
+                          onChange={(e) => setEditingDepartmentId(e.target.value)}
+                          className="rounded-xl px-2 py-1 text-xs"
+                          style={{
+                            border: "1px solid #6c63ff",
+                            background: "#f0f2f8",
+                            color: "#1a1a2e",
+                            outline: "none",
+                          }}
+                        >
+                          <option value="">No department</option>
+                          {departments.map((dep) => (
+                            <option key={dep.id} value={dep.id}>{dep.name}</option>
+                          ))}
+                        </select>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => handleRename(position.id)}
-                        disabled={savingRename}
+                        onClick={() => handleSaveEdit(position.id)}
+                        disabled={savingEdit}
                         className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-green-50 disabled:opacity-50"
                         title="Save"
                       >
@@ -284,7 +307,7 @@ function PositionsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={cancelRename}
+                        onClick={cancelEdit}
                         className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-red-50"
                         title="Cancel"
                       >
@@ -326,12 +349,12 @@ function PositionsPage() {
                       />
                     </Link>
 
-                    {/* Rename */}
+                    {/* Edit */}
                     <button
                       type="button"
-                      onClick={() => startRename(position)}
+                      onClick={() => startEdit(position)}
                       className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#ede8ff]"
-                      title="Rename position"
+                      title="Edit position"
                     >
                       <Pencil
                         style={{ width: "14px", height: "14px", color: "#6c63ff" }}

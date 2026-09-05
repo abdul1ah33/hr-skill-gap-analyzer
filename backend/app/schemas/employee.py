@@ -18,6 +18,7 @@ class DepartmentSimple(BaseModel):
 class PositionSimple(BaseModel):
     id: int
     title: str
+    department: Optional[DepartmentSimple] = None
 
     model_config = ConfigDict(from_attributes=True)
 

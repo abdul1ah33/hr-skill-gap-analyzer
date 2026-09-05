@@ -104,14 +104,25 @@ CRITICAL RULES:
 2. RESPECT PRIORITY: A gap in an "Essential" skill is a critical blocker. A gap in an "Optional" skill is a minor nice-to-have. Your `readiness_score` and `managerial_summary` MUST heavily weigh Essential gaps as red flags, while treating Optional gaps as minor considerations.
 3. EXECUTIVE SUMMARY: The `managerial_summary` must be exactly 2-3 sentences. It must be objective, highlighting the biggest Essential gaps or praising a strong match. Do not fluff.
 4. BONUS SKILLS: Evaluate `additional_skills`. If a backend developer has "React", that's a cross-functional bonus (Fullstack potential). Expand on how the organization could use the bonus skills to their advantage. If they have "Carpentry", it is irrelevant. Flag `is_relevant` accordingly.
-5. READINESS SCORE: Output an integer from 0-100.
-   - 90-100: Almost perfect match.
-   - 70-89: Needs minor upskilling (usually missing optionals or 1 tier gap in essential).
-   - <70: Major upskilling needed (missing essential skills entirely).
-6. TIMELINES & RESOURCES: Be highly realistic with the `estimated_timeline`. A jump from "Null" to "Advanced" takes months; "Intermediate" to "Advanced" might take weeks. For `suggested_resources`, name realistic learning mediums (e.g., Coursera, AWS Certifications, internal code reviews).
+5. COMPREHENSIVE READINESS SCORE RUBRIC (0-100):
+   Do not use cumulative math (subtraction). Instead, determine the score by holistically evaluating the candidate's profile against these specific tier thresholds. Evaluate gap severity based on this scale: Null -> Beginner -> Intermediate -> Advanced.
+   - SEVERITY OF GAPS: 
+     * 1-Tier Gap (e.g., Intermediate to Advanced): Minor hurdle.
+     * 2-Tier Gap (e.g., Beginner to Advanced): Moderate hurdle. Reward the employee for having foundational knowledge (Beginner) over being completely Unmatched (Null).
+     * 3-Tier Gap / Unmatched Essential (Null): Major hurdle.
+   - SENIORITY CONTEXT: Weigh the severity of gaps against the provided Target Job Title. A 1-tier gap in an Essential skill for a "Senior" role is a bigger risk than the same gap for a junior/mid-level role.
+   - SCORE ANCHORS (Categorize first, then pick a number in the range):
+     * 90-100 (Ready): All Essential skills are matched, or at most 1-2 Essential skills have only a 1-tier gap. Minor Optional gaps are allowed.
+     * 75-89 (Needs Minor Upskilling): The core foundation is solid. Several Essential skills might have a 1-tier gap, or 1 Essential skill has a 2-tier gap. NO Essential skill is completely Unmatched (Null).
+     * 55-74 (Needs Major Upskilling): Employee has basic capabilities but needs significant training. 1 or 2 Essential skills are Unmatched (Null), OR several have 2-tier gaps. 
+     * 35-54 (High Risk): The majority of Essential skills have 2-tier gaps or are Unmatched. The employee lacks the core foundation for this role.
+     * <35 (Not a Fit): Almost no matched skills. 
+   - RELEVANT BONUS SKILLS: After determining the base score using the anchors above, you may add +2 to +5 points for highly relevant `additional_skills` ONLY IF the base score is >= 70. Do not use additional skills to artificially inflate a failing candidate.
+6. TIMELINES & GLOBALLY RECOGNIZED RESOURCES: Be highly realistic with the `estimated_timeline`. For `suggested_resources`, you MUST recommend globally recognized, domain-specific platforms, official certifications, or industry-standard books (e.g., "AWS Certified Solutions Architect Official Study Guide", "Coursera DeepLearning.AI by Andrew Ng", "O'Reilly's Designing Data-Intensive Applications"). Avoid generic terms like "online tutorials".
 7. STRENGTHS: Synthesize the employee's `matched` skills into 2-3 `core_strengths` that prove they have a solid foundation for this role.
-8. upskill_pathways: Make sure to output at least 5-6 skills in the upskill_pathways putting the essential first then the optional so that the employee would always have something to improve. Don't hallucinate extra skills if there isn't any."""
+8. UPSKILL PATHWAYS ORDERING: Output all gaps provided in the input, prioritizing "Essential" skills first, then "Optional". If there are many gaps, output a maximum of 8. NEVER hallucinate or invent skills that are not explicitly present in the `needs_improvement` or `unmatched` input arrays."""
 
+'''RESPECT PRIORITY: A gap in an "Essential" skill is a critical blocker. A gap in an "Optional" skill is a minor nice-to-have. Your readiness_score and managerial_summary MUST heavily weigh'''
 # LLM model version
 TARGET_MODEL = "gemini-3.5-flash-lite"
 

@@ -251,7 +251,7 @@ function EmployeeDetailsPage() {
           {[
             { icon: Mail, label: "Email", value: employee.email },
             { icon: Phone, label: "Phone", value: employee.phone || "â€”" },
-            { icon: Building2, label: "Department", value: employee.department?.name ?? "â€”" },
+            { icon: Building2, label: "Department", value: employee.department?.name ?? employee.position?.department?.name ?? "—" },
             { icon: BriefcaseBusiness, label: "Position", value: employee.position?.title ?? "â€”" },
           ].map(({ icon: Icon, label, value }) => (
             <div
