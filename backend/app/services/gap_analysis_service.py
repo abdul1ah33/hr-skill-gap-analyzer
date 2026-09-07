@@ -112,6 +112,59 @@ class SkillGapService:
         )
 
         # ---------------------------------------------------------
+        # 4b. Strip reconciled skills out of the gap
+        # ---------------------------------------------------------
+        # The AI may determine that a skill in "unmatched" or
+        # "needs_improvement" is actually already possessed by the
+        # employee under a different name (see "reconciled_skills"
+        # in gap_analysis_ai.py). Those skills should no longer be
+        # reported as gaps, nor as additional skills (since they're
+        # already accounted for as a match to a required skill).
+
+        if gap_analysis:
+
+            reconciled_skills = gap_analysis.get("reconciled_skills", [])
+
+            reconciled_target_names = {
+                reconciled_skill["target_skill"].strip().lower()
+                for reconciled_skill in reconciled_skills
+            }
+
+            reconciled_employee_names = {
+                reconciled_skill["employee_skill"].strip().lower()
+                for reconciled_skill in reconciled_skills
+            }
+
+            if reconciled_target_names:
+
+                for gap_category in ("needs_improvement", "unmatched"):
+
+                    skill_diff[gap_category] = [
+                        skill_entry
+                        for skill_entry in skill_diff[gap_category]
+                        if skill_entry["skill"].strip().lower()
+                        not in reconciled_target_names
+                    ]
+
+            if reconciled_employee_names:
+
+                skill_diff["additional_skills"] = [
+                    skill_entry
+                    for skill_entry in skill_diff["additional_skills"]
+                    if skill_entry["skill"].strip().lower()
+                    not in reconciled_employee_names
+                ]
+
+                gap_analysis["bonus_skills_analysis"] = [
+                    bonus_skill
+                    for bonus_skill in gap_analysis.get(
+                        "bonus_skills_analysis", []
+                    )
+                    if bonus_skill["skill"].strip().lower()
+                    not in reconciled_employee_names
+                ]
+
+        # ---------------------------------------------------------
         # 5. Return the complete result
         # ---------------------------------------------------------
 

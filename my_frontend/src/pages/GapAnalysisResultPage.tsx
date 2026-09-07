@@ -21,6 +21,8 @@ import {
   Clock,
   Target,
   Link2,
+  ArrowLeftRight,
+  ShieldCheck,
 } from "lucide-react";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -496,9 +498,76 @@ export default function GapAnalysisResultPage() {
               </div>
             )}
 
+            {/* ── 3b. Reconciled Skills ── */}
+            {ga.reconciled_skills && ga.reconciled_skills.length > 0 && (
+              <div className="reveal-section" style={{ animationDelay: "240ms" }}>
+                <Section
+                  title={`Reconciled Skills (${ga.reconciled_skills.length})`}
+                  icon={ShieldCheck}
+                  accent="#0891b2"
+                  headerExtra={
+                    <span
+                      className="text-xs font-bold tracking-wide rounded-md px-2 py-1"
+                      style={{ color: "#0891b2", background: "#cffafe", border: "1px solid #a5f3fc" }}
+                    >
+                      AI Verified
+                    </span>
+                  }
+                >
+                  <p className="mb-4 text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+                    These required skills were initially flagged as missing by exact-name matching, but our AI
+                    determined the employee already possesses an equivalent skill under a different name — some are
+                    now counted as matched, while others still need improvement to fully meet the required level.
+                  </p>
+                  <div className="space-y-3">
+                    {ga.reconciled_skills.map((rs, i) => {
+                      const isMatched = rs.match_status === "Matched";
+                      const statusBg = isMatched ? "#dcfce7" : "#fef3c7";
+                      const statusColor = isMatched ? "#15803d" : "#b45309";
+                      return (
+                        <div
+                          key={i}
+                          className="rounded-xl p-4 space-y-3"
+                          style={{ background: "#ecfeff", border: "1px solid #a5f3fc" }}
+                        >
+                          <div className="flex flex-wrap items-center gap-2.5">
+                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: "#ffffff", border: "1px solid #bae6fd" }}>
+                              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#0891b2" }}>Employee has</span>
+                              <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{rs.employee_skill}</span>
+                            </div>
+
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: "#0891b218" }}>
+                              <ArrowLeftRight style={{ width: 12, height: 12, color: "#0891b2" }} />
+                            </div>
+
+                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: "#ffffff", border: "1px solid #bae6fd" }}>
+                              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#0e7490" }}>Satisfies requirement</span>
+                              <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{rs.target_skill}</span>
+                            </div>
+
+                            <span className="ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: statusBg, color: statusColor }}>
+                              {isMatched
+                                ? <CheckCircle2 style={{ width: 11, height: 11 }} />
+                                : <TrendingUp style={{ width: 11, height: 11 }} />
+                              }
+                              {isMatched ? "Counted as Matched" : "Needs Improvement"}
+                            </span>
+                          </div>
+
+                          <p className="text-sm leading-relaxed" style={{ color: "#155e75" }}>
+                            {rs.justification}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Section>
+              </div>
+            )}
+
             {/* ── 4. Needs Improvement ── */}
             {sd.needs_improvement.length > 0 && (
-              <div className="reveal-section" style={{ animationDelay: "240ms" }}>
+              <div className="reveal-section" style={{ animationDelay: "320ms" }}>
                 <Section title={`Needs Improvement (${sd.needs_improvement.length})`} icon={TrendingUp} accent="#d97706">
                   <div className="space-y-3">
                     {sd.needs_improvement.map((sk, i) => {
@@ -534,7 +603,7 @@ export default function GapAnalysisResultPage() {
 
             {/* ── 5. Missing Skills ── */}
             {sd.unmatched.length > 0 && (
-              <div className="reveal-section" style={{ animationDelay: "320ms" }}>
+              <div className="reveal-section" style={{ animationDelay: "400ms" }}>
                 <Section title={`Missing Skills (${sd.unmatched.length})`} icon={XCircle} accent="#dc2626">
                   <div className="space-y-2">
                     {sd.unmatched.map((sk, i) => {
@@ -563,7 +632,7 @@ export default function GapAnalysisResultPage() {
               const pb  = priorityBadge(up.priority);
               const isNI = up.gap_type === "Needs Improvement";
               return (
-                <div className="reveal-section" style={{ animationDelay: "400ms" }}>
+                <div className="reveal-section" style={{ animationDelay: "480ms" }}>
                   <Section title="Top Priority Upskill Pathway" icon={BookOpen} accent="#6c63ff">
                     <div
                       className="relative rounded-2xl p-5 space-y-5"
@@ -648,7 +717,7 @@ export default function GapAnalysisResultPage() {
 
             {/* ── 7. Bonus Skills ── */}
             {ga.bonus_skills_analysis.length > 0 && (
-              <div className="reveal-section" style={{ animationDelay: "480ms" }}>
+              <div className="reveal-section" style={{ animationDelay: "560ms" }}>
                 <Section title={`Bonus Skills Analysis (${ga.bonus_skills_analysis.length})`} icon={Star} accent="#f59e0b">
                   <div className="space-y-2">
                     {ga.bonus_skills_analysis.map((bs, i) => (
@@ -688,7 +757,7 @@ export default function GapAnalysisResultPage() {
             {ga.upskill_pathways.slice(1).filter(up => up.priority === "Essential").length > 0 && (() => {
               const essentials = ga.upskill_pathways.slice(1).filter(up => up.priority === "Essential");
               return (
-                <div className="reveal-section" style={{ animationDelay: "560ms" }}>
+                <div className="reveal-section" style={{ animationDelay: "640ms" }}>
                   <Section title={`Additional Essential Upskill Pathways (${essentials.length})`} icon={BookOpen} accent="#dc2626">
                     <div className="space-y-4">
                       {essentials.map((up, idx) => {
@@ -784,7 +853,7 @@ export default function GapAnalysisResultPage() {
             {ga.upskill_pathways.filter(up => up.priority === "Optional").length > 0 && (() => {
               const optionals = ga.upskill_pathways.filter(up => up.priority === "Optional");
               return (
-                <div className="reveal-section" style={{ animationDelay: "640ms" }}>
+                <div className="reveal-section" style={{ animationDelay: "720ms" }}>
                   <Section title={`Optional Upskill Pathways (${optionals.length})`} icon={BookOpen} accent="#6b7280">
                     <div className="space-y-4">
                       {optionals.map((up, idx) => {

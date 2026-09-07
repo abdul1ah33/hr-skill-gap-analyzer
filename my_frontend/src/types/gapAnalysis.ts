@@ -50,6 +50,13 @@ export interface BonusSkillAnalysis {
   leverage_evaluation: string;
 }
 
+export interface ReconciledSkill {
+  target_skill: string;
+  employee_skill: string;
+  match_status: "Matched" | "Needs Improvement";
+  justification: string;
+}
+
 export interface GapAnalysisReport {
   readiness_score: number;
   readiness_status: "Ready" | "Needs Upskilling" | "Not a Fit";
@@ -57,6 +64,7 @@ export interface GapAnalysisReport {
   upskill_pathways: UpskillRecommendation[];
   bonus_skills_analysis: BonusSkillAnalysis[];
   core_strengths: string[];
+  reconciled_skills: ReconciledSkill[];
 }
 
 // ─── Full API Response ────────────────────────────────────────────────────────

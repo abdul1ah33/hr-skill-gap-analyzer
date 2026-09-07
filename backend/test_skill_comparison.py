@@ -5,7 +5,7 @@ from app.services.skill_comparison_service import SkillComparisonService
 
 
 def main():
-    employee_id = 13
+    employee_id = 21
     db = SessionLocal()
 
     try:

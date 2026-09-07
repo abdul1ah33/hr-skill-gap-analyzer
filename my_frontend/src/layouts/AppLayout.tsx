@@ -54,10 +54,10 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex min-h-screen w-full" style={{ background: "#f0f2f8" }}>
+    <div className="flex h-screen w-full overflow-hidden" style={{ background: "#f0f2f8" }}>
       {/* Sidebar */}
       <aside
-        className="flex w-64 shrink-0 flex-col"
+        className="flex w-64 shrink-0 flex-col overflow-y-auto"
         style={{
           background: "#ffffff",
           borderRight: "1px solid #e8eaf0",

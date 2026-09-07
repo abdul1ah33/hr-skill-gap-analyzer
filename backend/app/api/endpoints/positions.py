@@ -124,7 +124,7 @@ def create_position_route(
 
     db_position = create_position(
         db=db,
-        position_data=position,
+        position=position,
     )
 
     # Auto-generate position skills in the background

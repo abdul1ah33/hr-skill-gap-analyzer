@@ -73,6 +73,10 @@ class ReconciledSkill(BaseModel):
         ..., 
         description="The employee's actual skill from 'additional_skills' (e.g., 'Strategic and operational procurement')."
     )
+    match_status: Literal["Matched", "Needs Improvement"] = Field(
+        ..., 
+        description="The new status evaluated by comparing the employee's level in the additional skill against the target required level."
+    )
     justification: str = Field(
         ..., 
         description="1 short sentence explaining why these are practically equivalent."
@@ -137,10 +141,12 @@ CRITICAL RULES:
 6. TIMELINES & GLOBALLY RECOGNIZED RESOURCES: Be highly realistic with the `estimated_timeline`. For `suggested_resources`, you MUST recommend globally recognized, domain-specific platforms, official certifications, or industry-standard books (e.g., "AWS Certified Solutions Architect Official Study Guide", "Coursera DeepLearning.AI by Andrew Ng", "O'Reilly's Designing Data-Intensive Applications"). Avoid generic terms like "online tutorials".
 7. STRENGTHS: Synthesize the employee's `matched` skills into 2-3 `core_strengths` that prove they have a solid foundation for this role.
 8. UPSKILL PATHWAYS ORDERING: Output all gaps provided in the input, prioritizing "Essential" skills first, then "Optional". If there are many gaps, output a maximum of 8. NEVER hallucinate or invent skills that are not explicitly present in the `needs_improvement` or `unmatched` input arrays.
-9. SEMANTIC RECONCILIATION: The input data comes from a strict string-matching backend. Before generating gaps, check if any skill in `unmatched` or `needs_improvement` is semantically fulfilled by a skill in `additional_skills` (e.g., required: "Procurement", employee has: "Strategic and Operational Procurement"). 
-   - If a semantic match exists, DO NOT put it in `upskill_pathways`. 
-   - Instead, document it in the `reconciled_skills` array.
-   - Treat this skill as fully "matched" when calculating the `readiness_score` and `managerial_summary`.
+9. SEMANTIC RECONCILIATION: The input data comes from a strict string-matching backend. Before generating gaps, check if any skill in `unmatched` or `needs_improvement` is semantically fulfilled by a skill in `additional_skills` (e.g., required: "Procurement", employee has: "Strategic and Operational Procurement", required: "Natural Language Processing", employee has: "NLP").
+   - If a semantic match exists, document it in the `reconciled_skills` array.
+   - Compare the `employee_level` of the skill against the `required_level` of the target skill. Set `match_status` to "Matched" if they meet/exceed the requirement, or "Needs Improvement" if the employee's level is lower or None.
+   - If the `match_status` is "Matched", DO NOT put it in `upskill_pathways`. Treat it as a fully matched skill for the score.
+   - If the `match_status` is "Needs Improvement", you MUST ALSO add it to `upskill_pathways` to provide steps to bridge the remaining level gap (e.g., going from Beginner in the additional skill to Advanced as required).
+   - Do not over reconcile. The reconciled skills should have near direct matches. (eg: deep learning cannot match to computer vision)
 """
 
 # LLM model version
@@ -178,7 +184,9 @@ def generate_gap_report(job_title: str, skill_diff: dict, api_key: str) -> Optio
     # Configure the payload parameters and enforce structured output natively
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_INSTRUCTION,
-        temperature=0.1,  # Low temperature for analytical consistency
+        temperature=0.2,       # <-- THE COMPROMISE: Low enough for strict logic, high enough for natural language
+        top_k=40,              # <-- Standard default: Allows slight vocabulary variance
+        seed=42,               # <-- Keeps the mathematical foundation anchored
         response_mime_type="application/json",
         response_schema=GapAnalysisReport
     )
@@ -226,189 +234,193 @@ if __name__ == "__main__":
     # Ensure standard, valid output without Markdown wrappers in standard output
     
     # Dummy test payload injected matching Phase B's output requirements
-    dummy_job_title = "Senior Supply Chain Specialist"
+    dummy_job_title = "AI & Machine Learning Engineer"
     dummy_skill_diff = {
-    "matched": [],
-    "needs_improvement": [],
+    "matched": [
+        {
+            "skill": "Python",
+            "employee_level": "Advanced",
+            "required_level": "Advanced",
+            "priority": "Essential"
+        },
+        {
+            "skill": "PyTorch",
+            "employee_level": "Advanced",
+            "required_level": "Advanced",
+            "priority": "Essential"
+        },
+        {
+            "skill": "SQL",
+            "employee_level": "Intermediate",
+            "required_level": "Intermediate",
+            "priority": "Essential"
+        },
+        {
+            "skill": "Docker",
+            "employee_level": "Intermediate",
+            "required_level": "Intermediate",
+            "priority": "Essential"
+        }
+    ],
+    "needs_improvement": [
+        {
+            "skill": "TensorFlow",
+            "employee_level": "Intermediate",
+            "required_level": "Advanced",
+            "priority": "Essential"
+        }
+    ],
     "unmatched": [
         {
-            "skill": "Supply Chain Management",
-            "employee_level": None,
+            "skill": "Artificial Intelligence",
+            "employee_level": "None",
             "required_level": "Advanced",
             "priority": "Essential"
         },
         {
-            "skill": "Supplier Management",
-            "employee_level": None,
+            "skill": "Natural Language Processing",
+            "employee_level": "None",
             "required_level": "Advanced",
             "priority": "Essential"
         },
         {
-            "skill": "Supply Chain Analytics",
-            "employee_level": None,
+            "skill": "Machine Learning",
+            "employee_level": "None",
             "required_level": "Advanced",
             "priority": "Essential"
         },
         {
-            "skill": "Risk Management",
-            "employee_level": None,
+            "skill": "Deep Learning",
+            "employee_level": "None",
             "required_level": "Advanced",
             "priority": "Essential"
         },
         {
-            "skill": "Inventory Management",
-            "employee_level": None,
-            "required_level": "Advanced",
-            "priority": "Essential"
-        },
-        {
-            "skill": "Demand Forecasting",
-            "employee_level": None,
-            "required_level": "Advanced",
-            "priority": "Essential"
-        },
-        {
-            "skill": "ERP Systems",
-            "employee_level": None,
+            "skill": "System Design",
+            "employee_level": "None",
             "required_level": "Intermediate",
             "priority": "Essential"
         },
         {
-            "skill": "Procurement",
-            "employee_level": None,
-            "required_level": "Advanced",
-            "priority": "Essential"
-        },
-        {
-            "skill": "Logistics Management",
-            "employee_level": None,
-            "required_level": "Advanced",
-            "priority": "Essential"
-        },
-        {
-            "skill": "Contract Negotiation",
-            "employee_level": None,
-            "required_level": "Advanced",
-            "priority": "Essential"
-        },
-        {
-            "skill": "Warehouse Operations",
-            "employee_level": None,
+            "skill": "Data Mining",
+            "employee_level": "None",
             "required_level": "Intermediate",
             "priority": "Optional"
         },
         {
-            "skill": "Project Management",
-            "employee_level": None,
+            "skill": "R",
+            "employee_level": "None",
             "required_level": "Intermediate",
             "priority": "Optional"
         },
         {
-            "skill": "Financial Forecasting",
-            "employee_level": None,
+            "skill": "Scala",
+            "employee_level": "None",
             "required_level": "Intermediate",
             "priority": "Optional"
         },
         {
-            "skill": "Transportation Management",
-            "employee_level": None,
+            "skill": "C++",
+            "employee_level": "None",
             "required_level": "Intermediate",
             "priority": "Optional"
         },
         {
-            "skill": "Data Analysis",
-            "employee_level": None,
-            "required_level": "Advanced",
+            "skill": "Java",
+            "employee_level": "None",
+            "required_level": "Intermediate",
+            "priority": "Optional"
+        },
+        {
+            "skill": "MATLAB",
+            "employee_level": "None",
+            "required_level": "Intermediate",
+            "priority": "Optional"
+        },
+        {
+            "skill": "TypeScript",
+            "employee_level": "None",
+            "required_level": "Beginner",
+            "priority": "Optional"
+        },
+        {
+            "skill": "JavaScript",
+            "employee_level": "None",
+            "required_level": "Beginner",
+            "priority": "Optional"
+        },
+        {
+            "skill": "Agile Project Management",
+            "employee_level": "None",
+            "required_level": "Intermediate",
+            "priority": "Optional"
+        },
+        {
+            "skill": "Kubernetes",
+            "employee_level": "None",
+            "required_level": "Intermediate",
             "priority": "Essential"
         }
     ],
     "additional_skills": [
         {
-            "skill": "Strategic Procurement",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Operational Procurement",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Supplier Relationship Management",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Purchase Orders & Contract Administration",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Demand Forecasting & Replenishment",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Inventory Planning & Stock Optimization",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Logistics & Distribution Coordination",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Cost Analysis & Negotiation",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Vendor Performance Management",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "S&OP",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Warehouse & Inventory Controls",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Risk Management & Business Continuity",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Process Improvement",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Quality & Compliance Coordination",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "KPI Reporting & Root-Cause Analysis",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Microsoft Excel",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "SAP S/4HANA",
+            "skill": "Scikit-learn",
             "employee_level": "Intermediate"
         },
         {
-            "skill": "Microsoft Dynamics 365",
+            "skill": "Pandas",
+            "employee_level": "Advanced"
+        },
+        {
+            "skill": "LLMs",
             "employee_level": "Intermediate"
         },
         {
-            "skill": "Power BI",
+            "skill": "Computer Vision",
+            "employee_level": "Advanced"
+        },
+        {
+            "skill": "NLP",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "Prompt Engineering",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "Git",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "RAG",
             "employee_level": "Beginner"
         },
         {
-            "skill": "Cross-Functional Communication",
-            "employee_level": "Advanced"
-        },
-        {
-            "skill": "Leadership",
+            "skill": "FastAPI",
             "employee_level": "Intermediate"
         },
         {
-            "skill": "Stakeholder Management",
+            "skill": "AWS",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "Project Management",
+            "employee_level": "Beginner"
+        },
+        {
+            "skill": "Agile",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "Scrum",
+            "employee_level": "Intermediate"
+        },
+        {
+            "skill": "Communication",
+            "employee_level": "Advanced"
+        },
+        {
+            "skill": "Problem Solving",
             "employee_level": "Advanced"
         }
     ]

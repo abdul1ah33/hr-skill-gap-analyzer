@@ -201,7 +201,9 @@ function EditEmployeePage() {
                 <select
                   {...register("department_id", {
                     setValueAs: (value) =>
-                      value === "" ? null : Number(value),
+                      value === "" || value === null || value === undefined
+                        ? null
+                        : Number(value),
                   })}
                   className="w-full rounded-xl px-3 py-2 text-sm"
                   style={{
