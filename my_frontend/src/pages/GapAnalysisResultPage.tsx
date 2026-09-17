@@ -61,24 +61,24 @@ function statusConfig(status: string) {
 
 function priorityBadge(priority: "Essential" | "Optional") {
   return priority === "Essential"
-    ? { bg: "#fce7f3", color: "#be185d", label: "Essential" }
-    : { bg: "#f3f4f6", color: "#6b7280", label: "Optional" };
+    ? { className: "bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400", label: "Essential" }
+    : { className: "bg-muted text-muted-foreground", label: "Optional" };
 }
 
 const levelOrder: Record<string, number> = {
   Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4,
 };
-const LEVEL_COLORS: Record<string, { bg: string; color: string }> = {
-  Beginner:     { bg: "#e0f2fe", color: "#0369a1" },
-  Intermediate: { bg: "#fef9c3", color: "#854d0e" },
-  Advanced:     { bg: "#dcfce7", color: "#166534" },
-  Expert:       { bg: "#ede8ff", color: "#6c63ff" },
+const LEVEL_COLORS: Record<string, string> = {
+  Beginner:     "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+  Intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  Advanced:     "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+  Expert:       "bg-accent text-primary",
 };
 function LevelBadge({ level }: { level: string | null }) {
-  if (!level) return <span className="text-xs italic" style={{ color: "#d1d5db" }}>None</span>;
-  const s = LEVEL_COLORS[level] ?? { bg: "#f3f4f6", color: "#6b7280" };
+  if (!level) return <span className="text-xs italic" style={{ color: "var(--muted-foreground)" }}>None</span>;
+  const cls = LEVEL_COLORS[level] ?? "bg-muted text-muted-foreground";
   return (
-    <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={s}>{level}</span>
+    <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${cls}`}>{level}</span>
   );
 }
 
@@ -93,7 +93,7 @@ function ScoreRing({ score, size = 140, stroke = 10 }: { score: number; size?: n
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: "rotate(-90deg)", position: "absolute" }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e8eaf0" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
         <circle
           cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke={c.ring} strokeWidth={stroke}
@@ -103,7 +103,7 @@ function ScoreRing({ score, size = 140, stroke = 10 }: { score: number; size?: n
       </svg>
       <div className="relative flex flex-col items-center">
         <span className="text-4xl font-black" style={{ color: c.text, lineHeight: 1 }}>{displayed}</span>
-        <span className="text-xs font-semibold" style={{ color: "#9ca3af" }}>/ 100</span>
+        <span className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>/ 100</span>
       </div>
     </div>
   );
@@ -121,13 +121,13 @@ function Section({ title, icon: Icon, accent = "#6c63ff", headerExtra, children 
   return (
     <div
       className="overflow-hidden rounded-2xl"
-      style={{ background: "#ffffff", border: "1px solid #e8eaf0", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+      style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
     >
-      <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid #e8eaf0" }}>
+      <div className="flex items-center gap-3 px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: accent + "18" }}>
           <Icon style={{ width: 16, height: 16, color: accent }} />
         </div>
-        <h2 className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{title}</h2>
+        <h2 className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{title}</h2>
         {headerExtra && <div className="ml-auto pr-4">{headerExtra}</div>}
       </div>
       <div className="p-6">{children}</div>
@@ -141,7 +141,7 @@ function SkillRow({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3"
-      style={{ background: "#f8f9ff", border: "1px solid #eff0f8" }}
+      style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
     >
       {children}
     </div>
@@ -154,7 +154,7 @@ function AnalysisSkeleton() {
   return (
     <div className="space-y-4 animate-pulse">
       {[180, 120, 280, 220].map((h, i) => (
-        <div key={i} className="rounded-2xl" style={{ height: h, background: "#f0f2f8" }} />
+        <div key={i} className="rounded-2xl" style={{ height: h, background: "var(--muted)" }} />
       ))}
     </div>
   );
@@ -177,7 +177,7 @@ function LevelBar({ from, to }: { from: string | null; to: string }) {
             key={l}
             className="h-1.5 flex-1 rounded-full transition-all duration-700"
             style={{
-              background: current ? "#6c63ff" : active ? "#e8eaf0" : "#f0f2f8",
+              background: current ? "var(--primary)" : active ? "var(--border)" : "var(--muted)",
               opacity: active ? 1 : 0.4,
             }}
           />
@@ -220,7 +220,7 @@ export default function GapAnalysisResultPage() {
   if (!employee) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>Loading employee…</div>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>Loading employee…</div>
       </div>
     );
   }
@@ -255,7 +255,7 @@ export default function GapAnalysisResultPage() {
         <Link
           to="/gap-analysis"
           className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
-          style={{ background: "#ede8ff", color: "#6c63ff", border: "1px solid #d4cfff" }}
+          style={{ background: "var(--accent)", color: "var(--primary)", border: "1px solid var(--accent)" }}
         >
           <ArrowLeft style={{ width: 15, height: 15 }} />
           Back to Gap Analysis
@@ -264,7 +264,7 @@ export default function GapAnalysisResultPage() {
         {/* ── employee header ── */}
         <div
           className="flex flex-wrap items-center justify-between gap-4 rounded-2xl p-6"
-          style={{ background: "#ffffff", border: "1px solid #e8eaf0", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
+          style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
         >
           <div className="flex items-center gap-4">
             <div
@@ -274,13 +274,13 @@ export default function GapAnalysisResultPage() {
               {initials}
             </div>
             <div>
-              <h1 className="text-xl font-black" style={{ color: "#1a1a2e" }}>
+              <h1 className="text-xl font-black" style={{ color: "var(--foreground)" }}>
                 {employee.first_name} {employee.last_name}
               </h1>
-              <p className="text-sm font-semibold" style={{ color: "#6c63ff" }}>
+              <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
                 {employee.position?.title ?? "No position"}
               </p>
-              <p className="text-xs" style={{ color: "#9ca3af" }}>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                 {employee.department?.name ?? "—"} · {employee.employee_number}
               </p>
             </div>
@@ -324,7 +324,7 @@ export default function GapAnalysisResultPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-white">AI is crunching the numbers…</p>
-                <p className="text-xs" style={{ color: "#9ca3af" }}>Comparing skills against position requirements via Gemini</p>
+                <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Comparing skills against position requirements via Gemini</p>
               </div>
             </div>
             <AnalysisSkeleton />
@@ -333,9 +333,9 @@ export default function GapAnalysisResultPage() {
 
         {/* ── error ── */}
         {analysisState === "error" && (
-          <div className="rounded-2xl p-5" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-            <p className="text-sm font-bold" style={{ color: "#b91c1c" }}>Analysis Failed</p>
-            <p className="mt-1 text-sm" style={{ color: "#ef4444" }}>{errorMsg}</p>
+          <div className="rounded-2xl p-5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+            <p className="text-sm font-bold text-red-700 dark:text-red-400">Analysis Failed</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errorMsg}</p>
           </div>
         )}
 
@@ -343,17 +343,17 @@ export default function GapAnalysisResultPage() {
         {analysisState === "idle" && (
           <div
             className="flex flex-col items-center gap-4 rounded-2xl py-20"
-            style={{ background: "#ffffff", border: "2px dashed #e8eaf0" }}
+            style={{ background: "var(--card)", border: "2px dashed var(--border)" }}
           >
             <div
               className="flex h-16 w-16 items-center justify-center rounded-2xl"
               style={{ background: "linear-gradient(135deg,#6c63ff18,#a78bfa18)" }}
             >
-              <BarChart3 style={{ width: 28, height: 28, color: "#6c63ff" }} />
+              <BarChart3 style={{ width: 28, height: 28, color: "var(--primary)" }} />
             </div>
             <div className="text-center">
-              <p className="text-base font-bold" style={{ color: "#1a1a2e" }}>Ready to Analyse</p>
-              <p className="text-sm" style={{ color: "#9ca3af" }}>
+              <p className="text-base font-bold" style={{ color: "var(--foreground)" }}>Ready to Analyse</p>
+              <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                 Press <strong>"Run Gap Analysis"</strong> to generate the AI report
               </p>
             </div>
@@ -384,7 +384,7 @@ export default function GapAnalysisResultPage() {
                   {/* ring */}
                   <div className="flex flex-col items-center gap-2">
                     <ScoreRing score={ga.readiness_score} />
-                    <span className="text-xs font-semibold" style={{ color: "#9ca3af" }}>Readiness Score</span>
+                    <span className="text-xs font-semibold" style={{ color: "var(--muted-foreground)" }}>Readiness Score</span>
                   </div>
 
                   {/* status + summary */}
@@ -414,12 +414,12 @@ export default function GapAnalysisResultPage() {
                     ].map(({ label, value, color }) => (
                       <div key={label} className="flex flex-col items-center rounded-2xl px-4 py-3 gap-1" style={{ background: "#ffffff0a", border: "1px solid #ffffff15" }}>
                         <span className="text-2xl font-black" style={{ color }}>{value}</span>
-                        <span className="text-xs" style={{ color: "#9ca3af" }}>{label}</span>
+                        <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</span>
                       </div>
                     ))}
                     <div className="flex flex-col items-center rounded-2xl px-4 py-3 gap-1" style={{ background: "#ffffff0a", border: "1px solid #ffffff15" }}>
                       <span className="text-2xl font-black" style={{ color: "#a78bfa" }}>{totalRequired}</span>
-                      <span className="text-xs" style={{ color: "#9ca3af" }}>Required Skills</span>
+                      <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>Required Skills</span>
                     </div>
                   </div>
                 </div>
@@ -435,10 +435,10 @@ export default function GapAnalysisResultPage() {
                       <div
                         key={i}
                         className="flex items-start gap-3 rounded-xl px-4 py-3"
-                        style={{ background: "#f5f3ff", border: "1px solid #ddd6fe" }}
+                        style={{ background: "var(--accent)", border: "1px solid var(--accent)" }}
                       >
-                        <Star style={{ width: 14, height: 14, color: "#6c63ff", fill: "#6c63ff", flexShrink: 0, marginTop: 2 }} />
-                        <span className="text-sm leading-relaxed" style={{ color: "#374151" }}>{strength}</span>
+                        <Star style={{ width: 14, height: 14, color: "var(--primary)", fill: "var(--primary)", flexShrink: 0, marginTop: 2 }} />
+                        <span className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>{strength}</span>
                       </div>
                     ))}
                   </div>
@@ -456,15 +456,14 @@ export default function GapAnalysisResultPage() {
                   headerExtra={
                     <div className="flex items-center gap-2">
                       <span
-                        className="text-xs font-bold tracking-wide rounded-md px-2 py-1"
-                        style={{ color: "#6b7280", background: "#f3f4f6", border: "1px solid #e5e7eb" }}
+                        className="text-xs font-bold tracking-wide rounded-md px-2 py-1 bg-muted text-muted-foreground"
+                        style={{ border: "1px solid var(--border)" }}
                       >
                         Current
                       </span>
-                      <ChevronRight style={{ width: 11, height: 11, color: "#d1d5db" }} />
+                      <ChevronRight style={{ width: 11, height: 11, color: "var(--muted-foreground)" }} />
                       <span
-                        className="text-xs font-bold tracking-wide rounded-md px-2 py-1"
-                        style={{ color: "#16a34a", background: "#dcfce7", border: "1px solid #bbf7d0" }}
+                        className="text-xs font-bold tracking-wide rounded-md px-2 py-1 bg-emerald-100 text-emerald-700 border border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-800"
                       >
                         Required
                       </span>
@@ -477,15 +476,15 @@ export default function GapAnalysisResultPage() {
                       return (
                         <SkillRow key={i}>
                           <div className="flex items-center gap-3">
-                            <CheckCircle2 style={{ width: 15, height: 15, color: "#16a34a", flexShrink: 0 }} />
-                            <span className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{sk.skill}</span>
-                            <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>{pb.label}</span>
+                            <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" style={{ width: 15, height: 15, flexShrink: 0 }} />
+                            <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{sk.skill}</span>
+                            <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>{pb.label}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="flex w-16 justify-center">
                               <LevelBadge level={sk.employee_level} />
                             </div>
-                            <ChevronRight style={{ width: 12, height: 12, color: "#d1d5db" }} />
+                            <ChevronRight style={{ width: 12, height: 12, color: "var(--muted-foreground)" }} />
                             <div className="flex w-16 justify-center">
                               <LevelBadge level={sk.required_level} />
                             </div>
@@ -507,14 +506,13 @@ export default function GapAnalysisResultPage() {
                   accent="#0891b2"
                   headerExtra={
                     <span
-                      className="text-xs font-bold tracking-wide rounded-md px-2 py-1"
-                      style={{ color: "#0891b2", background: "#cffafe", border: "1px solid #a5f3fc" }}
+                      className="text-xs font-bold tracking-wide rounded-md px-2 py-1 bg-cyan-100 text-cyan-700 border border-cyan-200 dark:bg-cyan-500/15 dark:text-cyan-400 dark:border-cyan-800"
                     >
                       AI Verified
                     </span>
                   }
                 >
-                  <p className="mb-4 text-xs leading-relaxed" style={{ color: "#9ca3af" }}>
+                  <p className="mb-4 text-xs leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
                     These required skills were initially flagged as missing by exact-name matching, but our AI
                     determined the employee already possesses an equivalent skill under a different name — some are
                     now counted as matched, while others still need improvement to fully meet the required level.
@@ -522,30 +520,30 @@ export default function GapAnalysisResultPage() {
                   <div className="space-y-3">
                     {ga.reconciled_skills.map((rs, i) => {
                       const isMatched = rs.match_status === "Matched";
-                      const statusBg = isMatched ? "#dcfce7" : "#fef3c7";
-                      const statusColor = isMatched ? "#15803d" : "#b45309";
+                      const statusClass = isMatched
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+                        : "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400";
                       return (
                         <div
                           key={i}
-                          className="rounded-xl p-4 space-y-3"
-                          style={{ background: "#ecfeff", border: "1px solid #a5f3fc" }}
+                          className="rounded-xl p-4 space-y-3 bg-cyan-50 border border-cyan-200 dark:bg-cyan-500/10 dark:border-cyan-800"
                         >
                           <div className="flex flex-wrap items-center gap-2.5">
-                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: "#ffffff", border: "1px solid #bae6fd" }}>
-                              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#0891b2" }}>Employee has</span>
-                              <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{rs.employee_skill}</span>
+                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 bg-card border border-cyan-200 dark:border-cyan-800">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-400">Employee has</span>
+                              <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{rs.employee_skill}</span>
                             </div>
 
-                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full" style={{ background: "#0891b218" }}>
-                              <ArrowLeftRight style={{ width: 12, height: 12, color: "#0891b2" }} />
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cyan-500/15">
+                              <ArrowLeftRight className="text-cyan-700 dark:text-cyan-400" style={{ width: 12, height: 12 }} />
                             </div>
 
-                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5" style={{ background: "#ffffff", border: "1px solid #bae6fd" }}>
-                              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#0e7490" }}>Satisfies requirement</span>
-                              <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{rs.target_skill}</span>
+                            <div className="flex items-center gap-2 rounded-lg px-3 py-1.5 bg-card border border-cyan-200 dark:border-cyan-800">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-800 dark:text-cyan-300">Satisfies requirement</span>
+                              <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{rs.target_skill}</span>
                             </div>
 
-                            <span className="ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: statusBg, color: statusColor }}>
+                            <span className={`ml-auto flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold ${statusClass}`}>
                               {isMatched
                                 ? <CheckCircle2 style={{ width: 11, height: 11 }} />
                                 : <TrendingUp style={{ width: 11, height: 11 }} />
@@ -554,7 +552,7 @@ export default function GapAnalysisResultPage() {
                             </span>
                           </div>
 
-                          <p className="text-sm leading-relaxed" style={{ color: "#155e75" }}>
+                          <p className="text-sm leading-relaxed text-cyan-800 dark:text-cyan-300">
                             {rs.justification}
                           </p>
                         </div>
@@ -574,19 +572,19 @@ export default function GapAnalysisResultPage() {
                       const pb = priorityBadge(sk.priority);
                       const gap = (levelOrder[sk.required_level] ?? 0) - (levelOrder[sk.employee_level] ?? 0);
                       return (
-                        <div key={i} className="rounded-xl p-4 space-y-2" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+                        <div key={i} className="rounded-xl p-4 space-y-2 bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:border-amber-800">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <TrendingUp style={{ width: 14, height: 14, color: "#d97706" }} />
-                              <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{sk.skill}</span>
-                              <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>{pb.label}</span>
+                              <TrendingUp className="text-amber-700 dark:text-amber-400" style={{ width: 14, height: 14 }} />
+                              <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{sk.skill}</span>
+                              <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>{pb.label}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <LevelBadge level={sk.employee_level} />
-                              <span className="text-xs font-bold" style={{ color: "#d97706" }}>→</span>
+                              <span className="text-xs font-bold text-amber-700 dark:text-amber-400">→</span>
                               <LevelBadge level={sk.required_level} />
                               {gap > 0 && (
-                                <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: "#fef3c7", color: "#92400e" }}>
+                                <span className="rounded-md px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
                                   +{gap} tier{gap > 1 ? "s" : ""}
                                 </span>
                               )}
@@ -611,9 +609,9 @@ export default function GapAnalysisResultPage() {
                       return (
                         <SkillRow key={i}>
                           <div className="flex items-center gap-3">
-                            <XCircle style={{ width: 15, height: 15, color: "#dc2626", flexShrink: 0 }} />
-                            <span className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{sk.skill}</span>
-                            <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>{pb.label}</span>
+                            <XCircle className="text-red-600 dark:text-red-400" style={{ width: 15, height: 15, flexShrink: 0 }} />
+                            <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{sk.skill}</span>
+                            <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>{pb.label}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <LevelBadge level={sk.required_level} />
@@ -636,34 +634,33 @@ export default function GapAnalysisResultPage() {
                   <Section title="Top Priority Upskill Pathway" icon={BookOpen} accent="#6c63ff">
                     <div
                       className="relative rounded-2xl p-5 space-y-5"
-                      style={{ background: "#fafbff", border: "1px solid #e8eaf0" }}
+                      style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
                     >
                       {/* Priority badge top-right */}
                       <div
                         className="absolute right-4 top-4 flex items-center gap-1 rounded-full px-3 py-1"
                         style={{ background: "#6c63ff18", border: "1px solid #6c63ff33" }}
                       >
-                        <Target style={{ width: 11, height: 11, color: "#6c63ff" }} />
-                        <span className="text-xs font-bold" style={{ color: "#6c63ff" }}>Priority #1</span>
+                        <Target style={{ width: 11, height: 11, color: "var(--primary)" }} />
+                        <span className="text-xs font-bold" style={{ color: "var(--primary)" }}>Priority #1</span>
                       </div>
 
                       {/* Skill name + badges */}
                       <div className="flex flex-wrap items-center gap-2 pr-28">
-                        <span className="text-base font-black" style={{ color: "#1a1a2e" }}>{up.skill}</span>
+                        <span className="text-base font-black" style={{ color: "var(--foreground)" }}>{up.skill}</span>
                         <span
-                          className="rounded-md px-2 py-0.5 text-xs font-semibold"
-                          style={{ background: isNI ? "#fff7ed" : "#fef2f2", color: isNI ? "#c2410c" : "#b91c1c" }}
+                          className={`rounded-md px-2 py-0.5 text-xs font-semibold ${isNI ? "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400" : "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"}`}
                         >
                           {up.gap_type}
                         </span>
-                        <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>
+                        <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>
                           {pb.label}
                         </span>
                       </div>
 
                       {/* Tactical Steps */}
                       <div>
-                        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Tactical Steps</p>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Tactical Steps</p>
                         <ol className="space-y-2">
                           {up.tactical_steps.map((step, si) => (
                             <li key={si} className="flex items-start gap-3">
@@ -673,7 +670,7 @@ export default function GapAnalysisResultPage() {
                               >
                                 {si + 1}
                               </span>
-                              <span className="text-sm leading-relaxed" style={{ color: "#374151" }}>{step}</span>
+                              <span className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>{step}</span>
                             </li>
                           ))}
                         </ol>
@@ -681,28 +678,27 @@ export default function GapAnalysisResultPage() {
 
                       {/* Timeline */}
                       <div
-                        className="flex items-center gap-3 rounded-xl px-4 py-3"
-                        style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+                        className="flex items-center gap-3 rounded-xl px-4 py-3 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-800"
                       >
-                        <Clock style={{ width: 15, height: 15, color: "#16a34a", flexShrink: 0 }} />
+                        <Clock className="text-emerald-600 dark:text-emerald-400" style={{ width: 15, height: 15, flexShrink: 0 }} />
                         <div>
-                          <p className="text-xs font-bold" style={{ color: "#15803d" }}>Estimated Timeline</p>
-                          <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{up.estimated_timeline}</p>
+                          <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Estimated Timeline</p>
+                          <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{up.estimated_timeline}</p>
                         </div>
                       </div>
 
                       {/* Suggested Resources */}
                       <div>
                         <div className="mb-2 flex items-center gap-2">
-                          <Link2 style={{ width: 13, height: 13, color: "#6c63ff" }} />
-                          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Suggested Resources</p>
+                          <Link2 style={{ width: 13, height: 13, color: "var(--primary)" }} />
+                          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Suggested Resources</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {up.suggested_resources.map((res, ri) => (
                             <span
                               key={ri}
                               className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                              style={{ background: "#ede8ff", color: "#6c63ff", border: "1px solid #d4cfff" }}
+                              style={{ background: "var(--accent)", color: "var(--primary)", border: "1px solid var(--accent)" }}
                             >
                               {res}
                             </span>
@@ -723,29 +719,29 @@ export default function GapAnalysisResultPage() {
                     {ga.bonus_skills_analysis.map((bs, i) => (
                       <div
                         key={i}
-                        className="flex flex-wrap items-start gap-4 rounded-xl p-4"
-                        style={{
-                          background: bs.is_relevant ? "#f0fdf4" : "#fafafa",
-                          border: `1px solid ${bs.is_relevant ? "#bbf7d0" : "#e5e7eb"}`,
-                        }}
+                        className={`flex flex-wrap items-start gap-4 rounded-xl p-4 border ${
+                          bs.is_relevant
+                            ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-800"
+                            : "bg-muted border-border"
+                        }`}
                       >
                         <div className="flex items-center gap-2 shrink-0">
                           {bs.is_relevant
-                            ? <Star style={{ width: 14, height: 14, color: "#f59e0b", fill: "#f59e0b" }} />
-                            : <AlertTriangle style={{ width: 14, height: 14, color: "#9ca3af" }} />
+                            ? <Star className="text-amber-500 dark:text-amber-400" style={{ width: 14, height: 14, fill: "currentColor" }} />
+                            : <AlertTriangle style={{ width: 14, height: 14, color: "var(--muted-foreground)" }} />
                           }
-                          <span className="text-sm font-bold" style={{ color: "#1a1a2e" }}>{bs.skill}</span>
+                          <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{bs.skill}</span>
                           <span
-                            className="rounded-md px-2 py-0.5 text-xs font-semibold"
-                            style={{
-                              background: bs.is_relevant ? "#dcfce7" : "#f3f4f6",
-                              color:      bs.is_relevant ? "#15803d" : "#6b7280",
-                            }}
+                            className={`rounded-md px-2 py-0.5 text-xs font-semibold ${
+                              bs.is_relevant
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+                                : "bg-muted text-muted-foreground"
+                            }`}
                           >
                             {bs.is_relevant ? "Relevant" : "Irrelevant"}
                           </span>
                         </div>
-                        <p className="flex-1 text-sm" style={{ color: "#6b7280" }}>{bs.leverage_evaluation}</p>
+                        <p className="flex-1 text-sm" style={{ color: "var(--muted-foreground)" }}>{bs.leverage_evaluation}</p>
                       </div>
                     ))}
                   </div>
@@ -767,34 +763,33 @@ export default function GapAnalysisResultPage() {
                           <div
                             key={idx}
                             className="relative rounded-2xl p-5 space-y-5"
-                            style={{ background: "#fafbff", border: "1px solid #e8eaf0" }}
+                            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
                           >
                             {/* Badge top-right */}
                             <div
                               className="absolute right-4 top-4 flex items-center gap-1 rounded-full px-3 py-1"
                               style={{ background: "#dc262618", border: "1px solid #dc262633" }}
                             >
-                              <Target style={{ width: 11, height: 11, color: "#dc2626" }} />
-                              <span className="text-xs font-bold" style={{ color: "#dc2626" }}>Essential</span>
+                              <Target className="text-red-600 dark:text-red-400" style={{ width: 11, height: 11 }} />
+                              <span className="text-xs font-bold text-red-600 dark:text-red-400">Essential</span>
                             </div>
 
                             {/* Skill name + badges */}
                             <div className="flex flex-wrap items-center gap-2 pr-28">
-                              <span className="text-base font-black" style={{ color: "#1a1a2e" }}>{up.skill}</span>
+                              <span className="text-base font-black" style={{ color: "var(--foreground)" }}>{up.skill}</span>
                               <span
-                                className="rounded-md px-2 py-0.5 text-xs font-semibold"
-                                style={{ background: isNI ? "#fff7ed" : "#fef2f2", color: isNI ? "#c2410c" : "#b91c1c" }}
+                                className={`rounded-md px-2 py-0.5 text-xs font-semibold ${isNI ? "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400" : "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"}`}
                               >
                                 {up.gap_type}
                               </span>
-                              <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>
+                              <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>
                                 {pb.label}
                               </span>
                             </div>
 
                             {/* Tactical Steps */}
                             <div>
-                              <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Tactical Steps</p>
+                              <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Tactical Steps</p>
                               <ol className="space-y-2">
                                 {up.tactical_steps.map((step, si) => (
                                   <li key={si} className="flex items-start gap-3">
@@ -804,7 +799,7 @@ export default function GapAnalysisResultPage() {
                                     >
                                       {si + 1}
                                     </span>
-                                    <span className="text-sm leading-relaxed" style={{ color: "#374151" }}>{step}</span>
+                                    <span className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>{step}</span>
                                   </li>
                                 ))}
                               </ol>
@@ -812,28 +807,27 @@ export default function GapAnalysisResultPage() {
 
                             {/* Timeline */}
                             <div
-                              className="flex items-center gap-3 rounded-xl px-4 py-3"
-                              style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}
+                              className="flex items-center gap-3 rounded-xl px-4 py-3 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-800"
                             >
-                              <Clock style={{ width: 15, height: 15, color: "#16a34a", flexShrink: 0 }} />
+                              <Clock className="text-emerald-600 dark:text-emerald-400" style={{ width: 15, height: 15, flexShrink: 0 }} />
                               <div>
-                                <p className="text-xs font-bold" style={{ color: "#15803d" }}>Estimated Timeline</p>
-                                <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{up.estimated_timeline}</p>
+                                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">Estimated Timeline</p>
+                                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{up.estimated_timeline}</p>
                               </div>
                             </div>
 
                             {/* Suggested Resources */}
                             <div>
                               <div className="mb-2 flex items-center gap-2">
-                                <Link2 style={{ width: 13, height: 13, color: "#6c63ff" }} />
-                                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Suggested Resources</p>
+                                <Link2 style={{ width: 13, height: 13, color: "var(--primary)" }} />
+                                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Suggested Resources</p>
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {up.suggested_resources.map((res, ri) => (
                                   <span
                                     key={ri}
                                     className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                                    style={{ background: "#ede8ff", color: "#6c63ff", border: "1px solid #d4cfff" }}
+                                    style={{ background: "var(--accent)", color: "var(--primary)", border: "1px solid var(--accent)" }}
                                   >
                                     {res}
                                   </span>
@@ -863,34 +857,33 @@ export default function GapAnalysisResultPage() {
                           <div
                             key={idx}
                             className="relative rounded-2xl p-5 space-y-5"
-                            style={{ background: "#fafbff", border: "1px solid #e8eaf0" }}
+                            style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
                           >
                             {/* Badge top-right */}
                             <div
-                              className="absolute right-4 top-4 flex items-center gap-1 rounded-full px-3 py-1"
-                              style={{ background: "#f3f4f6", border: "1px solid #e5e7eb" }}
+                              className="absolute right-4 top-4 flex items-center gap-1 rounded-full px-3 py-1 bg-muted"
+                              style={{ border: "1px solid var(--border)" }}
                             >
-                              <Target style={{ width: 11, height: 11, color: "#6b7280" }} />
-                              <span className="text-xs font-bold" style={{ color: "#6b7280" }}>Optional</span>
+                              <Target style={{ width: 11, height: 11, color: "var(--muted-foreground)" }} />
+                              <span className="text-xs font-bold" style={{ color: "var(--muted-foreground)" }}>Optional</span>
                             </div>
 
                             {/* Skill name + badges */}
                             <div className="flex flex-wrap items-center gap-2 pr-28">
-                              <span className="text-base font-black" style={{ color: "#1a1a2e" }}>{up.skill}</span>
+                              <span className="text-base font-black" style={{ color: "var(--foreground)" }}>{up.skill}</span>
                               <span
-                                className="rounded-md px-2 py-0.5 text-xs font-semibold"
-                                style={{ background: isNI ? "#fff7ed" : "#fef2f2", color: isNI ? "#c2410c" : "#b91c1c" }}
+                                className={`rounded-md px-2 py-0.5 text-xs font-semibold ${isNI ? "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400" : "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400"}`}
                               >
                                 {up.gap_type}
                               </span>
-                              <span className="rounded-md px-2 py-0.5 text-xs font-semibold" style={{ background: pb.bg, color: pb.color }}>
+                              <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>
                                 {pb.label}
                               </span>
                             </div>
 
                             {/* Tactical Steps */}
                             <div>
-                              <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Tactical Steps</p>
+                              <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Tactical Steps</p>
                               <ol className="space-y-2">
                                 {up.tactical_steps.map((step, si) => (
                                   <li key={si} className="flex items-start gap-3">
@@ -900,7 +893,7 @@ export default function GapAnalysisResultPage() {
                                     >
                                       {si + 1}
                                     </span>
-                                    <span className="text-sm leading-relaxed" style={{ color: "#374151" }}>{step}</span>
+                                    <span className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>{step}</span>
                                   </li>
                                 ))}
                               </ol>
@@ -908,28 +901,28 @@ export default function GapAnalysisResultPage() {
 
                             {/* Timeline */}
                             <div
-                              className="flex items-center gap-3 rounded-xl px-4 py-3"
-                              style={{ background: "#f9fafb", border: "1px solid #e5e7eb" }}
+                              className="flex items-center gap-3 rounded-xl px-4 py-3 bg-muted"
+                              style={{ border: "1px solid var(--border)" }}
                             >
-                              <Clock style={{ width: 15, height: 15, color: "#6b7280", flexShrink: 0 }} />
+                              <Clock style={{ width: 15, height: 15, color: "var(--muted-foreground)", flexShrink: 0 }} />
                               <div>
-                                <p className="text-xs font-bold" style={{ color: "#6b7280" }}>Estimated Timeline</p>
-                                <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{up.estimated_timeline}</p>
+                                <p className="text-xs font-bold" style={{ color: "var(--muted-foreground)" }}>Estimated Timeline</p>
+                                <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{up.estimated_timeline}</p>
                               </div>
                             </div>
 
                             {/* Suggested Resources */}
                             <div>
                               <div className="mb-2 flex items-center gap-2">
-                                <Link2 style={{ width: 13, height: 13, color: "#6b7280" }} />
-                                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#9ca3af" }}>Suggested Resources</p>
+                                <Link2 style={{ width: 13, height: 13, color: "var(--muted-foreground)" }} />
+                                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--muted-foreground)" }}>Suggested Resources</p>
                               </div>
                               <div className="flex flex-wrap gap-2">
                                 {up.suggested_resources.map((res, ri) => (
                                   <span
                                     key={ri}
-                                    className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                                    style={{ background: "#f3f4f6", color: "#6b7280", border: "1px solid #e5e7eb" }}
+                                    className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-muted text-muted-foreground"
+                                    style={{ border: "1px solid var(--border)" }}
                                   >
                                     {res}
                                   </span>

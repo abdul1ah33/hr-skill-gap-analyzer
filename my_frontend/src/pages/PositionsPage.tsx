@@ -127,10 +127,10 @@ function PositionsPage() {
     <div className="space-y-6">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "#1a1a2e" }}>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
           Positions
         </h1>
-        <p className="mt-0.5 text-sm" style={{ color: "#9ca3af" }}>
+        <p className="mt-0.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
           {positions.length} positions
         </p>
       </div>
@@ -139,14 +139,14 @@ function PositionsPage() {
       <div
         className="rounded-2xl p-6"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         <h2
           className="mb-4 text-base font-semibold"
-          style={{ color: "#1a1a2e" }}
+          style={{ color: "var(--foreground)" }}
         >
           Add Position
         </h2>
@@ -158,7 +158,7 @@ function PositionsPage() {
           <div className="flex flex-col gap-1.5">
             <label
               className="text-xs font-medium"
-              style={{ color: "#6b7280" }}
+              style={{ color: "var(--muted-foreground)" }}
             >
               Position Title
             </label>
@@ -167,14 +167,14 @@ function PositionsPage() {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="e.g. Software Engineer"
               className="w-56 rounded-xl"
-              style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
+              style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label
               className="text-xs font-medium"
-              style={{ color: "#6b7280" }}
+              style={{ color: "var(--muted-foreground)" }}
             >
               Department
             </label>
@@ -183,9 +183,9 @@ function PositionsPage() {
               onChange={(event) => setDepartmentId(event.target.value)}
               className="w-48 rounded-xl px-3 py-2 text-sm"
               style={{
-                border: "1px solid #e8eaf0",
-                background: "#f0f2f8",
-                color: "#1a1a2e",
+                border: "1px solid var(--border)",
+                background: "var(--muted)",
+                color: "var(--foreground)",
                 outline: "none",
               }}
             >
@@ -217,15 +217,15 @@ function PositionsPage() {
       <div
         className="overflow-hidden rounded-2xl"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
-        <div className="px-6 py-4" style={{ borderBottom: "1px solid #e8eaf0" }}>
+        <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
           <h2
             className="text-base font-semibold"
-            style={{ color: "#1a1a2e" }}
+            style={{ color: "var(--foreground)" }}
           >
             All Positions
           </h2>
@@ -234,27 +234,27 @@ function PositionsPage() {
         {positions.length === 0 ? (
           <div className="flex flex-col items-center gap-2 py-16">
             <BriefcaseBusiness
-              style={{ width: "40px", height: "40px", color: "#e8eaf0" }}
+              style={{ width: "40px", height: "40px", color: "var(--border)" }}
             />
-            <p className="text-sm" style={{ color: "#9ca3af" }}>
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
               No positions found.
             </p>
           </div>
         ) : (
-          <div className="divide-y" style={{ borderColor: "#f0f2f8" }}>
+          <div className="divide-y" style={{ borderColor: "var(--muted)" }}>
             {positions.map((position) => (
               <div
                 key={position.id}
-                className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-[#fafbff]"
+                className="flex items-center justify-between px-6 py-4 transition-colors hover:bg-muted"
               >
                 {/* Left: icon + name/dept (or rename input) */}
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   <div
                     className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: "#ede8ff" }}
+                    style={{ background: "var(--accent)" }}
                   >
                     <BriefcaseBusiness
-                      style={{ width: "16px", height: "16px", color: "#6c63ff" }}
+                      style={{ width: "16px", height: "16px", color: "var(--primary)" }}
                     />
                   </div>
 
@@ -271,8 +271,8 @@ function PositionsPage() {
                           }}
                           className="rounded-xl text-sm h-8"
                           style={{
-                            border: "1px solid #6c63ff",
-                            background: "#f0f2f8",
+                            border: "1px solid var(--primary)",
+                            background: "var(--muted)",
                           }}
                           autoFocus
                           placeholder="Position title"
@@ -282,9 +282,9 @@ function PositionsPage() {
                           onChange={(e) => setEditingDepartmentId(e.target.value)}
                           className="rounded-xl px-2 py-1 text-xs"
                           style={{
-                            border: "1px solid #6c63ff",
-                            background: "#f0f2f8",
-                            color: "#1a1a2e",
+                            border: "1px solid var(--primary)",
+                            background: "var(--muted)",
+                            color: "var(--foreground)",
                             outline: "none",
                           }}
                         >
@@ -302,7 +302,7 @@ function PositionsPage() {
                         title="Save"
                       >
                         <Check
-                          style={{ width: "14px", height: "14px", color: "#16a34a" }}
+                          style={{ width: "14px", height: "14px", color: "var(--chart-2)" }}
                         />
                       </button>
                       <button
@@ -312,7 +312,7 @@ function PositionsPage() {
                         title="Cancel"
                       >
                         <X
-                          style={{ width: "14px", height: "14px", color: "#ef4444" }}
+                          style={{ width: "14px", height: "14px", color: "var(--destructive)" }}
                         />
                       </button>
                     </div>
@@ -323,12 +323,12 @@ function PositionsPage() {
                       className="min-w-0 flex-1 group"
                     >
                       <p
-                        className="text-sm font-semibold group-hover:text-[#6c63ff] transition-colors"
-                        style={{ color: "#1a1a2e" }}
+                        className="text-sm font-semibold group-hover:text-primary transition-colors"
+                        style={{ color: "var(--foreground)" }}
                       >
                         {position.title}
                       </p>
-                      <p className="text-xs" style={{ color: "#9ca3af" }}>
+                      <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                         {position.department?.name ?? "No department"}
                       </p>
                     </Link>
@@ -341,11 +341,11 @@ function PositionsPage() {
                     {/* View details */}
                     <Link
                       to={`/positions/${position.id}`}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#ede8ff]"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
                       title="View skills"
                     >
                       <ChevronRight
-                        style={{ width: "15px", height: "15px", color: "#6c63ff" }}
+                        style={{ width: "15px", height: "15px", color: "var(--primary)" }}
                       />
                     </Link>
 
@@ -353,11 +353,11 @@ function PositionsPage() {
                     <button
                       type="button"
                       onClick={() => startEdit(position)}
-                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-[#ede8ff]"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-accent"
                       title="Edit position"
                     >
                       <Pencil
-                        style={{ width: "14px", height: "14px", color: "#6c63ff" }}
+                        style={{ width: "14px", height: "14px", color: "var(--primary)" }}
                       />
                     </button>
 
@@ -369,7 +369,7 @@ function PositionsPage() {
                       title="Delete position"
                     >
                       <Trash2
-                        style={{ width: "15px", height: "15px", color: "#ef4444" }}
+                        style={{ width: "15px", height: "15px", color: "var(--destructive)" }}
                       />
                     </button>
                   </div>

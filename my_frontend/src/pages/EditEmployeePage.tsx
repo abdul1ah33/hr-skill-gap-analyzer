@@ -86,7 +86,7 @@ function EditEmployeePage() {
   if (!employee) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>Loading...</div>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>Loading...</div>
       </div>
     );
   }
@@ -98,9 +98,9 @@ function EditEmployeePage() {
         to={`/employees/${id}`}
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
         style={{
-          background: "#ede8ff",
-          color: "#6c63ff",
-          border: "1px solid #d4cfff",
+          background: "var(--accent)",
+          color: "var(--primary)",
+          border: "1px solid var(--accent)",
         }}
       >
         <ArrowLeft style={{ width: "15px", height: "15px" }} />
@@ -109,10 +109,10 @@ function EditEmployeePage() {
 
       {/* Page header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: "#1a1a2e" }}>
+        <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
           Edit Employee
         </h1>
-        <p className="mt-0.5 text-sm" style={{ color: "#9ca3af" }}>
+        <p className="mt-0.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
           {employee.first_name} {employee.last_name} Â· {employee.employee_number}
         </p>
       </div>
@@ -121,14 +121,14 @@ function EditEmployeePage() {
       <div
         className="rounded-2xl p-6"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         <div className="flex items-center gap-3 mb-6">
-          <UserCog style={{ width: "18px", height: "18px", color: "#6c63ff" }} />
-          <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>
+          <UserCog style={{ width: "18px", height: "18px", color: "var(--primary)" }} />
+          <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
             Employee Information
           </h2>
         </div>
@@ -136,7 +136,7 @@ function EditEmployeePage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 First Name
               </label>
               <FormField error={errors.first_name?.message}>
@@ -144,13 +144,13 @@ function EditEmployeePage() {
                   type="text"
                   {...register("first_name")}
                   className="rounded-xl"
-                  style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
+                  style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
                 />
               </FormField>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Last Name
               </label>
               <FormField error={errors.last_name?.message}>
@@ -158,14 +158,14 @@ function EditEmployeePage() {
                   type="text"
                   {...register("last_name")}
                   className="rounded-xl"
-                  style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
+                  style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
                 />
               </FormField>
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
               Email Address
             </label>
             <FormField error={errors.email?.message}>
@@ -173,13 +173,13 @@ function EditEmployeePage() {
                 type="email"
                 {...register("email")}
                 className="rounded-xl"
-                style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
+                style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
               />
             </FormField>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
               Phone Number
             </label>
             <FormField error={errors.phone?.message}>
@@ -187,14 +187,14 @@ function EditEmployeePage() {
                 type="text"
                 {...register("phone")}
                 className="rounded-xl"
-                style={{ border: "1px solid #e8eaf0", background: "#f0f2f8" }}
+                style={{ border: "1px solid var(--border)", background: "var(--muted)" }}
               />
             </FormField>
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Department
               </label>
               <FormField error={errors.department_id?.message}>
@@ -207,9 +207,9 @@ function EditEmployeePage() {
                   })}
                   className="w-full rounded-xl px-3 py-2 text-sm"
                   style={{
-                    border: "1px solid #e8eaf0",
-                    background: "#f0f2f8",
-                    color: "#1a1a2e",
+                    border: "1px solid var(--border)",
+                    background: "var(--muted)",
+                    color: "var(--foreground)",
                     outline: "none",
                     height: "38px",
                   }}
@@ -225,7 +225,7 @@ function EditEmployeePage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Position
               </label>
               <FormField error={errors.position_id?.message}>
@@ -233,9 +233,9 @@ function EditEmployeePage() {
                   {...register("position_id", { valueAsNumber: true })}
                   className="w-full rounded-xl px-3 py-2 text-sm"
                   style={{
-                    border: "1px solid #e8eaf0",
-                    background: "#f0f2f8",
-                    color: "#1a1a2e",
+                    border: "1px solid var(--border)",
+                    background: "var(--muted)",
+                    color: "var(--foreground)",
                     outline: "none",
                     height: "38px",
                   }}
@@ -252,7 +252,7 @@ function EditEmployeePage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
               Notes
             </label>
             <FormField error={errors.notes?.message}>
@@ -261,9 +261,9 @@ function EditEmployeePage() {
                 rows={3}
                 className="w-full rounded-xl px-4 py-2.5 text-sm resize-none outline-none transition-all"
                 style={{
-                  border: "1px solid #e8eaf0",
-                  background: "#f0f2f8",
-                  color: "#1a1a2e",
+                  border: "1px solid var(--border)",
+                  background: "var(--muted)",
+                  color: "var(--foreground)",
                 }}
               />
             </FormField>

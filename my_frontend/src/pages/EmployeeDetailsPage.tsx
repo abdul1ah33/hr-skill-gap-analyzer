@@ -29,11 +29,14 @@ import {
   BriefcaseBusiness,
 } from "lucide-react";
 
-const levelColors: Record<string, { bg: string; color: string }> = {
-  Beginner: { bg: "#e0f2fe", color: "#0369a1" },
-  Intermediate: { bg: "#fef9c3", color: "#854d0e" },
-  Advanced: { bg: "#dcfce7", color: "#166534" },
-  Expert: { bg: "#ede8ff", color: "#6c63ff" },
+const levelBadgeClasses: Record<string, string> = {
+  Beginner: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
+  Intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
+  Advanced: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
+};
+
+const levelBadgeStyle: Record<string, { background: string; color: string }> = {
+  Expert: { background: "var(--accent)", color: "var(--primary)" },
 };
 
 function EmployeeDetailsPage() {
@@ -163,7 +166,7 @@ function EmployeeDetailsPage() {
   if (!employee) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>Loading...</div>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>Loading...</div>
       </div>
     );
   }
@@ -177,9 +180,9 @@ function EmployeeDetailsPage() {
         to="/employees"
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
         style={{
-          background: "#ede8ff",
-          color: "#6c63ff",
-          border: "1px solid #d4cfff",
+          background: "var(--accent)",
+          color: "var(--primary)",
+          border: "1px solid var(--accent)",
         }}
       >
         <ArrowLeft style={{ width: "15px", height: "15px" }} />
@@ -190,8 +193,8 @@ function EmployeeDetailsPage() {
       <div
         className="rounded-2xl p-6"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
@@ -204,10 +207,10 @@ function EmployeeDetailsPage() {
               {initials}
             </div>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: "#1a1a2e" }}>
+              <h1 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
                 {employee.first_name} {employee.last_name}
               </h1>
-              <p className="mt-0.5 text-sm font-mono" style={{ color: "#9ca3af" }}>
+              <p className="mt-0.5 text-sm font-mono" style={{ color: "var(--muted-foreground)" }}>
                 {employee.employee_number}
               </p>
             </div>
@@ -257,15 +260,15 @@ function EmployeeDetailsPage() {
             <div
               key={label}
               className="rounded-xl p-3"
-              style={{ background: "#f0f2f8" }}
+              style={{ background: "var(--muted)" }}
             >
               <div className="flex items-center gap-2 mb-1">
-                <Icon style={{ width: "14px", height: "14px", color: "#6c63ff" }} />
-                <span className="text-xs font-medium" style={{ color: "#9ca3af" }}>
+                <Icon style={{ width: "14px", height: "14px", color: "var(--primary)" }} />
+                <span className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                   {label}
                 </span>
               </div>
-              <p className="truncate text-sm font-semibold" style={{ color: "#1a1a2e" }}>
+              <p className="truncate text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                 {value}
               </p>
             </div>
@@ -277,33 +280,33 @@ function EmployeeDetailsPage() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         <div
           className="flex items-center gap-3 px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <GraduationCap style={{ width: "18px", height: "18px", color: "#6c63ff" }} />
-          <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>
+          <GraduationCap style={{ width: "18px", height: "18px", color: "var(--primary)" }} />
+          <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
             Education
           </h2>
         </div>
 
         <div className="px-6 py-4">
           {employee.education.length === 0 ? (
-            <p className="text-sm" style={{ color: "#9ca3af" }}>No education records found.</p>
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No education records found.</p>
           ) : (
             <div className="space-y-2">
               {employee.education.map((education) => (
                 <div
                   key={education.id}
                   className="rounded-xl p-3"
-                  style={{ background: "#f0f2f8" }}
+                  style={{ background: "var(--muted)" }}
                 >
-                  <p className="text-sm" style={{ color: "#1a1a2e" }}>{education.description}</p>
+                  <p className="text-sm" style={{ color: "var(--foreground)" }}>{education.description}</p>
                 </div>
               ))}
             </div>
@@ -315,34 +318,34 @@ function EmployeeDetailsPage() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         <div
           className="flex items-center gap-3 px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
-          <Award style={{ width: "18px", height: "18px", color: "#6c63ff" }} />
-          <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>
+          <Award style={{ width: "18px", height: "18px", color: "var(--primary)" }} />
+          <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
             Certifications
           </h2>
         </div>
 
         <div className="px-6 py-4">
           {employee.certifications.length === 0 ? (
-            <p className="text-sm" style={{ color: "#9ca3af" }}>No certifications found.</p>
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No certifications found.</p>
           ) : (
             <div className="space-y-2">
               {employee.certifications.map((certification) => (
                 <div
                   key={certification.id}
                   className="flex items-center gap-2 rounded-xl p-3"
-                  style={{ background: "#f0f2f8" }}
+                  style={{ background: "var(--muted)" }}
                 >
-                  <Award style={{ width: "14px", height: "14px", color: "#6c63ff", flexShrink: 0 }} />
-                  <p className="text-sm font-medium" style={{ color: "#1a1a2e" }}>
+                  <Award style={{ width: "14px", height: "14px", color: "var(--primary)", flexShrink: 0 }} />
+                  <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
                     {certification.name}
                   </p>
                 </div>
@@ -356,18 +359,18 @@ function EmployeeDetailsPage() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="flex items-center gap-3">
-            <Sparkles style={{ width: "18px", height: "18px", color: "#6c63ff" }} />
-            <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>
+            <Sparkles style={{ width: "18px", height: "18px", color: "var(--primary)" }} />
+            <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
               Skills
             </h2>
           </div>
@@ -388,17 +391,17 @@ function EmployeeDetailsPage() {
           {showAddSkill && (
             <div
               className="rounded-xl p-4 space-y-3"
-              style={{ background: "#f0f2f8", border: "1px solid #e8eaf0" }}
+              style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
             >
-              <h3 className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>Add New Skill</h3>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Add New Skill</h3>
               <div className="flex flex-wrap gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium" style={{ color: "#6b7280" }}>Skill</label>
+                  <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Skill</label>
                   <select
                     value={selectedSkillId}
                     onChange={(event) => setSelectedSkillId(event.target.value)}
                     className="rounded-xl px-3 py-2 text-sm"
-                    style={{ border: "1px solid #e8eaf0", background: "#ffffff", color: "#1a1a2e", outline: "none" }}
+                    style={{ border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", outline: "none" }}
                   >
                     <option value="">Select Skill</option>
                     {skills.map((skill) => (
@@ -410,14 +413,14 @@ function EmployeeDetailsPage() {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium" style={{ color: "#6b7280" }}>Level</label>
+                  <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>Level</label>
                   <select
                     value={selectedLevel}
                     onChange={(event) =>
                       setSelectedLevel(event.target.value as SkillLevel)
                     }
                     className="rounded-xl px-3 py-2 text-sm"
-                    style={{ border: "1px solid #e8eaf0", background: "#ffffff", color: "#1a1a2e", outline: "none" }}
+                    style={{ border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", outline: "none" }}
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -443,25 +446,26 @@ function EmployeeDetailsPage() {
 
           {/* Skills list */}
           {employee.employee_skills.length === 0 ? (
-            <p className="text-sm" style={{ color: "#9ca3af" }}>No skills found.</p>
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No skills found.</p>
           ) : (
             <div className="space-y-2">
               {employee.employee_skills.map((employeeSkill) => {
-                const levelStyle = levelColors[employeeSkill.level] ?? levelColors["Beginner"];
+                const levelClass = levelBadgeClasses[employeeSkill.level] ?? levelBadgeClasses["Beginner"];
+                const levelStyle = levelBadgeStyle[employeeSkill.level];
                 return (
                   <div
                     key={employeeSkill.id}
                     className="flex items-center justify-between rounded-xl px-4 py-3"
-                    style={{ background: "#f0f2f8" }}
+                    style={{ background: "var(--muted)" }}
                   >
                     <div className="flex items-center gap-3">
-                      <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>
+                      <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                         {employeeSkill.skill.name}
                       </p>
 
                       {editingSkillId !== employeeSkill.id && (
                         <span
-                          className="rounded-lg px-2 py-0.5 text-xs font-medium"
+                          className={`rounded-lg px-2 py-0.5 text-xs font-medium ${levelClass}`}
                           style={levelStyle}
                         >
                           {employeeSkill.level}
@@ -477,7 +481,7 @@ function EmployeeDetailsPage() {
                             setEditingLevel(event.target.value as SkillLevel)
                           }
                           className="rounded-xl px-3 py-1.5 text-sm"
-                          style={{ border: "1px solid #e8eaf0", background: "#ffffff", color: "#1a1a2e", outline: "none" }}
+                          style={{ border: "1px solid var(--border)", background: "var(--card)", color: "var(--foreground)", outline: "none" }}
                         >
                           <option value="Beginner">Beginner</option>
                           <option value="Intermediate">Intermediate</option>
@@ -514,7 +518,7 @@ function EmployeeDetailsPage() {
                           className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-white"
                           title="Edit skill"
                         >
-                          <Pencil style={{ width: "13px", height: "13px", color: "#6c63ff" }} />
+                          <Pencil style={{ width: "13px", height: "13px", color: "var(--primary)" }} />
                         </button>
 
                         <button
@@ -523,7 +527,7 @@ function EmployeeDetailsPage() {
                           className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
                           title="Remove skill"
                         >
-                          <Trash2 style={{ width: "13px", height: "13px", color: "#ef4444" }} />
+                          <Trash2 style={{ width: "13px", height: "13px", color: "var(--destructive)" }} />
                         </button>
                       </div>
                     )}

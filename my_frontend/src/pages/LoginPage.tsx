@@ -50,13 +50,13 @@ function LoginPage() {
   return (
     <div
       className="flex min-h-screen items-center justify-center"
-      style={{ background: "#f0f2f8" }}
+      style={{ background: "var(--background)" }}
     >
       <div
         className="w-full max-w-sm overflow-hidden rounded-2xl"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 8px 40px rgba(108,99,255,0.12)",
         }}
       >
@@ -76,13 +76,13 @@ function LoginPage() {
 
         {/* Form */}
         <div className="px-8 py-8">
-          <h2 className="mb-6 text-lg font-semibold" style={{ color: "#1a1a2e" }}>
+          <h2 className="mb-6 text-lg font-semibold" style={{ color: "var(--foreground)" }}>
             Sign in to your account
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Username or Email
               </label>
               <input
@@ -93,17 +93,17 @@ function LoginPage() {
                 required
                 className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
                 style={{
-                  border: "1px solid #e8eaf0",
-                  background: "#f0f2f8",
-                  color: "#1a1a2e",
+                  border: "1px solid var(--border)",
+                  background: "var(--muted)",
+                  color: "var(--foreground)",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#6c63ff")}
-                onBlur={(e) => (e.target.style.borderColor = "#e8eaf0")}
+                onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+              <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
                 Password
               </label>
               <input
@@ -114,19 +114,18 @@ function LoginPage() {
                 required
                 className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all"
                 style={{
-                  border: "1px solid #e8eaf0",
-                  background: "#f0f2f8",
-                  color: "#1a1a2e",
+                  border: "1px solid var(--border)",
+                  background: "var(--muted)",
+                  color: "var(--foreground)",
                 }}
-                onFocus={(e) => (e.target.style.borderColor = "#6c63ff")}
-                onBlur={(e) => (e.target.style.borderColor = "#e8eaf0")}
+                onFocus={(e) => (e.target.style.borderColor = "var(--primary)")}
+                onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
               />
             </div>
 
             {error && (
               <div
-                className="rounded-xl px-4 py-2.5 text-sm"
-                style={{ background: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}
+                className="rounded-xl px-4 py-2.5 text-sm bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30"
               >
                 {error}
               </div>

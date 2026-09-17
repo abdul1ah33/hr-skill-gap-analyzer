@@ -12,7 +12,7 @@ function FormField({
   return (
     <div>
       {label && (
-        <label className="text-xs font-medium" style={{ color: "#6b7280" }}>
+        <label className="text-xs font-medium" style={{ color: "var(--muted-foreground)" }}>
           {label}
         </label>
       )}
@@ -20,7 +20,7 @@ function FormField({
       {children}
 
       {error && (
-        <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>{error}</p>
+        <p className="mt-1 text-xs" style={{ color: "var(--destructive)" }}>{error}</p>
       )}
     </div>
   );

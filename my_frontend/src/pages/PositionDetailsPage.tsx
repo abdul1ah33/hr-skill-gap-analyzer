@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getPositionById } from "../services/positionService";
 import {
@@ -26,16 +27,17 @@ import {
   Wand2,
 } from "lucide-react";
 
-const levelColors: Record<string, { bg: string; color: string }> = {
-  Beginner: { bg: "#e0f2fe", color: "#0369a1" },
-  Intermediate: { bg: "#fef9c3", color: "#854d0e" },
-  Advanced: { bg: "#dcfce7", color: "#166534" },
-  Expert: { bg: "#ede8ff", color: "#6c63ff" },
+const levelColors: Record<string, { className?: string; style?: CSSProperties }> = {
+  Beginner: { className: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400" },
+  Intermediate: { className: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
+  Advanced: { className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" },
+  // Expert uses the theme's accent color pair rather than a fixed status color
+  Expert: { style: { background: "var(--accent)", color: "var(--accent-foreground)" } },
 };
 
-const priorityColors = {
-  essential: { bg: "#fce7f3", color: "#be185d" },
-  optional: { bg: "#f3f4f6", color: "#6b7280" },
+const priorityColors: Record<"essential" | "optional", { className?: string; style?: CSSProperties }> = {
+  essential: { className: "bg-pink-100 text-pink-700 dark:bg-pink-500/15 dark:text-pink-400" },
+  optional: { className: "bg-muted text-muted-foreground" },
 };
 
 function PositionDetailsPage() {
@@ -154,7 +156,7 @@ function PositionDetailsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>
           Loading...
         </div>
       </div>
@@ -164,7 +166,7 @@ function PositionDetailsPage() {
   if (!position) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>
           Position not found.
         </div>
       </div>
@@ -178,9 +180,9 @@ function PositionDetailsPage() {
         to="/positions"
         className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all hover:opacity-80"
         style={{
-          background: "#ede8ff",
-          color: "#6c63ff",
-          border: "1px solid #d4cfff",
+          background: "var(--accent)",
+          color: "var(--primary)",
+          border: "1px solid var(--accent)",
         }}
       >
         <ArrowLeft style={{ width: "15px", height: "15px" }} />
@@ -191,8 +193,8 @@ function PositionDetailsPage() {
       <div
         className="rounded-2xl p-6"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
@@ -205,10 +207,10 @@ function PositionDetailsPage() {
               <BriefcaseBusiness style={{ width: "28px", height: "28px" }} />
             </div>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: "#1a1a2e" }}>
+              <h1 className="text-xl font-bold" style={{ color: "var(--foreground)" }}>
                 {position.title}
               </h1>
-              <p className="mt-0.5 text-sm" style={{ color: "#9ca3af" }}>
+              <p className="mt-0.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
                 Position #{position.id}
               </p>
             </div>
@@ -237,22 +239,22 @@ function PositionDetailsPage() {
             <div
               key={label}
               className="rounded-xl p-3"
-              style={{ background: "#f0f2f8" }}
+              style={{ background: "var(--muted)" }}
             >
               <div className="flex items-center gap-2 mb-1">
                 <Icon
-                  style={{ width: "14px", height: "14px", color: "#6c63ff" }}
+                  style={{ width: "14px", height: "14px", color: "var(--primary)" }}
                 />
                 <span
                   className="text-xs font-medium"
-                  style={{ color: "#9ca3af" }}
+                  style={{ color: "var(--muted-foreground)" }}
                 >
                   {label}
                 </span>
               </div>
               <p
                 className="truncate text-sm font-semibold"
-                style={{ color: "#1a1a2e" }}
+                style={{ color: "var(--foreground)" }}
               >
                 {value}
               </p>
@@ -265,23 +267,23 @@ function PositionDetailsPage() {
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         {/* Section header */}
         <div
           className="flex items-center justify-between px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div className="flex items-center gap-3">
             <Sparkles
-              style={{ width: "18px", height: "18px", color: "#6c63ff" }}
+              style={{ width: "18px", height: "18px", color: "var(--primary)" }}
             />
             <h2
               className="text-base font-semibold"
-              style={{ color: "#1a1a2e" }}
+              style={{ color: "var(--foreground)" }}
             >
               Required Skills
             </h2>
@@ -322,14 +324,7 @@ function PositionDetailsPage() {
         <div className="px-6 py-4 space-y-4">
           {/* Generate error */}
           {generateError && (
-            <div
-              className="rounded-xl px-4 py-3 text-sm"
-              style={{
-                background: "#fef2f2",
-                border: "1px solid #fecaca",
-                color: "#b91c1c",
-              }}
-            >
+            <div className="rounded-xl px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/30">
               {generateError}
             </div>
           )}
@@ -338,11 +333,11 @@ function PositionDetailsPage() {
           {showAddSkill && (
             <div
               className="rounded-xl p-4 space-y-3"
-              style={{ background: "#f0f2f8", border: "1px solid #e8eaf0" }}
+              style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
             >
               <h3
                 className="text-sm font-semibold"
-                style={{ color: "#1a1a2e" }}
+                style={{ color: "var(--foreground)" }}
               >
                 Add New Skill Requirement
               </h3>
@@ -351,7 +346,7 @@ function PositionDetailsPage() {
                 <div className="flex flex-col gap-1">
                   <label
                     className="text-xs font-medium"
-                    style={{ color: "#6b7280" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     Skill
                   </label>
@@ -360,9 +355,9 @@ function PositionDetailsPage() {
                     onChange={(e) => setSelectedSkillId(e.target.value)}
                     className="rounded-xl px-3 py-2 text-sm"
                     style={{
-                      border: "1px solid #e8eaf0",
-                      background: "#ffffff",
-                      color: "#1a1a2e",
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--foreground)",
                       outline: "none",
                     }}
                   >
@@ -384,7 +379,7 @@ function PositionDetailsPage() {
                 <div className="flex flex-col gap-1">
                   <label
                     className="text-xs font-medium"
-                    style={{ color: "#6b7280" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     Required Level
                   </label>
@@ -395,9 +390,9 @@ function PositionDetailsPage() {
                     }
                     className="rounded-xl px-3 py-2 text-sm"
                     style={{
-                      border: "1px solid #e8eaf0",
-                      background: "#ffffff",
-                      color: "#1a1a2e",
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--foreground)",
                       outline: "none",
                     }}
                   >
@@ -412,7 +407,7 @@ function PositionDetailsPage() {
                 <div className="flex flex-col gap-1">
                   <label
                     className="text-xs font-medium"
-                    style={{ color: "#6b7280" }}
+                    style={{ color: "var(--muted-foreground)" }}
                   >
                     Priority
                   </label>
@@ -423,9 +418,9 @@ function PositionDetailsPage() {
                     }
                     className="rounded-xl px-3 py-2 text-sm"
                     style={{
-                      border: "1px solid #e8eaf0",
-                      background: "#ffffff",
-                      color: "#1a1a2e",
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--foreground)",
                       outline: "none",
                     }}
                   >
@@ -455,7 +450,7 @@ function PositionDetailsPage() {
 
           {/* Skills list */}
           {positionSkills.length === 0 ? (
-            <p className="text-sm" style={{ color: "#9ca3af" }}>
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
               No skills defined yet. Use &quot;Generate (AI)&quot; to
               auto-generate or &quot;Add Skill&quot; to add manually.
             </p>
@@ -473,12 +468,12 @@ function PositionDetailsPage() {
                   <div
                     key={ps.id}
                     className="flex items-center justify-between rounded-xl px-4 py-3"
-                    style={{ background: "#f0f2f8" }}
+                    style={{ background: "var(--muted)" }}
                   >
                     <div className="flex items-center gap-3 flex-wrap">
                       <p
                         className="text-sm font-semibold"
-                        style={{ color: "#1a1a2e" }}
+                        style={{ color: "var(--foreground)" }}
                       >
                         {ps.skill.name}
                       </p>
@@ -486,14 +481,14 @@ function PositionDetailsPage() {
                       {editingPsId !== ps.id && (
                         <>
                           <span
-                            className="rounded-lg px-2 py-0.5 text-xs font-medium"
-                            style={levelStyle}
+                            className={`rounded-lg px-2 py-0.5 text-xs font-medium ${levelStyle.className ?? ""}`}
+                            style={levelStyle.style}
                           >
                             {ps.required_skill_level}
                           </span>
                           <span
-                            className="rounded-lg px-2 py-0.5 text-xs font-medium"
-                            style={priorityStyle}
+                            className={`rounded-lg px-2 py-0.5 text-xs font-medium ${priorityStyle.className ?? ""}`}
+                            style={priorityStyle.style}
                           >
                             {ps.is_essential ? "Essential" : "Optional"}
                           </span>
@@ -511,9 +506,9 @@ function PositionDetailsPage() {
                           }
                           className="rounded-xl px-3 py-1.5 text-sm"
                           style={{
-                            border: "1px solid #e8eaf0",
-                            background: "#ffffff",
-                            color: "#1a1a2e",
+                            border: "1px solid var(--border)",
+                            background: "var(--card)",
+                            color: "var(--foreground)",
                             outline: "none",
                           }}
                         >
@@ -533,9 +528,9 @@ function PositionDetailsPage() {
                           }
                           className="rounded-xl px-3 py-1.5 text-sm"
                           style={{
-                            border: "1px solid #e8eaf0",
-                            background: "#ffffff",
-                            color: "#1a1a2e",
+                            border: "1px solid var(--border)",
+                            background: "var(--card)",
+                            color: "var(--foreground)",
                             outline: "none",
                           }}
                         >
@@ -574,14 +569,14 @@ function PositionDetailsPage() {
                             setEditingLevel(ps.required_skill_level);
                             setEditingEssential(ps.is_essential);
                           }}
-                          className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-white"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg transition-colors hover:bg-card"
                           title="Edit skill"
                         >
                           <Pencil
                             style={{
                               width: "13px",
                               height: "13px",
-                              color: "#6c63ff",
+                              color: "var(--primary)",
                             }}
                           />
                         </button>
@@ -596,7 +591,7 @@ function PositionDetailsPage() {
                             style={{
                               width: "13px",
                               height: "13px",
-                              color: "#ef4444",
+                              color: "var(--destructive)",
                             }}
                           />
                         </button>

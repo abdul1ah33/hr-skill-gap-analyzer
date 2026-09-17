@@ -50,7 +50,7 @@ function EmployeesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm" style={{ color: "#9ca3af" }}>Loading employees...</div>
+        <div className="text-sm" style={{ color: "var(--muted-foreground)" }}>Loading employees...</div>
       </div>
     );
   }
@@ -60,10 +60,10 @@ function EmployeesPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: "#1a1a2e" }}>
+          <h1 className="text-2xl font-bold" style={{ color: "var(--foreground)" }}>
             Employees
           </h1>
-          <p className="mt-0.5 text-sm" style={{ color: "#9ca3af" }}>
+          <p className="mt-0.5 text-sm" style={{ color: "var(--muted-foreground)" }}>
             {employees.length} total employees
           </p>
         </div>
@@ -83,47 +83,47 @@ function EmployeesPage() {
       <div
         className="overflow-hidden rounded-2xl"
         style={{
-          background: "#ffffff",
-          border: "1px solid #e8eaf0",
+          background: "var(--card)",
+          border: "1px solid var(--border)",
           boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
         }}
       >
         {/* Card toolbar */}
         <div
           className="flex items-center gap-3 px-6 py-4"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--border)" }}
         >
           <div
             className="flex flex-1 items-center gap-2 rounded-xl px-4 py-2"
-            style={{ background: "#f0f2f8", border: "1px solid #e8eaf0", maxWidth: "320px" }}
+            style={{ background: "var(--muted)", border: "1px solid var(--border)", maxWidth: "320px" }}
           >
-            <Search style={{ width: "15px", height: "15px", color: "#9ca3af", flexShrink: 0 }} />
+            <Search style={{ width: "15px", height: "15px", color: "var(--muted-foreground)", flexShrink: 0 }} />
             <Input
               placeholder="Search employees..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="border-0 bg-transparent p-0 text-sm shadow-none outline-none focus-visible:ring-0"
-              style={{ color: "#1a1a2e" }}
+              style={{ color: "var(--foreground)" }}
             />
           </div>
         </div>
 
         <Table>
           <TableHeader>
-            <TableRow style={{ borderBottom: "1px solid #e8eaf0", background: "#fafbfc" }}>
-              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "#9ca3af" }}>
+            <TableRow style={{ borderBottom: "1px solid var(--border)", background: "var(--muted)" }}>
+              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                 Employee #
               </TableHead>
-              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "#9ca3af" }}>
+              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                 Name
               </TableHead>
-              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "#9ca3af" }}>
+              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                 Email
               </TableHead>
-              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "#9ca3af" }}>
+              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                 Department
               </TableHead>
-              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "#9ca3af" }}>
+              <TableHead className="px-6 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--muted-foreground)" }}>
                 Position
               </TableHead>
             </TableRow>
@@ -134,8 +134,8 @@ function EmployeesPage() {
               <TableRow>
                 <TableCell colSpan={5} className="py-16 text-center">
                   <div className="flex flex-col items-center gap-2">
-                    <UserCircle2 style={{ width: "40px", height: "40px", color: "#e8eaf0" }} />
-                    <p className="text-sm" style={{ color: "#9ca3af" }}>No employees found.</p>
+                    <UserCircle2 style={{ width: "40px", height: "40px", color: "var(--border)" }} />
+                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No employees found.</p>
                   </div>
                 </TableCell>
               </TableRow>
@@ -143,10 +143,10 @@ function EmployeesPage() {
               filteredEmployees.map((employee) => (
                 <TableRow
                   key={employee.id}
-                  className="transition-colors hover:bg-[#fafbff]"
-                  style={{ borderBottom: "1px solid #f0f2f8" }}
+                  className="transition-colors hover:bg-[var(--muted)]"
+                  style={{ borderBottom: "1px solid var(--border)" }}
                 >
-                  <TableCell className="px-6 py-4 text-sm font-mono" style={{ color: "#6b7280" }}>
+                  <TableCell className="px-6 py-4 text-sm font-mono" style={{ color: "var(--muted-foreground)" }}>
                     {employee.employee_number}
                   </TableCell>
 
@@ -163,14 +163,14 @@ function EmployeesPage() {
                       </div>
                       <span
                         className="text-sm font-semibold group-hover:underline"
-                        style={{ color: "#1a1a2e" }}
+                        style={{ color: "var(--foreground)" }}
                       >
                         {employee.first_name} {employee.last_name}
                       </span>
                     </Link>
                   </TableCell>
 
-                  <TableCell className="px-6 py-4 text-sm" style={{ color: "#6b7280" }}>
+                  <TableCell className="px-6 py-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
                     {employee.email}
                   </TableCell>
 
@@ -178,16 +178,16 @@ function EmployeesPage() {
                     {(employee.department?.name || employee.position?.department?.name) ? (
                       <span
                         className="inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium"
-                        style={{ background: "#ede8ff", color: "#6c63ff" }}
+                        style={{ background: "var(--accent)", color: "var(--primary)" }}
                       >
                         {employee.department?.name || employee.position?.department?.name}
                       </span>
                     ) : (
-                      <span className="text-sm" style={{ color: "#d1d5db" }}>—</span>
+                      <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>—</span>
                     )}
                   </TableCell>
 
-                  <TableCell className="px-6 py-4 text-sm" style={{ color: "#6b7280" }}>
+                  <TableCell className="px-6 py-4 text-sm" style={{ color: "var(--muted-foreground)" }}>
                     {employee.position?.title ?? "—"}
                   </TableCell>
                 </TableRow>

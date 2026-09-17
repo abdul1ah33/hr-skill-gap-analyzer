@@ -54,33 +54,33 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden" style={{ background: "#f0f2f8" }}>
+    <div className="flex h-screen w-full overflow-hidden" style={{ background: "var(--background)" }}>
       {/* Sidebar */}
       <aside
         className="flex w-64 shrink-0 flex-col overflow-y-auto"
         style={{
-          background: "#ffffff",
-          borderRight: "1px solid #e8eaf0",
+          background: "var(--sidebar)",
+          borderRight: "1px solid var(--sidebar-border)",
           boxShadow: "2px 0 8px rgba(0,0,0,0.04)",
         }}
       >
         {/* Logo */}
         <div
           className="flex h-16 items-center px-6"
-          style={{ borderBottom: "1px solid #e8eaf0" }}
+          style={{ borderBottom: "1px solid var(--sidebar-border)" }}
         >
           <div className="flex items-center gap-3">
             <div
               className="flex h-9 w-9 items-center justify-center rounded-xl text-white"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)" }}
+              style={{ background: "linear-gradient(135deg, var(--primary), #a78bfa)" }}
             >
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h1 className="text-sm font-bold" style={{ color: "#1a1a2e", letterSpacing: "-0.01em" }}>
+              <h1 className="text-sm font-bold" style={{ color: "var(--foreground)", letterSpacing: "-0.01em" }}>
                 HR Skill Gap
               </h1>
-              <p className="text-[11px]" style={{ color: "#9ca3af" }}>
+              <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
                 Analytics Platform
               </p>
             </div>
@@ -95,20 +95,14 @@ export default function AppLayout() {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
-                    isActive
-                      ? "text-white shadow-md"
-                      : "hover:bg-[#f0f2f8]"
-                  }`
-                }
+                className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 hover:bg-[var(--sidebar-accent)]"
                 style={({ isActive }) =>
                   isActive
                     ? {
-                        background: "linear-gradient(135deg, #6c63ff, #a78bfa)",
+                        background: "linear-gradient(135deg, var(--primary), #a78bfa)",
                         color: "#ffffff",
                       }
-                    : { color: "#6b7280" }
+                    : { color: "var(--sidebar-foreground)" }
                 }
               >
                 <Icon className="h-4.5 w-4.5 shrink-0" style={{ width: "18px", height: "18px" }} />
@@ -119,18 +113,14 @@ export default function AppLayout() {
         </nav>
 
         {/* Bottom – Settings */}
-        <div className="px-4 pb-4 space-y-1" style={{ borderTop: "1px solid #e8eaf0", paddingTop: "16px" }}>
+        <div className="px-4 pb-4 space-y-1" style={{ borderTop: "1px solid var(--sidebar-border)", paddingTop: "16px" }}>
           <NavLink
             to="/settings"
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 ${
-                isActive ? "text-white shadow-md" : "hover:bg-[#f0f2f8]"
-              }`
-            }
+            className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-150 hover:bg-[var(--sidebar-accent)]"
             style={({ isActive }) =>
               isActive
-                ? { background: "linear-gradient(135deg, #6c63ff, #a78bfa)", color: "#ffffff" }
-                : { color: "#6b7280" }
+                ? { background: "linear-gradient(135deg, var(--primary), #a78bfa)", color: "#ffffff" }
+                : { color: "var(--sidebar-foreground)" }
             }
           >
             <Settings style={{ width: "18px", height: "18px" }} />
@@ -140,19 +130,19 @@ export default function AppLayout() {
           {/* User profile footer */}
           <div
             className="mt-4 flex items-center gap-3 rounded-xl px-3 py-3"
-            style={{ background: "#f0f2f8" }}
+            style={{ background: "var(--muted)" }}
           >
             <div
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)" }}
+              style={{ background: "linear-gradient(135deg, var(--primary), #a78bfa)" }}
             >
               HR
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold" style={{ color: "#1a1a2e" }}>
+              <p className="truncate text-sm font-semibold" style={{ color: "var(--foreground)" }}>
                 HR Manager
               </p>
-              <p className="truncate text-xs" style={{ color: "#9ca3af" }}>
+              <p className="truncate text-xs" style={{ color: "var(--muted-foreground)" }}>
                 Administrator
               </p>
             </div>
@@ -160,9 +150,9 @@ export default function AppLayout() {
             <button
               onClick={handleLogout}
               title="Logout"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-red-50"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-red-500/10"
             >
-              <LogOut style={{ width: "15px", height: "15px", color: "#ef4444" }} />
+              <LogOut style={{ width: "15px", height: "15px", color: "var(--destructive)" }} />
             </button>
           </div>
         </div>
@@ -174,8 +164,8 @@ export default function AppLayout() {
         <header
           className="flex h-16 shrink-0 items-center justify-between px-8"
           style={{
-            background: "#ffffff",
-            borderBottom: "1px solid #e8eaf0",
+            background: "var(--card)",
+            borderBottom: "1px solid var(--border)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
           }}
         >
@@ -183,10 +173,10 @@ export default function AppLayout() {
           <div className="flex items-center gap-3">
             <div
               className="flex items-center gap-2 rounded-xl px-4 py-2"
-              style={{ background: "#f0f2f8", border: "1px solid #e8eaf0" }}
+              style={{ background: "var(--muted)", border: "1px solid var(--border)" }}
             >
-              <Search style={{ width: "15px", height: "15px", color: "#9ca3af" }} />
-              <span className="text-sm" style={{ color: "#9ca3af" }}>
+              <Search style={{ width: "15px", height: "15px", color: "var(--muted-foreground)" }} />
+              <span className="text-sm" style={{ color: "var(--muted-foreground)" }}>
                 Search...
               </span>
             </div>
@@ -195,16 +185,16 @@ export default function AppLayout() {
           <div className="flex items-center gap-3">
             {/* Notification bell */}
             <button
-              className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-[#f0f2f8]"
-              style={{ border: "1px solid #e8eaf0" }}
+              className="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-[var(--muted)]"
+              style={{ border: "1px solid var(--border)" }}
             >
-              <Bell style={{ width: "17px", height: "17px", color: "#6b7280" }} />
+              <Bell style={{ width: "17px", height: "17px", color: "var(--muted-foreground)" }} />
             </button>
 
             {/* Avatar */}
             <div
               className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white"
-              style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)" }}
+              style={{ background: "linear-gradient(135deg, var(--primary), #a78bfa)" }}
             >
               HR
             </div>
@@ -218,4 +208,4 @@ export default function AppLayout() {
       </div>
     </div>
   );
-}
+}

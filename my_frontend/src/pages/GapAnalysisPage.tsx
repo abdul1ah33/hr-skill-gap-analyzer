@@ -61,7 +61,7 @@ function StatCard({ icon: Icon, label, value, color }: {
   return (
     <div
       className="flex flex-col items-center gap-1 rounded-2xl px-5 py-4"
-      style={{ background: "#ffffff", border: "1px solid #e8eaf0", minWidth: 110 }}
+      style={{ background: "var(--card)", border: "1px solid var(--border)", minWidth: 110 }}
     >
       <div
         className="mb-1 flex h-9 w-9 items-center justify-center rounded-xl"
@@ -69,8 +69,8 @@ function StatCard({ icon: Icon, label, value, color }: {
       >
         <Icon style={{ width: 18, height: 18, color }} />
       </div>
-      <span className="text-xl font-bold" style={{ color: "#1a1a2e" }}>{value}</span>
-      <span className="text-xs" style={{ color: "#9ca3af" }}>{label}</span>
+      <span className="text-xl font-bold" style={{ color: "var(--foreground)" }}>{value}</span>
+      <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>{label}</span>
     </div>
   );
 }
@@ -178,7 +178,7 @@ export default function GapAnalysisPage() {
                   Intelligence
                 </span>
               </h1>
-              <p className="mt-3 max-w-sm text-sm leading-relaxed" style={{ color: "#9ca3af" }}>
+              <p className="mt-3 max-w-sm text-sm leading-relaxed" style={{ color: "var(--muted-foreground)" }}>
                 Identify exactly where each employee stands against their role requirements. Get AI-generated upskill pathways in seconds.
               </p>
             </div>
@@ -195,26 +195,26 @@ export default function GapAnalysisPage() {
         {/* ── SEARCH + LIST ────────────────────────────────────────────── */}
         <div
           className="overflow-hidden rounded-2xl"
-          style={{ background: "#ffffff", border: "1px solid #e8eaf0", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
+          style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
         >
           {/* toolbar */}
-          <div className="flex items-center justify-between gap-4 px-6 py-4" style={{ borderBottom: "1px solid #e8eaf0" }}>
+          <div className="flex items-center justify-between gap-4 px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
             <div>
-              <h2 className="text-base font-semibold" style={{ color: "#1a1a2e" }}>Select Employee</h2>
-              <p className="text-xs" style={{ color: "#9ca3af" }}>Choose an employee to run their gap analysis</p>
+              <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Select Employee</h2>
+              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Choose an employee to run their gap analysis</p>
             </div>
 
             <div
               className="flex items-center gap-2 rounded-xl px-4 py-2"
-              style={{ background: "#f0f2f8", border: "1px solid #e8eaf0", minWidth: 260 }}
+              style={{ background: "var(--muted)", border: "1px solid var(--border)", minWidth: 260 }}
             >
-              <Search style={{ width: 15, height: 15, color: "#9ca3af", flexShrink: 0 }} />
+              <Search style={{ width: 15, height: 15, color: "var(--muted-foreground)", flexShrink: 0 }} />
               <Input
                 placeholder="Search by name, email, position…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="border-0 bg-transparent p-0 text-sm shadow-none outline-none focus-visible:ring-0"
-                style={{ color: "#1a1a2e" }}
+                style={{ color: "var(--foreground)" }}
               />
             </div>
           </div>
@@ -224,13 +224,13 @@ export default function GapAnalysisPage() {
             {loading ? (
               <div className="flex flex-col gap-3">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-20 animate-pulse rounded-2xl" style={{ background: "#f0f2f8" }} />
+                  <div key={i} className="h-20 animate-pulse rounded-2xl" style={{ background: "var(--muted)" }} />
                 ))}
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16">
-                <UserCircle2 style={{ width: 48, height: 48, color: "#e8eaf0" }} />
-                <p className="text-sm" style={{ color: "#9ca3af" }}>No employees found.</p>
+                <UserCircle2 style={{ width: 48, height: 48, color: "var(--border)" }} />
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No employees found.</p>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -246,21 +246,21 @@ export default function GapAnalysisPage() {
                       title={!hasPosition ? "No position assigned — cannot run analysis" : undefined}
                       className="employee-card group relative flex items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{
-                        background: "#f8f9ff",
-                        border: "1px solid #e8eaf0",
+                        background: "var(--muted)",
+                        border: "1px solid var(--border)",
                         animation: `slideUp 0.4s ease both`,
                         animationDelay: `${idx * 40}ms`,
                       }}
                       onMouseEnter={(e) => {
                         if (!hasPosition) return;
-                        (e.currentTarget as HTMLElement).style.background = "#ede8ff";
-                        (e.currentTarget as HTMLElement).style.borderColor = "#c4b8ff";
+                        (e.currentTarget as HTMLElement).style.background = "var(--accent)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
                         (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
                         (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(108,99,255,0.15)";
                       }}
                       onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "#f8f9ff";
-                        (e.currentTarget as HTMLElement).style.borderColor = "#e8eaf0";
+                        (e.currentTarget as HTMLElement).style.background = "var(--muted)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
                         (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
                         (e.currentTarget as HTMLElement).style.boxShadow = "none";
                       }}
@@ -275,13 +275,13 @@ export default function GapAnalysisPage() {
 
                       {/* info */}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold" style={{ color: "#1a1a2e" }}>
+                        <p className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>
                           {emp.first_name} {emp.last_name}
                         </p>
-                        <p className="truncate text-xs" style={{ color: "#6c63ff", fontWeight: 600 }}>
-                          {emp.position?.title ?? <span style={{ color: "#d1d5db" }}>No position</span>}
+                        <p className="truncate text-xs" style={{ color: "var(--primary)", fontWeight: 600 }}>
+                          {emp.position?.title ?? <span style={{ color: "var(--muted-foreground)" }}>No position</span>}
                         </p>
-                        <p className="truncate text-xs mt-0.5" style={{ color: "#9ca3af" }}>
+                        <p className="truncate text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
                           {emp.department?.name ?? "—"} · {emp.employee_number}
                         </p>
                       </div>
@@ -289,8 +289,8 @@ export default function GapAnalysisPage() {
                       {/* arrow hint */}
                       {hasPosition && (
                         <div className="run-analysis-hint flex items-center gap-1 shrink-0">
-                          <span className="text-xs font-semibold" style={{ color: "#6c63ff" }}>Analyse</span>
-                          <Zap style={{ width: 13, height: 13, color: "#6c63ff" }} />
+                          <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>Analyse</span>
+                          <Zap style={{ width: 13, height: 13, color: "var(--primary)" }} />
                         </div>
                       )}
                     </button>

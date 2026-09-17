@@ -44,8 +44,8 @@ function StatCard({ label, value, icon: Icon, gradient, iconBg, iconColor, href,
       onClick={() => navigate(href)}
       className="relative overflow-hidden rounded-2xl cursor-pointer group"
       style={{
-        background: "#ffffff",
-        border: "1px solid #e8eaf0",
+        background: "var(--card)",
+        border: "1px solid var(--border)",
         boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
         opacity: animateIn ? 1 : 0,
         transform: animateIn ? "translateY(0)" : "translateY(24px)",
@@ -64,10 +64,10 @@ function StatCard({ label, value, icon: Icon, gradient, iconBg, iconColor, href,
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#9ca3af" }}>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "var(--muted-foreground)" }}>
               {label}
             </p>
-            <p className="mt-2 text-4xl font-bold" style={{ color: "#1a1a2e" }}>
+            <p className="mt-2 text-4xl font-bold" style={{ color: "var(--foreground)" }}>
               {animateIn ? count : 0}
             </p>
           </div>
@@ -131,10 +131,10 @@ function QuickAction({ label, description, icon: Icon, href, color, bg, delay, a
         <Icon style={{ width: "18px", height: "18px", color }} />
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>{label}</p>
-        <p className="text-xs" style={{ color: "#9ca3af" }}>{description}</p>
+        <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{label}</p>
+        <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>{description}</p>
       </div>
-      <ArrowRight style={{ width: "16px", height: "16px", color: "#d1d5db", marginLeft: "auto", flexShrink: 0 }} />
+      <ArrowRight style={{ width: "16px", height: "16px", color: "var(--muted-foreground)", marginLeft: "auto", flexShrink: 0 }} />
     </button>
   );
 }
@@ -195,8 +195,8 @@ function DashboardPage() {
       value: counts.employees,
       icon: Users,
       gradient: "linear-gradient(90deg, #6c63ff, #a78bfa)",
-      iconBg: "#ede8ff",
-      iconColor: "#6c63ff",
+      iconBg: "var(--accent)",
+      iconColor: "var(--primary)",
       href: "/employees",
     },
     {
@@ -204,7 +204,7 @@ function DashboardPage() {
       value: counts.departments,
       icon: Building2,
       gradient: "linear-gradient(90deg, #10b981, #34d399)",
-      iconBg: "#d1fae5",
+      iconBg: "rgba(16,185,129,0.15)",
       iconColor: "#10b981",
       href: "/departments",
     },
@@ -213,7 +213,7 @@ function DashboardPage() {
       value: counts.positions,
       icon: BriefcaseBusiness,
       gradient: "linear-gradient(90deg, #f59e0b, #fbbf24)",
-      iconBg: "#fff7ed",
+      iconBg: "rgba(245,158,11,0.15)",
       iconColor: "#f59e0b",
       href: "/positions",
     },
@@ -226,7 +226,7 @@ function DashboardPage() {
       icon: Users,
       href: "/employees/add",
       color: "#6c63ff",
-      bg: "#f5f3ff",
+      bg: "rgba(108,99,255,0.08)",
     },
     {
       label: "Run Gap Analysis",
@@ -234,7 +234,7 @@ function DashboardPage() {
       icon: TrendingUp,
       href: "/gap-analysis",
       color: "#10b981",
-      bg: "#f0fdf4",
+      bg: "rgba(16,185,129,0.08)",
     },
     {
       label: "Manage Positions",
@@ -242,7 +242,7 @@ function DashboardPage() {
       icon: BriefcaseBusiness,
       href: "/positions",
       color: "#f59e0b",
-      bg: "#fffbeb",
+      bg: "rgba(245,158,11,0.08)",
     },
     {
       label: "Departments",
@@ -250,7 +250,7 @@ function DashboardPage() {
       icon: Building2,
       href: "/departments",
       color: "#3b82f6",
-      bg: "#eff6ff",
+      bg: "rgba(59,130,246,0.08)",
     },
   ];
 
@@ -332,15 +332,15 @@ function DashboardPage() {
           <div
             className="lg:col-span-2 rounded-2xl p-5 space-y-3"
             style={{
-              background: "#ffffff",
-              border: "1px solid #e8eaf0",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
               boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
               opacity: animateIn ? 1 : 0,
               transform: animateIn ? "translateY(0)" : "translateY(20px)",
               transition: "opacity 0.5s ease 350ms, transform 0.5s ease 350ms",
             }}
           >
-            <p className="text-sm font-semibold" style={{ color: "#1a1a2e" }}>Quick Actions</p>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Quick Actions</p>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {quickActions.map((qa, i) => (
                 <QuickAction
@@ -377,7 +377,7 @@ function DashboardPage() {
             <button
               onClick={() => navigate("/gap-analysis")}
               className="relative z-10 mt-4 inline-flex items-center gap-2 self-start rounded-xl bg-white px-4 py-2 text-sm font-semibold transition-all duration-200 hover:scale-105"
-              style={{ color: "#6c63ff" }}
+              style={{ color: "var(--primary)" }}
             >
               Start Analysis
               <ArrowRight style={{ width: "14px", height: "14px" }} />
@@ -391,7 +391,7 @@ function DashboardPage() {
           <div
             className="rounded-full h-1 w-full"
             style={{
-              background: "linear-gradient(90deg, #e8eaf0 25%, #f0f2f8 50%, #e8eaf0 75%)",
+              background: "linear-gradient(90deg, var(--border) 25%, var(--muted) 50%, var(--border) 75%)",
               backgroundSize: "200% 100%",
               animation: "shimmer 1.4s infinite",
             }}
