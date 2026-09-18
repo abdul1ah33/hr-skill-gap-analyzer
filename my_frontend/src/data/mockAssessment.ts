@@ -6,7 +6,7 @@ export const mockAssessment: Assessment = {
   description:
     "This assessment evaluates your knowledge of supply chain management, inventory control, procurement, logistics, and demand planning.",
   config: {
-    timePerQuestion: 60,
+    timePerQuestion: 5,
     maxViolations: 3,
     requireFullscreen: true,
     preventCopy: true,

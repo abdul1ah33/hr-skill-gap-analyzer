@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react"; // EDITED
 import { useParams, useNavigate } from "react-router-dom";
 import { mockAssessment } from "../data/mockAssessment";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Clock, AlertTriangle } from "lucide-react";
+import { useAssessmentTimer } from "../hooks/assessment/useAssessmentTimer";
 
 export default function AssessmentPage() {
   const { id } = useParams();
@@ -18,8 +19,27 @@ export default function AssessmentPage() {
     assessment.questions[currentQuestionIndex];
 
   const totalQuestions = assessment.questions.length;
+
   const isLastQuestion =
     currentQuestionIndex === totalQuestions - 1;
+
+  // EDITED: useCallback added so the timer callback stays stable
+  const handleTimerExpire = useCallback(() => {
+    if (isLastQuestion) {
+      navigate(`/assessments/${id}/result`);
+      return;
+    }
+
+    setCurrentQuestionIndex((previous) => previous + 1);
+    setSelectedOption(null);
+  }, [id, isLastQuestion, navigate]); // EDITED
+
+  // EDITED: the hook returns an object, so we extract timeRemaining
+  const { timeRemaining } = useAssessmentTimer({
+    duration: assessment.config.timePerQuestion,
+    questionKey: currentQuestion.id,
+    onExpire: handleTimerExpire,
+  });
 
   const handleNext = () => {
     if (isLastQuestion) {
@@ -95,16 +115,19 @@ export default function AssessmentPage() {
                 Time Remaining
               </p>
 
-              <p className="text-2xl font-bold tabular-nums">
+              {/* EDITED: now displays the real countdown */}
+              <p
+                className={`text-2xl font-bold tabular-nums ${
+                  timeRemaining <= 10
+                    ? "text-destructive"
+                    : ""
+                }`}
+              >
                 {String(
-                  Math.floor(
-                    assessment.config.timePerQuestion / 60
-                  )
+                  Math.floor(timeRemaining / 60)
                 ).padStart(2, "0")}
                 :
-                {String(
-                  assessment.config.timePerQuestion % 60
-                ).padStart(2, "0")}
+                {String(timeRemaining % 60).padStart(2, "0")}
               </p>
             </div>
           </div>
