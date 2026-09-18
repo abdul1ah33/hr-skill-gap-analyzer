@@ -43,6 +43,11 @@ const navigation = [
     path: "/skills",
     icon: Sparkles,
   },
+  {
+    name: "Assessment Instructions",
+    path: "/assessment-instructions",
+    icon: Sparkles,
+  },
 ];
 
 export default function AppLayout() {
