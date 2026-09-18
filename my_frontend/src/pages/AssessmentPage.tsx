@@ -1,10 +1,11 @@
-import { useCallback, useState } from "react"; // EDITED
+import { useCallback, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { mockAssessment } from "../data/mockAssessment";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Clock, AlertTriangle } from "lucide-react";
 import { useAssessmentTimer } from "../hooks/assessment/useAssessmentTimer";
+import type { AssessmentAnswer } from "../types/assessment";
 
 export default function AssessmentPage() {
   const { id } = useParams();
@@ -13,7 +14,14 @@ export default function AssessmentPage() {
   const assessment = mockAssessment;
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+
+  // Store the selected answer for every question.
+  const [answers, setAnswers] = useState<AssessmentAnswer[]>(
+    assessment.questions.map((question) => ({
+      questionId: question.id,
+      selectedOptionId: null,
+    }))
+  );
 
   const currentQuestion =
     assessment.questions[currentQuestionIndex];
@@ -23,7 +31,17 @@ export default function AssessmentPage() {
   const isLastQuestion =
     currentQuestionIndex === totalQuestions - 1;
 
-  // EDITED: useCallback added so the timer callback stays stable
+  // Get the answer currently selected for this question.
+  const currentAnswer = currentQuestion
+    ? answers.find(
+        (answer) => answer.questionId === currentQuestion.id
+      )
+    : undefined;
+
+  const selectedOption =
+    currentAnswer?.selectedOptionId ?? null;
+
+  // Automatically move to the next question when the timer expires.
   const handleTimerExpire = useCallback(() => {
     if (isLastQuestion) {
       navigate(`/assessments/${id}/result`);
@@ -31,25 +49,47 @@ export default function AssessmentPage() {
     }
 
     setCurrentQuestionIndex((previous) => previous + 1);
-    setSelectedOption(null);
-  }, [id, isLastQuestion, navigate]); // EDITED
+  }, [id, isLastQuestion, navigate]);
 
-  // EDITED: the hook returns an object, so we extract timeRemaining
+  // Start/reset the timer whenever the current question changes.
   const { timeRemaining } = useAssessmentTimer({
     duration: assessment.config.timePerQuestion,
-    questionKey: currentQuestion.id,
+    questionKey: currentQuestion?.id ?? 0,
     onExpire: handleTimerExpire,
   });
 
+  // Select an answer for the current question.
+  const handleSelectOption = (optionId: string) => {
+    if (!currentQuestion) {
+      return;
+    }
+
+    setAnswers((previousAnswers) =>
+      previousAnswers.map((answer) =>
+        answer.questionId === currentQuestion.id
+          ? {
+              ...answer,
+              selectedOptionId: optionId,
+            }
+          : answer
+      )
+    );
+  };
+
+  // Move to the next question or submit the assessment.
   const handleNext = () => {
+    if (!currentQuestion) {
+      return;
+    }
+
     if (isLastQuestion) {
-      // Result page will be implemented later.
+      console.log("Assessment answers:", answers);
+
       navigate(`/assessments/${id}/result`);
       return;
     }
 
     setCurrentQuestionIndex((previous) => previous + 1);
-    setSelectedOption(null);
   };
 
   if (!currentQuestion) {
@@ -115,7 +155,6 @@ export default function AssessmentPage() {
                 Time Remaining
               </p>
 
-              {/* EDITED: now displays the real countdown */}
               <p
                 className={`text-2xl font-bold tabular-nums ${
                   timeRemaining <= 10
@@ -156,7 +195,7 @@ export default function AssessmentPage() {
                     key={option.id}
                     type="button"
                     onClick={() =>
-                      setSelectedOption(option.id)
+                      handleSelectOption(option.id)
                     }
                     className={`
                       flex w-full items-center gap-4 rounded-xl
