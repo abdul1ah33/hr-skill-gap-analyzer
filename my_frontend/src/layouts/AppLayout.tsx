@@ -45,7 +45,7 @@ const navigation = [
   },
   {
     name: "Assessment Instructions",
-    path: "/assessment-instructions",
+    path: "/assessments/:id/instructions",
     icon: Sparkles,
   },
 ];

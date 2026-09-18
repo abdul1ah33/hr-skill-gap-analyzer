@@ -15,6 +15,7 @@ import GapAnalysisPage from "./pages/GapAnalysisPage";
 import GapAnalysisResultPage from "./pages/GapAnalysisResultPage";
 import SettingsPage from "./pages/SettingsPage";
 import AssessmentInstructionsPage from "./pages/AssessmentInstructionsPage";
+import AssessmentPage from "./pages/AssessmentPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -39,7 +40,8 @@ function App() {
               <Route path="/gap-analysis" element={<GapAnalysisPage />} />
               <Route path="/gap-analysis/:id" element={<GapAnalysisResultPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/assessment-instructions" element={<AssessmentInstructionsPage />} />
+              <Route path="/assessments/:id/instructions" element={<AssessmentInstructionsPage />} />
+              <Route path="/assessments/:id" element={<AssessmentPage />} />
             </Route>
 
 
