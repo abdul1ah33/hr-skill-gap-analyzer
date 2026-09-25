@@ -1,11 +1,11 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
+import { useAssessmentAttempt } from "../hooks/assessment/useAssessmentAttempt";
 import { useParams, useNavigate } from "react-router-dom";
 import { mockAssessment } from "../data/mockAssessment";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Clock, AlertTriangle } from "lucide-react";
 import { useAssessmentTimer } from "../hooks/assessment/useAssessmentTimer";
-import type { AssessmentAnswer } from "../types/assessment";
 
 export default function AssessmentPage() {
   const { id } = useParams();
@@ -13,15 +13,18 @@ export default function AssessmentPage() {
 
   const assessment = mockAssessment;
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const {
+    attempt,
+    setCurrentQuestion,
+    selectAnswer,
+    completeAttempt,
+  } = useAssessmentAttempt({
+    assessment,
+    employeeId: 1,
+  });
 
-  // Store the selected answer for every question.
-  const [answers, setAnswers] = useState<AssessmentAnswer[]>(
-    assessment.questions.map((question) => ({
-      questionId: question.id,
-      selectedOptionId: null,
-    }))
-  );
+  const currentQuestionIndex =
+    attempt.currentQuestionIndex;
 
   const currentQuestion =
     assessment.questions[currentQuestionIndex];
@@ -33,7 +36,7 @@ export default function AssessmentPage() {
 
   // Get the answer currently selected for this question.
   const currentAnswer = currentQuestion
-    ? answers.find(
+    ? attempt.answers.find(
         (answer) => answer.questionId === currentQuestion.id
       )
     : undefined;
@@ -44,12 +47,20 @@ export default function AssessmentPage() {
   // Automatically move to the next question when the timer expires.
   const handleTimerExpire = useCallback(() => {
     if (isLastQuestion) {
+      completeAttempt();
       navigate(`/assessments/${id}/result`);
       return;
     }
 
-    setCurrentQuestionIndex((previous) => previous + 1);
-  }, [id, isLastQuestion, navigate]);
+    setCurrentQuestion(currentQuestionIndex + 1);
+  }, [
+    completeAttempt,
+    currentQuestionIndex,
+    id,
+    isLastQuestion,
+    navigate,
+    setCurrentQuestion,
+  ]);
 
   // Start/reset the timer whenever the current question changes.
   const { timeRemaining } = useAssessmentTimer({
@@ -64,16 +75,7 @@ export default function AssessmentPage() {
       return;
     }
 
-    setAnswers((previousAnswers) =>
-      previousAnswers.map((answer) =>
-        answer.questionId === currentQuestion.id
-          ? {
-              ...answer,
-              selectedOptionId: optionId,
-            }
-          : answer
-      )
-    );
+    selectAnswer(currentQuestion.id, optionId);
   };
 
   // Move to the next question or submit the assessment.
@@ -83,13 +85,15 @@ export default function AssessmentPage() {
     }
 
     if (isLastQuestion) {
-      console.log("Assessment answers:", answers);
+      completeAttempt();
+
+      console.log("Assessment attempt:", attempt);
 
       navigate(`/assessments/${id}/result`);
       return;
     }
 
-    setCurrentQuestionIndex((previous) => previous + 1);
+    setCurrentQuestion(currentQuestionIndex + 1);
   };
 
   if (!currentQuestion) {
