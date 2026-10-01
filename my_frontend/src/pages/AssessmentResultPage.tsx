@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { CheckCircle2, ClipboardCheck } from "lucide-react";
 
 export default function AssessmentResultPage() {
-  const { id } = useParams();
   const navigate = useNavigate();
 
   return (

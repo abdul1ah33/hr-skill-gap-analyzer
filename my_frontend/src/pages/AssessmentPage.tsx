@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useAssessmentAttempt } from "../hooks/assessment/useAssessmentAttempt";
 import { useParams, useNavigate } from "react-router-dom";
 import { mockAssessment } from "../data/mockAssessment";
@@ -6,6 +6,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Clock, AlertTriangle } from "lucide-react";
 import { useAssessmentTimer } from "../hooks/assessment/useAssessmentTimer";
+import { useAssessmentSecurity } from "../hooks/assessment/useAssessmentSecurity";
 
 export default function AssessmentPage() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function AssessmentPage() {
     attempt,
     setCurrentQuestion,
     selectAnswer,
+    addViolation,
     completeAttempt,
   } = useAssessmentAttempt({
     assessment,
@@ -61,6 +63,27 @@ export default function AssessmentPage() {
     navigate,
     setCurrentQuestion,
   ]);
+
+  const handleViolation = useCallback(
+    (reason: string) => {
+      console.warn("Assessment violation:", reason);
+
+      addViolation();
+    },
+    [addViolation]
+  );
+
+  useAssessmentSecurity({
+    enabled: attempt.status === "in_progress",
+    detectTabSwitch: assessment.config.detectTabSwitch,
+    onViolation: handleViolation,
+  });
+
+  useEffect(() => {
+    if (attempt.status === "terminated") {
+      navigate(`/assessments/${id}/result`);
+    }
+  }, [attempt.status, id, navigate]);
 
   // Start/reset the timer whenever the current question changes.
   const { timeRemaining } = useAssessmentTimer({

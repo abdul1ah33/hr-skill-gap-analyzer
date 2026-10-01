@@ -55,10 +55,25 @@ export function useAssessmentAttempt({
   };
 
   const addViolation = () => {
-    setAttempt((previous) => ({
-      ...previous,
-      violations: previous.violations + 1,
-    }));
+    setAttempt((previous) => {
+      const newViolationCount =
+        previous.violations + 1;
+
+      const isTerminated =
+        newViolationCount >=
+        assessment.config.maxViolations;
+
+      return {
+        ...previous,
+        violations: newViolationCount,
+        status: isTerminated
+          ? "terminated"
+          : previous.status,
+        completedAt: isTerminated
+          ? new Date().toISOString()
+          : previous.completedAt,
+      };
+    });
   };
 
   const completeAttempt = () => {

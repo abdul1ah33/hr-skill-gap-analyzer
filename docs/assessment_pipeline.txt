@@ -1,0 +1,31 @@
+Employee
+   ↓
+SkillComparisonService
+   ↓
+unmatched + needs_improvement
+   ↓
+AssessmentService
+   ↓
+For EACH skill:
+   ├── select 1 Beginner
+   ├── select 2 Intermediate
+   └── select 2 Advanced
+   ↓
+Create AssessmentSession in DB
+   ↓
+Frontend receives ONLY:
+   question_id
+   question_text
+   proficiency_level
+   option_id
+   option_text
+   ↓
+Employee answers
+   ↓
+Backend receives question_id + selected_option_id
+   ↓
+Backend checks correct answer
+   ↓
+Backend calculates skill level
+   ↓
+Final assessment result
