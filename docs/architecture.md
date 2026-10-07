@@ -1,4 +1,4 @@
-﻿# System Architecture
+# System Architecture
 
 This document describes the complete technical architecture of the AI-Based HR Assisting App.
 
@@ -8,7 +8,7 @@ This document describes the complete technical architecture of the AI-Based HR A
 
 The application follows a three-tier architecture:
 
-1. **Presentation Layer** — A React/TypeScript single-page application (SPA).
+1. **Presentation Layer** — A React/TypeScript single-page application (SPA) in `my_frontend/`. The older `frontend/` app is legacy and not covered here (see [legacy-frontend.md](legacy-frontend.md)).
 2. **Application Layer** — A FastAPI Python backend exposing a REST API.
 3. **Data/Intelligence Layer** — PostgreSQL database, ESCO external API, and Google Gemini AI.
 
@@ -20,13 +20,10 @@ The frontend communicates exclusively with the backend via JSON HTTP requests. T
 
 ```
 ┌────────────────────────────────────────┐
-│        React Frontend (SPA)             │
-│  ┌─────────┐ ┌────────────┐           │
-│  │AuthCtx  │ │useEmployees│           │
-│  │(JWT)    │ │  (state)   │           │
-│  └─────────┘ └────────────┘           │
-│                employeeService.ts       │
-│                axios (Bearer token)     │
+│     my_frontend — React SPA (Vite)      │
+│  pages/  →  services/*.ts               │
+│  ThemeContext   assessment hooks        │
+│  axios (Bearer token from localStorage) │
 └────────────────────────────────────────┘
                         │ HTTP/JSON
                         ▼
@@ -60,39 +57,35 @@ The frontend communicates exclusively with the backend via JSON HTTP requests. T
 
 ## Frontend Architecture
 
-The frontend is a React 19 single-page application built with Vite.
+The frontend (`my_frontend/`) is a React 19 single-page application built with Vite, Tailwind CSS 4 and shadcn/ui. Full details: [frontend.md](frontend.md).
 
 ### Entry Point
 
-- `src/main.tsx` — Renders `<App />` into `#root`.
-- `src/App.tsx` — Wraps the entire application in `<AuthProvider>` and `<BrowserRouter>`, then defines the route tree.
+- `src/main.tsx` — Renders `<App />` inside `<ThemeProvider>`.
+- `src/App.tsx` — `<BrowserRouter>` with `/login` public and every other route wrapped in `ProtectedRoute` and `AppLayout`.
 
 ### Routing
 
-Two protected layout wrappers handle role-based routing:
-
-- **HRLayout** — Available to users with `role === "HR"`. Includes Dashboard, Employees, Departments, Roles/Positions, Skills, Assessment, Recruitment, Analytics, Settings.
-- **EmployeeLayout** — Available to users with `role === "Employee"`. Includes Profile and Assessments pages at `/employee/*`.
-- **ProtectedRoute** — Component that checks authentication and role before rendering children. Redirects to `/login` if unauthenticated or to the appropriate home if wrong role.
+- **ProtectedRoute** — Redirects to `/login` if there is no `access_token` in `localStorage`. It does not check the role or token expiry.
+- **AppLayout** — Sidebar navigation (Dashboard, Employees, Departments, Positions, Gap Analysis, Skills, Settings) and a header; pages render in its `<Outlet />`.
+- There is no separate Employee portal; the UI is built for HR users.
 
 ### State Management
 
-The application does not use Redux or Zustand. State is managed through:
+No global store. Each page fetches what it needs through the service functions on mount and keeps it in local `useState`. Shared state is limited to:
 
-- **`AuthContext`** — Global authentication state (token, decoded user, role, login/logout functions). Token is persisted to `localStorage`.
-- **`useEmployees` hook** — Central data hook loaded in `HRLayout`. Fetches and manages `employees`, `departments`, `positions`, and `skills`. Provides CRUD action functions. Passes data down as props to pages.
-- **Local component state** — Individual pages manage their own UI state (modals, form state, selected items).
+- **`ThemeContext`** — light / dark / system theme, persisted in `localStorage`.
+- **Assessment hooks** — `useAssessmentAttempt`, `useAssessmentTimer`, `useAssessmentSecurity` hold the state of a running assessment.
 
 ### API Communication
 
-- `src/api/axios.ts` — A configured `axios` instance with `baseURL: "http://localhost:8000"`.
-- **Request interceptor** — Attaches `Authorization: Bearer <token>` header from `localStorage` on every request.
-- **Response interceptor** — On 401 response, clears `localStorage` and redirects to `/login`.
+- `src/services/api.ts` — Shared `axios` instance with `baseURL: "http://localhost:8000"`.
+- **Request interceptor** — Adds `Authorization: Bearer <access_token>` on every request.
+- No response interceptor: a 401 is handled (or not) by the page that made the call.
 
 ### Services
 
-- `src/services/employeeService.ts` — All CRUD functions for employees, departments, positions, skills, employee skills, and position skills. Includes field-mapping functions that translate between camelCase frontend types and snake_case backend JSON.
-- `src/services/skillAliasService.ts` — Skill alias CRUD calls.
+One file per backend resource in `src/services/` (`employeeService`, `employeeSkillService`, `departmentService`, `positionService`, `positionSkillService`, `skillService`, `resumeService`, `gapAnalysisService`, `authService`). They send and receive the backend's snake_case JSON directly; types in `src/types/` mirror the backend schemas.
 
 ---
 
@@ -140,7 +133,7 @@ HTTP Request
 User opens /employees
      │
      ▼
-HRLayout (useEmployees hook)
+EmployeesPage (useEffect on mount)
      │
      ▼
 employeeService.getEmployees()
@@ -150,7 +143,6 @@ GET /employees  [axios, Bearer token]
      │
      ▼
 FastAPI employees router (app/api/endpoints/employees.py)
-  get_employees_route()
      │
      ▼
 crud.get_employees(db)
@@ -162,16 +154,10 @@ SQLAlchemy: SELECT * FROM employees
 EmployeeResponse (Pydantic serialization)
      │
      ▼
-JSON response
+JSON response → setEmployees(data)
      │
      ▼
-mapEmployeeToFrontend() in employeeService.ts
-     │
-     ▼
-setEmployees(empData) in useEmployees
-     │
-     ▼
-EmployeesPage renders table
+EmployeesPage renders the table (client-side search filter)
 ```
 
 ### Generate Position Skills (AI)
@@ -223,7 +209,7 @@ SkillGapService.generate_employee_gap_analysis(db, employee_id, api_key)
      │   3. Load position's PositionSkill records
      │   4. Build case-insensitive skill map from employee skills
      │   5. For each position skill:
-     │      - Exact name match (case-insensitive)
+     │      - Exact name match (case-insensitive, no alias lookup)
      │      - Compare SkillLevel rank
      │      - Categorize as: matched / needs_improvement / unmatched
      │   6. Find additional skills (employee has but not required)
@@ -233,8 +219,13 @@ SkillGapService.generate_employee_gap_analysis(db, employee_id, api_key)
      │   → Google Gemini AI (gemini-3.5-flash-lite)
      │   Returns: GapAnalysisReport {
      │     readiness_score, readiness_status, managerial_summary,
-     │     upskill_pathways, bonus_skills_analysis, core_strengths
+     │     upskill_pathways, bonus_skills_analysis, core_strengths,
+     │     reconciled_skills
      │   }
+     │
+     │ Reconciliation: skills Gemini matched semantically
+     │   (reconciled_skills) are removed from unmatched /
+     │   needs_improvement / additional_skills in skill_diff
      ▼
 Combined response returned to frontend
 ```
@@ -254,10 +245,9 @@ Combined response returned to frontend
      Return {access_token, token_type: "bearer"}
      │
      ▼
-   Frontend: AuthContext.login(token)
-     Store token in localStorage (both "token" and "access_token" keys)
-     Decode JWT payload to extract role
-     Redirect HR → /dashboard, Employee → /employee/profile
+   Frontend: LoginPage
+     Store token in localStorage under "access_token"
+     Navigate to /dashboard
 
 2. AUTHENTICATED REQUEST
    axios request interceptor reads token from localStorage
@@ -276,9 +266,8 @@ Combined response returned to frontend
 
 4. TOKEN EXPIRY
    Token contains exp claim (default: 60 minutes)
-   Frontend AuthContext checks exp on startup
-   If expired, clears localStorage before restoring session
-   axios response interceptor redirects to /login on 401
+   The frontend does not check exp or handle 401 globally;
+   requests fail until the user logs out and logs in again
 ```
 
 ---
@@ -286,43 +275,35 @@ Combined response returned to frontend
 ## Data Flow: Employee Creation
 
 ```
-HR fills EmployeeForm on frontend
+HR fills the form on AddEmployeePage
      │
      ▼
-React Hook Form validates fields (Zod schema)
+React Hook Form + zodResolver(createEmployeeSchema)
      │
      ▼
-useEmployees.addEmployee(employeeData)
+employeeService.createEmployee(data)   (snake_case payload)
      │
      ▼
-employeeService.createEmployee()
-  mapEmployeeToBackend() ← converts camelCase to snake_case
+POST /employees/ {first_name, last_name, email, position_id, ...}
      │
      ▼
-POST /employees {first_name, last_name, email, position_id, ...}
-     │
-     ▼
-FastAPI: employees.py create_employee_route()
+FastAPI: employees.py create route
   EmployeeCreate schema validation (Pydantic)
      │
      ▼
 crud.create_employee(db, employee_schema)
   Generates employee_number (EMP{id:04d})
-  db.add(employee)
-  db.commit()
-  db.refresh(employee)
+  db.add / commit / refresh
      │
      ▼
-EmployeeResponse schema serialization
-  Includes: department, position, role, employee_skills, education, certifications
+EmployeeResponse (department, position, employee_skills,
+                  education, certifications)
      │
      ▼
-JSON 201 response
-     │
-     ▼
-Frontend: mapEmployeeToFrontend()
-  setEmployees([...employees, newEmployee])
+201 JSON → navigate("/employees")
 ```
+
+**From a resume instead:** AddEmployeePage → `resumeService.extractResume(file)` → `POST /resume/extract` (multipart) → Gemini parses the resume → employee, skills, education and certifications are created → response `{ employee_id, employee_number, candidate }` → navigate to `/employees/{employee_id}`.
 
 ---
 
@@ -363,4 +344,5 @@ Frontend: mapEmployeeToFrontend()
 | **Cascading deletes** | Foreign key `ondelete="CASCADE"` on `EmployeeSkill`, `PositionSkill`, `Education`, `Certification` ensures clean removal when parent records are deleted. |
 | **Orphan skill cleanup** | When a position is deleted or its title changes, skills that are no longer referenced by any `PositionSkill` row are also deleted. |
 | **CRUD layer separation** | Database queries are in `app/crud/`, business logic is in `app/services/`, and HTTP routing is in `app/api/endpoints/`. |
-| **Dual localStorage keys** | The frontend stores the JWT under both `"token"` and `"access_token"` keys — this appears to handle compatibility between different storage conventions used across the codebase. |
+| **Semantic reconciliation by AI** | Exact-name comparison is deterministic; Gemini then lists near-identical skills under different names in `reconciled_skills`, and the service removes them from the gap lists. |
+| **Server-side assessment grading** | The planned assessment flow sends questions without answers and grades on the backend (see [assessment.md](assessment.md)). |

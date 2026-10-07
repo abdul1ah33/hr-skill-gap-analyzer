@@ -155,6 +155,30 @@ Note: Only a single `description` string is stored per record. There are no sepa
 
 ---
 
+### Assessment tables (defined, not yet used by the app)
+
+Created by the initial migration for the skill assessment feature. Their final shape is still being worked out; see [assessment.md](assessment.md).
+
+| Table | Main columns |
+|---|---|
+| `assessments` | title, description, difficulty, passing_score, duration_minutes, created_by → users.id |
+| `assessment_skills` | assessment_id, skill_id (unique pair) |
+| `assessment_questions` | assessment_id, question_text, question_type, option_a–option_d, correct_answer, points |
+| `assessment_results` | employee_id, assessment_id, score, percentage, status, started_at, completed_at, attempt_number, feedback |
+| `assessment_answers` | result_id, question_id, employee_answer, is_correct, earned_points, answered_at |
+
+Note: question-bank questions have 5–7 options and a proficiency level, which `assessment_questions` cannot hold yet.
+
+### Learning tables (defined, not yet used by the app)
+
+| Table | Main columns |
+|---|---|
+| `courses` | title, provider, url, difficulty, estimated_hours, description |
+| `course_skills` | course_id, skill_id |
+| `recommendations` | employee_id, course_id, reason, priority, status, recommended_on, completed_on |
+
+---
+
 ## SkillLevel Enum
 
 Defined in `backend/app/models/employee_skill.py`. Used in both `employee_skills` and `position_skills`:

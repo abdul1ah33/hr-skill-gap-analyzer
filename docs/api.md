@@ -5,6 +5,10 @@ This document describes the REST API endpoints provided by the backend.
 
 Base URL: `http://localhost:8000`
 
+Interactive docs (always up to date): `http://localhost:8000/docs`.
+
+Authentication uses a Bearer JWT from `POST /auth/login`. Unless stated otherwise, routers require the **HR** role. Collection routes are declared with a trailing slash (e.g. `/departments/`); `my_frontend` calls them that way.
+
 ---
 
 ## Authentication
@@ -42,6 +46,9 @@ Gets the logged-in employee's skills.
 
 > **Note:** The current backend code has `# dependencies=[Depends(get_current_hr)]` commented out for employee endpoints, meaning they are temporarily public.
 
+### `GET /employees/count`
+Returns `{ "count": <int> }`. Used by the dashboard.
+
 ### `GET /employees`
 Lists all employees.
 - **Response:** `[EmployeeResponse, ...]`
@@ -69,8 +76,7 @@ Deletes an employee.
 - **Errors:** 404 (Employee not found).
 
 ### `GET /employees/{id}/skill-gap`
-Generates an AI skill gap analysis for the employee based on their current position.
-- **Headers:** `Authorization: Bearer <token>` (Requires HR role)
+Generates an AI skill gap analysis for the employee based on their current position. Public for now, like the other `/employees` routes.
 - **Response:** 
   ```json
   {
@@ -87,16 +93,22 @@ Generates an AI skill gap analysis for the employee based on their current posit
       "readiness_status": "Ready",
       "managerial_summary": "...",
       "upskill_pathways": [...],
-      "bonus_skills_analysis": "...",
-      "core_strengths": ["..."]
+      "bonus_skills_analysis": [{ "skill": "...", "is_relevant": true, "leverage_evaluation": "..." }],
+      "core_strengths": ["..."],
+      "reconciled_skills": [
+        { "target_skill": "...", "employee_skill": "...", "match_status": "Matched", "justification": "..." }
+      ]
     }
   }
   ```
-- **Errors:** 404 (Employee/Position not found), 500 (Gemini API error).
+- Skills listed in `reconciled_skills` are removed from `skill_diff.unmatched`, `needs_improvement` and `additional_skills` before the response is returned.
+- **Errors:** 404 (Employee/Position not found), 500 (Gemini API error or missing `GEMINI_API_KEY`).
 
 ---
 
 ## Employee Skills
+
+*Requires HR role.*
 
 ### `GET /employees/{employee_id}/skills`
 Lists all skills for an employee.
@@ -119,6 +131,9 @@ Removes a skill from an employee.
 ## Positions
 
 *All endpoints require HR role.*
+
+### `GET /positions/count`
+Returns `{ "count": <int> }`.
 
 ### `GET /positions`
 Lists all positions.
@@ -151,11 +166,12 @@ Lists all required skills for a position.
 Manually adds a required skill to a position.
 - **Body:** `{ "skill_id": 1, "required_skill_level": "Intermediate", "is_essential": true, "short_description": "..." }`
 
-### `PUT /positionSkills/{position_id}/skills/{skill_id}`
-Updates a required skill.
+### `PUT /positionSkills/{position_id}/skills/{ps_id}`
+Updates a required skill. `ps_id` is the **position-skill row id**, not the skill id.
+- **Body:** any of `required_skill_level`, `is_essential`, `short_description`
 
-### `DELETE /positionSkills/{position_id}/skills/{skill_id}`
-Removes a required skill from a position.
+### `DELETE /positionSkills/{position_id}/skills/{ps_id}`
+Removes a required skill from a position (`ps_id` = position-skill row id).
 
 ### `POST /positionSkills/{position_id}/generate-skills`
 Manually triggers AI skill generation for a position.
@@ -167,6 +183,7 @@ Manually triggers AI skill generation for a position.
 
 *All endpoints require HR role.*
 
+- `GET /departments/count` → `{ "count": <int> }`
 - `GET /departments`
 - `POST /departments`
 - `GET /departments/{id}`
@@ -177,8 +194,9 @@ Manually triggers AI skill generation for a position.
 
 ## Skills & Aliases
 
-*All endpoints require HR role.*
+`/skills` routes are currently **public** (HR dependency commented out). `/skill-aliases` requires HR.
 
+- `GET /skills/count` → `{ "count": <int> }`
 - `GET /skills`
 - `POST /skills`
 - `GET /skills/{id}`
@@ -192,6 +210,12 @@ Lists all skill aliases.
 Creates a new alias.
 - **Body:** `{ "skill_id": 1, "alias": "ReactJS" }`
 
+### `GET /skill-aliases/{id}`
+Gets one alias.
+
+### `GET /skill-aliases/skill/{skill_id}`
+Lists the aliases of a skill.
+
 ### `DELETE /skill-aliases/{id}`
 Deletes an alias.
 
@@ -204,5 +228,20 @@ Uploads a resume and automatically creates an employee record.
 - **Headers:** `Authorization: Bearer <token>` (Requires HR role)
 - **Content-Type:** `multipart/form-data`
 - **Body:** `file` (PDF or DOCX)
-- **Response:** `EmployeeResponse` (with newly created employee)
+- **Response:**
+  ```json
+  { "message": "Employee created successfully", "employee_id": 12, "employee_number": "EMP0012", "candidate": { ... } }
+  ```
+  `candidate` is the profile Gemini extracted.
 - **Errors:** 400 (Invalid file type), 500 (Parsing error).
+
+---
+
+## Assessment
+
+### `POST /assessment/employee/{employee_id}/assess` (legacy)
+- **Query:** `position_id` (optional)
+- Returns `matched`, `missing`, `needs_improvement`, `match_percentage`, `ai_report`, `employee_data`.
+- Imports `backend.app.services.old.assessment_service` and predates the current gap analysis and test-based assessment design. It will be replaced. See [assessment.md](assessment.md).
+
+The new assessment endpoints (start session, get questions, submit answers, get result) are not built yet.

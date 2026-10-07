@@ -41,7 +41,7 @@ Before AI analyzes a skill gap, the system performs a deterministic comparison t
 
 1. **Trigger:** `GET /employees/{id}/skill-gap` (Phase C).
 2. **Data Loading:** Loads employee skills and position required skills.
-3. **Alias Resolution (Implicit):** Because skills are normalized at creation time, the database `Skill` names should already align. 
+3. **No alias lookup:** The comparison does not consult the `skill_aliases` table. It relies on Gemini normalizing skill names when position skills and resumes are processed, plus the AI reconciliation step in section 3.
 4. **Comparison Rules:**
    - Skills are matched by **exact string match** (case-insensitive).
    - Proficiency levels are mapped to integers: `Beginner (1)`, `Intermediate (2)`, `Advanced (3)`, `Expert (4)`.
@@ -70,8 +70,10 @@ Once the deterministic comparison is complete, Gemini generates a human-readable
      - Determine `readiness_status` ("Ready", "Needs Upskilling", "Not a Fit").
      - Generate tactical `upskill_pathways` with timelines and resources.
      - Provide a `managerial_summary`.
+     - Reconcile semantic matches: if a required skill the employee "lacks" is really one they have under a different name (near-direct matches only), record it in `reconciled_skills` with a justification.
    - **Output:** A strict JSON schema (`GapAnalysisReport`).
-4. **Delivery:** The structured report is returned to the frontend and rendered in the `AIAssessmentPage`.
+4. **Post-processing (`gap_analysis_service.py`):** Skills in `reconciled_skills` are removed from `unmatched`, `needs_improvement` and `additional_skills` in `skill_diff`, and from `bonus_skills_analysis`.
+5. **Delivery:** The combined `{ employee_id, job_title, skill_diff, gap_analysis }` is returned and rendered by `GapAnalysisResultPage` in `my_frontend`.
 
 ---
 
@@ -94,3 +96,9 @@ When HR uploads a candidate's resume, AI extracts the data to automatically crea
 4. **Database Storage:**
    - The backend creates the `Employee` record, `Education`, `Certification`, and `EmployeeSkill` records.
    - If a new position title is detected, it creates the `Position` and triggers the Position Skill Generation background task.
+
+---
+
+## 5. Skill Assessments (in progress)
+
+The unmatched and needs-improvement skills from the comparison feed the assessment feature: employees take timed multiple-choice tests drawn from a pre-generated question bank (`backend/app/data/question_bank/output_question_bank.jsonl`), and the backend grades them to derive a verified proficiency level. No AI call happens at test time. See [assessment.md](assessment.md).

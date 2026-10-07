@@ -1,75 +1,61 @@
-# React + TypeScript + Vite
+# my_frontend — HR Skill Gap Analyzer UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The main frontend of the HR Skill Gap Analyzer: a React 19 + TypeScript + Vite single-page app for HR managers. It talks to the FastAPI backend in `../backend`.
 
-Currently, two official plugins are available:
+Full documentation: [../docs/frontend.md](../docs/frontend.md). Project overview: [../README.md](../README.md).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Getting started
 
-## React Compiler
+Requires Node.js 20+ and the backend running at `http://localhost:8000`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Script | Purpose |
+|---|---|
+| `npm run dev` | Dev server with HMR |
+| `npm run build` | Type-check and production build to `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run lint` | ESLint |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The backend URL is hard-coded in `src/services/api.ts`. Log in with an HR account (see [../docs/setup.md](../docs/setup.md) for creating the first one).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Stack
 
+React 19, TypeScript 6, Vite 8, React Router 7, Tailwind CSS 4, shadcn/ui (Base UI), Axios, React Hook Form + Zod, Lucide icons.
+
+## Structure
+
+```
+src/
+├── pages/            # One component per route (App.tsx defines the routes)
+├── layouts/          # AppLayout: sidebar + header
+├── components/       # ProtectedRoute, FormField, ui/ (shadcn)
+├── services/         # Axios API wrappers per backend resource
+├── hooks/assessment/ # Assessment attempt, timer and tab-switch hooks
+├── types/            # Types mirroring backend schemas (snake_case)
+├── schemas/          # Zod form schemas
+├── contexts/         # ThemeContext (light / dark / system)
+├── data/             # Mock assessment data
+└── lib/utils.ts      # cn() class helper
+```
+
+## Features
+
+- Dashboard with live employee, department and position counts
+- Employees: list, create manually or from a PDF/DOCX resume (AI), view, edit, delete, manage skills
+- Departments and positions management
+- Position required skills: view, edit, add, delete, regenerate with AI (ESCO + Gemini)
+- Skill gap analysis: skill diff and AI report per employee
+- Skill assessment flow (instructions → timed questions → result), currently on mock data. See [../docs/assessment.md](../docs/assessment.md)
+- Light/dark/system theme
+
+## Adding shadcn components
+
+`components.json` is configured (style `base-nova`, aliases under `src/`):
+
+```bash
+npx shadcn@latest add <component>
 ```

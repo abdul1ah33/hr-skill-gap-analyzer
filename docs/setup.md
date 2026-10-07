@@ -200,18 +200,20 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 ## 6. Frontend Setup
 
+The main frontend is `my_frontend/`. (The `frontend/` folder is a legacy app kept for reference; don't use it.)
+
 ```bash
-cd frontend
+cd my_frontend
 npm install
 ```
 
-The frontend has no `.env` file requirement. The backend URL is hardcoded in `src/api/axios.ts` as `http://localhost:8000`. If you need to change it, edit that file.
+The frontend has no `.env` file requirement. The backend URL is hard-coded in `src/services/api.ts` as `http://localhost:8000`. If you need to change it, edit that file.
 
 ```bash
 npm run dev
 ```
 
-The frontend will start at `http://localhost:5173`.
+The frontend will start at `http://localhost:5173`. Log in with the HR user you created in step 4.
 
 ---
 
@@ -228,7 +230,7 @@ uvicorn app.main:app --reload --port 8000
 
 **Terminal 2 (frontend):**
 ```bash
-cd frontend
+cd my_frontend
 npm run dev
 ```
 
@@ -278,9 +280,9 @@ The `GEMINI_API_KEY` is missing from `.env`. Add a valid key.
 
 The backend calls `https://ec.europa.eu/esco/api`. If you are behind a firewall or the ESCO API is temporarily unavailable, position skill generation will fail. Manually add position skills via `POST /positionSkills/{id}/skills` as a workaround.
 
-### Frontend shows mock data instead of real data
+### Frontend pages are empty or show errors
 
-The `useEmployees` hook falls back to localStorage mock data if the backend API calls fail. Check that the backend is running on port 8000 and the browser console for network errors.
+`my_frontend` has no mock-data fallback (except the assessment pages, which use mock data by design). Check that the backend is running on port 8000 and look at the browser console's network tab. A 401 usually means the stored token expired: log out and log in again, since the app does not redirect on 401 automatically.
 
 ### Alembic `Target database is not up to date`
 

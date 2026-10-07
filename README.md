@@ -1,273 +1,174 @@
 # AI-Based HR Assisting App — HR Skill Gap Analyzer
 
-An AI-powered Human Resources management system that automates skill gap analysis between employees and their positions. The application combines the ESCO European Skills taxonomy with Google Gemini AI to automatically generate required skill profiles for any job title, then compares those requirements against each employee's actual skills to produce actionable gap analysis reports.
+An AI-powered HR system that works out what skills a position needs, compares them against what each employee actually has, and tells HR how to close the gap. It combines the **ESCO** European skills taxonomy with **Google Gemini** to generate position skill profiles, runs a deterministic skill comparison, produces AI gap-analysis reports, and (in progress) verifies employee skill levels through timed, proctored skill assessments.
 
 ---
 
 ## Project Overview
 
-HR teams traditionally spend significant manual effort determining what skills a position requires and assessing whether employees are qualified. This application solves that problem by:
+HR teams spend a lot of manual effort deciding what a role requires and whether employees meet it. This app automates that:
 
-1. **Automatically generating position skill requirements** from ESCO (European Skills, Competences, Qualifications and Occupations) combined with Gemini AI filtering.
-2. **Managing employee skill profiles** — HR can record what skills an employee has and at what proficiency level.
-3. **Running deterministic skill-gap comparisons** — comparing employee skills against position requirements to produce matched, unmatched, needs-improvement, and additional-skills categories.
-4. **Generating AI-powered gap analysis reports** — Gemini AI produces readiness scores, upskill pathways, tactical steps, resource recommendations, and managerial summaries.
-5. **Importing employees from resumes** — PDF/DOCX resumes are parsed by Gemini AI to extract candidate profiles and create employee records automatically.
+1. **Generate position requirements** — When HR creates a position, ESCO supplies the occupation's raw skills and Gemini filters them into a "perfect employee profile" (skill + required level + essential/optional).
+2. **Capture employee skills** — HR enters skills manually, or uploads a PDF/DOCX resume that Gemini parses into a full employee record (skills, education, certifications).
+3. **Compare** — A deterministic service compares employee skills to position requirements and sorts them into *matched*, *needs improvement*, *unmatched* and *additional*.
+4. **Report** — Gemini turns the comparison into a readiness score, upskill pathways, timelines, resources, a managerial summary, and reconciles skills that match semantically under different names.
+5. **Verify (in progress)** — Employees take a timed multiple-choice assessment on their weak skills; the backend grades it and derives their real proficiency level.
 
-**Primary users:** HR managers and HR analysts who manage employee data and want data-driven insights into workforce skill coverage.
+**Primary users:** HR managers and analysts. An Employee role exists in the backend for self-service, but the current frontend is HR-only.
 
 ---
 
-## Main Features
+## Repository Layout
 
-- **Employee management** — Create, read, update, delete employee records with full profile information.
-- **Department management** — Organize positions and employees into departments.
-- **Position management** — Define job titles with department, level, and salary grade.
-- **Automatic position skill generation** — On position creation, ESCO + Gemini AI automatically generate required skills (runs as a background task).
-- **Employee skill management** — Assign skills and proficiency levels (Beginner / Intermediate / Advanced / Expert) to employees.
-- **Skill alias system** — Map alternate skill names to canonical skills for improved matching accuracy.
-- **Skill gap analysis (deterministic)** — Compare employee skills vs. position requirements across four categories.
-- **AI gap analysis report** — Gemini AI generates a structured report with readiness score, upskill pathways, timelines, resources, and manager summary.
-- **Resume import** — Upload PDF or DOCX resumes; Gemini AI extracts and creates the employee record with skills, education, and certifications.
-- **Assessment system** — Skill assessment infrastructure with questions, answers, and results.
-- **Role-based access** — HR role has full management access; Employee role has a self-service profile and assessments portal.
-- **JWT authentication** — Signup (for existing employees) and login with Bearer token.
+| Folder | Status | What it is |
+|---|---|---|
+| `backend/` | **Active** | FastAPI + SQLAlchemy + PostgreSQL REST API, ESCO and Gemini integrations |
+| `my_frontend/` | **Active — main frontend** | React 19 + TypeScript + Vite + Tailwind v4 + shadcn/ui |
+| `frontend/` | Legacy — kept for reference, not maintained | The original React frontend. See [docs/legacy-frontend.md](docs/legacy-frontend.md) |
+| `ai/` | Experimental | Standalone Ollama-based agents, not wired into the backend |
+| `docs/` | — | Project documentation and design notes |
+
+```
+hr-skill-gap-analyzer/
+├── README.md
+├── backend/
+│   ├── requirements.txt
+│   ├── alembic/                     # Database migrations
+│   └── app/
+│       ├── main.py                  # FastAPI entry point, router registration
+│       ├── auth/                    # Signup/login, JWT, role dependencies
+│       ├── core/                    # Config, security, exceptions, paths
+│       ├── db/                      # Engine and session
+│       ├── models/                  # SQLAlchemy models
+│       ├── schemas/                 # Pydantic schemas (incl. assessment + question bank)
+│       ├── crud/                    # Database access helpers
+│       ├── api/endpoints/           # Route handlers
+│       ├── services/                # Business logic (ESCO, comparison, gap analysis, resume)
+│       ├── ai/                      # Gemini modules (perfect profile, gap report, resume parser)
+│       ├── data/question_bank/      # Assessment question bank (JSONL)
+│       └── scripts/                 # Seed scripts
+├── my_frontend/                     # Main frontend (see my_frontend/README.md)
+│   └── src/
+│       ├── pages/                   # Route pages
+│       ├── layouts/                 # AppLayout (sidebar + header)
+│       ├── components/              # ProtectedRoute, FormField, shadcn ui/*
+│       ├── services/                # Axios API wrappers, one per resource
+│       ├── hooks/assessment/        # Attempt, timer and security hooks
+│       ├── types/                   # TypeScript types matching backend schemas
+│       ├── schemas/                 # Zod form schemas
+│       ├── contexts/                # ThemeContext (light/dark/system)
+│       └── data/                    # Mock assessment data
+├── frontend/                        # Legacy frontend (unused)
+├── ai/                              # Experimental Ollama agents
+└── docs/
+```
 
 ---
 
 ## Technology Stack
 
-### Frontend
+### Frontend (`my_frontend/`)
 
-| Technology | Version | Purpose |
-|---|---|---|
-| React | 19 | UI framework |
-| TypeScript | 6 | Type safety |
-| Vite | 8 | Build tool and dev server |
-| React Router DOM | 7 | Client-side routing |
-| Axios | 1.x | HTTP client |
-| Tailwind CSS | 4 | Utility-first styling |
-| React Hook Form | 7 | Form handling |
-| Zod | 3 | Schema validation |
-| Framer Motion | 12 | Animations |
-| Recharts | 3 | Data visualization |
-| Lucide React | 1.x | Icons |
-| TanStack React Query | 5 | Data fetching |
+| Technology | Purpose |
+|---|---|
+| React 19 + TypeScript 6 | UI |
+| Vite 8 | Dev server and build |
+| React Router 7 | Routing |
+| Tailwind CSS 4 + shadcn/ui (Base UI) | Styling and UI primitives |
+| Axios | HTTP client |
+| React Hook Form + Zod 4 | Forms and validation |
+| Lucide React | Icons |
+| ESLint | Linting |
 
 ### Backend
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Python | 3.x | Runtime |
-| FastAPI | — | Web framework |
-| SQLAlchemy | 2.0 | ORM |
-| Pydantic | 2.x | Schema validation |
-| python-jose | — | JWT handling |
-| passlib (bcrypt) | — | Password hashing |
-| python-dotenv | — | Environment variables |
-| Alembic | — | Database migrations |
-| requests | 2.x | HTTP client for ESCO API |
-| uvicorn | — | ASGI server |
-
-### Database
-
 | Technology | Purpose |
 |---|---|
-| PostgreSQL | Primary relational database |
-| SQLAlchemy | ORM layer |
-| Alembic | Migration management |
+| Python 3.10+ / FastAPI / Uvicorn | API server |
+| SQLAlchemy 2.0 + Alembic | ORM and migrations |
+| PostgreSQL | Database |
+| Pydantic 2 | Validation |
+| python-jose + passlib (bcrypt) | JWT auth and password hashing |
+| google-genai | Gemini client |
+| PyMuPDF / PyPDF2 | Resume text extraction |
 
-### AI / Skill Analysis
+### AI / External Services
 
-| Technology | Purpose |
+| Service | Purpose |
 |---|---|
-| Google Gemini AI (`gemini-3.5-flash-lite`) | Perfect profile generation, gap report generation, resume parsing |
-| ESCO API (`https://ec.europa.eu/esco/api`) | European occupational skill taxonomy |
-
-### Development Tools
-
-- **Vite** — Frontend dev server and bundler
-- **npm** — Frontend package manager
-- **pip / venv** — Python dependency management
-- **Alembic** — Database migration tool
-- **Git** — Version control
-- **oxlint** — Frontend linter
+| Google Gemini (`gemini-3.5-flash-lite`) | Perfect profile generation, gap reports, resume parsing |
+| ESCO API (`https://ec.europa.eu/esco/api`) | Occupation search and skill taxonomy |
 
 ---
 
 ## High-Level Architecture
 
 ```
-User (HR Manager / Employee)
-         │
-         ▼
-  React Frontend (Vite, TypeScript)
-  ├── AuthContext (JWT stored in localStorage)
-  ├── useEmployees hook (global state)
-  ├── employeeService.ts (HTTP calls via axios)
-  └── Pages / Components
-         │
-         │ HTTP/JSON (Bearer token)
-         ▼
-  FastAPI Backend (Python)
-  ├── /auth        Authentication (signup, login)
-  ├── /me          Authenticated employee self-service
-  ├── /employees   Employee CRUD + skill-gap analysis
-  ├── /departments Department CRUD
-  ├── /positions   Position CRUD + background skill generation
-  ├── /skills      Skill CRUD
-  ├── /skill-aliases Skill alias CRUD
-  ├── /employees/{id}/skills Employee skill CRUD
-  ├── /positionSkills Position skill CRUD + AI generation
-  ├── /resume      Resume upload + AI extraction
-  └── /assessment  Assessment management
-         │
-         ├── SQLAlchemy ORM ──► PostgreSQL Database
-         │
-         ├── ESCO API (https://ec.europa.eu/esco/api)
-         │      (occupation search + skill extraction)
-         │
-         └── Google Gemini AI
-                (perfect_profile, gap_analysis_ai, resume_parser)
+HR user
+   │
+   ▼
+my_frontend (React, Vite)  ── JWT in localStorage ("access_token")
+   │  services/*.ts → axios (Bearer token)
+   ▼
+FastAPI backend
+   ├── /auth              signup, login
+   ├── /me                employee self-service
+   ├── /employees         CRUD, counts, /{id}/skill-gap
+   ├── /employees/{id}/skills
+   ├── /departments       CRUD, counts
+   ├── /positions         CRUD, counts, background skill generation
+   ├── /positionSkills    position skill CRUD + AI generation
+   ├── /skills            CRUD
+   ├── /skill-aliases     CRUD
+   ├── /resume            resume upload → employee
+   └── /assessment        legacy endpoint (being replaced)
+   │
+   ├── PostgreSQL (SQLAlchemy)
+   ├── ESCO API
+   └── Google Gemini
 ```
 
----
-
-## Project Structure
-
-```
-hr-skill-gap-analyzer/
-├── README.md
-├── docs/                        # Project documentation
-│   ├── architecture.md
-│   ├── setup.md
-│   ├── backend.md
-│   ├── frontend.md
-│   ├── database.md
-│   ├── api.md
-│   ├── ai-analysis.md
-│   └── development.md
-├── backend/                     # FastAPI Python backend
-│   ├── .env                     # Environment variables (not in version control)
-│   ├── requirements.txt         # Python dependencies
-│   ├── alembic.ini              # Alembic migration config
-│   ├── alembic/                 # Database migrations
-│   │   └── versions/            # Migration files
-│   └── app/
-│       ├── main.py              # FastAPI application entry point
-│       ├── dependencies.py      # DB session injection
-│       ├── auth/                # Authentication (router, service, crud, schemas)
-│       ├── core/                # Config, security, exceptions
-│       ├── db/                  # Database engine and session
-│       ├── models/              # SQLAlchemy ORM models
-│       ├── schemas/             # Pydantic request/response schemas
-│       ├── crud/                # Database CRUD helpers
-│       ├── api/endpoints/       # FastAPI route handlers
-│       ├── services/            # Business logic services
-│       ├── ai/                  # Gemini AI modules
-│       └── scripts/             # Utility scripts (seed data)
-├── frontend/                    # React TypeScript frontend
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       ├── main.tsx             # Application entry point
-│       ├── App.tsx              # Router and layout wrapper
-│       ├── api/axios.ts         # Configured axios instance
-│       ├── context/             # React contexts (Auth, Theme)
-│       ├── hooks/               # Custom hooks (useEmployees)
-│       ├── pages/               # Page components
-│       ├── components/          # Reusable UI components
-│       ├── services/            # API service functions
-│       ├── types/               # TypeScript type definitions
-│       └── utils/               # Utility functions
-├── ai/                          # Experimental AI agents (standalone)
-│   ├── main.py
-│   ├── agents/                  # Ollama-based experimental agents
-│   └── services/                # ESCO service (standalone copy)
-└── docs/                        # Design documents and diagrams
-    ├── skill_alias_system.md
-    ├── Datatbase design.png
-    └── *.txt                    # Design flow documents
-```
+Details: [docs/architecture.md](docs/architecture.md).
 
 ---
 
 ## Quick Start
 
-### Prerequisites
-
-- Python 3.10+
-- Node.js 20+
-- npm 10+
-- PostgreSQL 14+
-- Git
-
-### 1. Clone the repository
+Prerequisites: Python 3.10+, Node.js 20+, npm 10+, PostgreSQL 14+.
 
 ```bash
-git clone <repository-url>
-cd hr-skill-gap-analyzer
-```
-
-### 2. Backend Setup
-
-```bash
+# 1. Backend
 cd backend
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-# Linux/macOS
-source .venv/bin/activate
-
-pip install fastapi uvicorn sqlalchemy psycopg alembic python-jose passlib python-dotenv pydantic[email] requests google-genai python-multipart pypdf2 pymupdf
+.venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-### 3. Configure environment variables
-
-Create `backend/.env`:
+Create `backend/.env` (it is git-ignored):
 
 ```env
 DATABASE_URL=postgresql+psycopg://postgres:<password>@localhost:5432/ai_hr_assistant
-SECRET_KEY=<your-secret-key>
+SECRET_KEY=<long-random-string>
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 GEMINI_API_KEY=<your-gemini-api-key>
 ```
 
-### 4. Database Setup
-
 ```bash
-# Create the PostgreSQL database
 createdb ai_hr_assistant
-
-# Run migrations from inside backend/
 alembic upgrade head
-```
+uvicorn app.main:app --reload --port 8000
 
-### 5. Run the backend
-
-```bash
-# From inside backend/
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### 6. Frontend Setup
-
-```bash
-cd ../frontend
+# 2. Frontend (new terminal)
+cd my_frontend
 npm install
 npm run dev
 ```
 
-The frontend runs at `http://localhost:5173` and the backend at `http://localhost:8000`.
-
-### 7. Verify
-
-- Backend health check: `GET http://localhost:8000/` → `{"message": "Welcome to the AI HR Assistant API"}`
-- Swagger UI: `http://localhost:8000/docs`
 - Frontend: `http://localhost:5173`
+- API: `http://localhost:8000` — Swagger UI at `/docs`
+
+You also need to seed the `HR` and `Employee` roles and create a first HR user before you can log in. See [docs/setup.md](docs/setup.md).
 
 ---
 
@@ -275,14 +176,19 @@ The frontend runs at `http://localhost:5173` and the backend at `http://localhos
 
 | Document | Description |
 |---|---|
-| [architecture.md](docs/architecture.md) | Full system architecture, diagrams, and request flows |
-| [setup.md](docs/setup.md) | Complete installation and configuration guide |
-| [backend.md](docs/backend.md) | Backend code structure, routers, services, and models |
-| [frontend.md](docs/frontend.md) | Frontend pages, components, services, and routing |
-| [database.md](docs/database.md) | Database schema, ER diagram, and table documentation |
-| [api.md](docs/api.md) | Complete API endpoint reference |
-| [ai-analysis.md](docs/ai-analysis.md) | ESCO/Gemini AI integration and skill gap analysis pipeline |
-| [development.md](docs/development.md) | Developer workflow, conventions, and extension guide |
+| [setup.md](docs/setup.md) | Full installation, seeding the first HR user, troubleshooting |
+| [architecture.md](docs/architecture.md) | System architecture and request flows |
+| [backend.md](docs/backend.md) | Backend structure, routers, services, models |
+| [frontend.md](docs/frontend.md) | `my_frontend` pages, routing, services, hooks |
+| [assessment.md](docs/assessment.md) | Skill assessment feature: design, question bank, status |
+| [api.md](docs/api.md) | API endpoint reference |
+| [database.md](docs/database.md) | Database schema |
+| [ai-analysis.md](docs/ai-analysis.md) | ESCO + Gemini pipelines |
+| [skill_alias_system.md](docs/skill_alias_system.md) | Skill alias system |
+| [development.md](docs/development.md) | Conventions, workflow, known tech debt |
+| [legacy-frontend.md](docs/legacy-frontend.md) | The old `frontend/` app (reference only) |
+
+Design notes (plain text / images) in `docs/`: `assessment_pipeline.txt`, `phase B.txt`, `frontend flow.txt`, `Creating Employee Flow.txt`, `employee Login flow.txt`, `Routes hierarchy.txt`, `Datatbase design.png/.pdf`.
 
 ---
 
@@ -290,38 +196,26 @@ The frontend runs at `http://localhost:5173` and the backend at `http://localhos
 
 | Feature | Status |
 |---|---|
-| Employee CRUD | ✅ Complete |
-| Department CRUD | ✅ Complete |
-| Position CRUD | ✅ Complete |
-| Skill CRUD | ✅ Complete |
-| Skill alias system | ✅ Complete |
+| Employee, department, position CRUD | ✅ Complete |
 | Employee skill management | ✅ Complete |
-| JWT authentication (HR/Employee roles) | ✅ Complete |
-| ESCO occupation search + skill extraction | ✅ Complete |
-| Gemini perfect profile generation | ✅ Complete |
-| Automatic position skill generation (background task) | ✅ Complete |
-| Deterministic skill gap comparison | ✅ Complete |
-| Gemini AI gap analysis report | ✅ Complete |
-| Resume import (PDF/DOCX) | ✅ Complete |
-| Assessment system (models + endpoints) | ✅ Partial — infrastructure exists, old service referenced |
-| Frontend AI Assessment Page | ✅ UI exists, calls assessment endpoint |
-| Analytics Page | ⚠️ Placeholder page (no live data) |
-| Recruitment Page | ⚠️ Placeholder page (no live data) |
-| Settings Page | ⚠️ Placeholder page |
+| Position skill management + AI generation (ESCO + Gemini) | ✅ Complete |
+| Resume import (PDF/DOCX → employee) | ✅ Complete |
+| Deterministic skill comparison | ✅ Complete |
+| Gemini gap-analysis report (incl. reconciled skills) | ✅ Complete |
+| JWT authentication | ✅ Complete |
+| Dashboard (live counts) and theme settings | ✅ Complete |
+| Assessment UI (instructions, timed questions, tab-switch detection, result) | 🟡 Built on mock data |
+| Assessment backend (question bank, sessions, grading, level calculation) | 🟡 In progress — question bank and response schemas exist |
+| Skills management page | ⚠️ Placeholder |
+| Employee self-service portal in `my_frontend` | ❌ Not started (backend `/me` exists) |
+| Skill aliases used during comparison | ❌ Not wired in — aliases are stored but the comparison uses exact names; Gemini's `reconciled_skills` covers semantic matches |
 
 ---
 
 ## Important Notes
 
-- **GEMINI_API_KEY is required** for position skill generation, gap analysis, and resume import. These features will return 500 errors without a valid key.
-- **ESCO API is a live external dependency.** If the European Commission's API is unavailable, position skill generation will fail.
-- **The `.env` file contains secrets.** Never commit it to version control. The `backend/.env` is currently tracked in the repository — this should be corrected by adding it to `.gitignore`.
-- **Skill matching is case-insensitive exact-name matching** (after alias resolution). Skills must be spelled identically (after normalization) to match.
-- The `assessment.py` endpoint references an older service (`backend.app.services.old.assessment_service`) which may cause import issues.
-- The `my_frontend/` directory exists in the repository root but is not documented here as it appears to be an older or experimental frontend.
-
----
-
-## Contributors
-
-Contributor information is not documented in the repository.
+- **`GEMINI_API_KEY` is required** for position skill generation, gap analysis and resume import; those endpoints return 500 without it.
+- **ESCO is a live external dependency.** If it is unreachable, automatic position skill generation fails (you can still add position skills manually).
+- **Some routes are not protected:** `/employees` and `/skills` have their HR dependency commented out. Re-enable before deploying.
+- **`/assessment` imports `backend.app.services.old.assessment_service`.** It only works because `app/core/paths.py` adds the project root to `sys.path`; it will be replaced by the new assessment service.
+- **CORS allows all origins** (`["*"]`). Restrict it before deploying.

@@ -1,4 +1,4 @@
-﻿# Backend Documentation
+# Backend Documentation
 
 This document covers the complete backend implementation of the AI-Based HR Assisting App.
 
@@ -64,7 +64,12 @@ backend/
     │   ├── skill.py
     │   ├── skill_alias.py
     │   ├── employee_skill.py
-    │   └── position_skill.py
+    │   ├── position_skill.py
+    │   ├── assessment.py        # Assessment question/option responses (no answers)
+    │   └── questions.py         # Question bank format (SkillQuestionBank)
+    ├── data/
+    │   └── question_bank/
+    │       └── output_question_bank.jsonl  # 83 skills × 30 questions (see assessment.md)
     ├── crud/                    # Database CRUD operations
     │   ├── employee.py
     │   ├── department.py
@@ -85,14 +90,16 @@ backend/
     │       ├── position_skill.py
     │       ├── me.py
     │       ├── resume.py
-    │       └── assessment.py
+    │       ├── assessment.py    # Legacy assessment endpoint
+    │       └── old_Ollama/      # Old Ollama-based position skill router (unused)
     ├── services/                # Business logic
     │   ├── esco_skills_extractor.py
     │   ├── position_skill_service.py
     │   ├── skill_comparison_service.py
     │   ├── gap_analysis_service.py
     │   ├── resume_service.py
-    │   └── pdf_extractor.py
+    │   ├── pdf_extractor.py
+    │   └── old/                 # Superseded services (still imported by assessment.py)
     ├── ai/                      # Gemini AI modules
     │   ├── perfect_profile.py
     │   ├── gap_analysis_ai.py
@@ -535,7 +542,9 @@ EmployeeSkillResponse serialized
 
 ## Important Notes
 
-- The `assessment.py` endpoint currently imports from `backend.app.services.old.assessment_service`, which uses an older service path. This may cause import errors.
+- `assessment.py` imports `backend.app.services.old.assessment_service` and `resume.py` imports `backend.app.auth.dependencies`. These `backend.`-prefixed imports only work because `app/core/paths.py` adds the project root to `sys.path` (it also prints that path on startup). Prefer `app.` imports.
+- The `/employees` and `/skills` routers have their `get_current_hr` dependency commented out, so they are currently public.
+- The assessment feature (question bank → sessions → grading) is being built; see [assessment.md](assessment.md).
 - The `requirements.txt` is a complete lock file from a conda/venv environment that includes many scientific/ML packages (pandas, scikit-learn, h2o, etc.) that are not directly used by the web application. A slimmer install is possible for pure backend use.
 - `echo=True` is set on the SQLAlchemy engine in `database.py`, which logs all SQL queries to stdout. Disable in production.
 - CORS is currently configured as `allow_origins=["*"]` which allows any origin. Restrict to the frontend URL in production.
