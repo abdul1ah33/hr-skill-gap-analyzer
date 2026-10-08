@@ -205,11 +205,11 @@ class Factory:
                     is_active=is_active,
                     options=[
                         SkillQuestionOption(
-                            text=f"{option_type.value} {n}",
+                            text=f"option {k} of question {n}",
                             option_type=option_type,
                             explanation="Test option.",
                         )
-                        for option_type in QuestionOptionType
+                        for k, option_type in enumerate(QuestionOptionType, start=1)
                     ],
                 ))
         self.db.add_all(questions)
