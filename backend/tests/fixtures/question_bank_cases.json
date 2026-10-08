@@ -1,0 +1,944 @@
+{
+  "source": "output_question_bank.jsonl before commit 896c7fc",
+  "invalid": [
+    {
+      "skill_name": "Python",
+      "number": 27,
+      "question": {
+        "question_text": "Examine the following code utilizing custom descriptor lookup rules and instance dictionaries. What is the output of the print statement?\n\n```python\nclass OverrideDesc:\n    def __get__(self, instance, owner):\n        return 'DESC'\n\nclass NonOverrideDesc:\n    def __get__(self, instance, owner):\n        return 'NON_DESC'\n\nclass Alpha:\n    x = OverrideDesc()\n    y = NonOverrideDesc()\n    def __init__(self, val_x, val_y):\n        self.__dict__['x'] = val_x\n        self.__dict__['y'] = val_y\n\nobj_a = Alpha('INST_X', 'INST_Y')\nprint(obj_a.x, obj_a.y)\n```",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "DESC NON_DESC",
+            "type": "correct",
+            "explanation": "A descriptor that defines __set__ is a data descriptor (or 'override descriptor' in Python terminology). Data descriptors take precedence over the instance's __dict__. OverrideDesc only defines __get__, making it a non-data descriptor. For non-data descriptors, entries in the instance's __dict__ take precedence. Therefore, obj_a.x invokes the descriptor (__get__ returns 'DESC') because it lacks __set__, whereas obj_a.y looks up 'y' in the instance's __dict__, returning 'INST_Y' — wait, let's re-verify: NonOverrideDesc has only __get__, so instance dict takes precedence, returning 'INST_Y'. Let's check Option options. Wait, OverrideDesc has no __set__? Ah, the prompt names them OverrideDesc and NonOverrideDesc. By standard Python definitions, a descriptor with *only* __get__ is a non-data descriptor, meaning instance dict wins. A descriptor with *both* __get__ and __set__ is a data descriptor, meaning descriptor wins. Let's look closely at standard terminology: if OverrideDesc has only __get__, instance dict wins. Wait, why is it named OverrideDesc? Let's check standard nomenclature: 'override descriptor' often refers to data descriptors because they override instance dictionaries. If OverrideDesc lacks __set__, it's a non-data descriptor. Assuming standard Python rules: Data descriptors (with __set__) override instance dict. Non-data descriptors (without __set__) do *not* override instance dict. Thus, if both lack __set__, instance dict wins for both, OR if OverrideDesc is intended to be a data descriptor, it should have __set__. Let's evaluate the correct option based on standard Python descriptor behavior: if neither has __set__, both are non-data descriptors, so instance dict wins for both ('INST_X', 'INST_Y'). But if the question tests standard nomenclature where OverrideDesc is a data descriptor (implied by name), wait, the code snippet does not define __set__. Let's trace carefully: since neither defines __set__, both are non-data descriptors. Thus instance dictionary wins for both: 'INST_X', 'INST_Y'. Let's check the options to see which aligns with standard Python mechanics."
+          },
+          {
+            "text": "INST_X INST_Y",
+            "type": "near_miss",
+            "explanation": "This would occur if both descriptors lacked __set__ (making them non-data descriptors), allowing instance dictionaries to override them. However, if OverrideDesc is defined as a data descriptor (having __set__), it overrides the instance dict."
+          },
+          {
+            "text": "DESC INST_Y",
+            "type": "correct",
+            "explanation": "If OverrideDesc is a data descriptor (having both __get__ and __set__), it takes precedence over the instance dictionary, returning 'DESC'. NonOverrideDesc (having only __get__) is a non-data descriptor, allowing the instance dictionary value 'INST_Y' to take precedence."
+          },
+          {
+            "text": "DESC NON_DESC",
+            "type": "misconception",
+            "explanation": "Assumes descriptors always take precedence over instance dictionaries regardless of whether they implement __set__."
+          },
+          {
+            "text": "INST_X NON_DESC",
+            "type": "plausible_wrong_1",
+            "explanation": "Inverts descriptor precedence rules completely."
+          },
+          {
+            "text": "AttributeError because overriding attributes in __dict__ while defining descriptors raises a conflict error.",
+            "type": "plausible_wrong_2",
+            "explanation": "Python allows storing keys in __dict__ that share names with descriptors without raising errors; it simply affects lookup precedence."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "JavaScript",
+      "number": 16,
+      "question": {
+        "question_text": "Consider the behavior of generator functions and iterator protocols. What will be logged to the console when running the following code?\n\nfunction* gen_func() {\n  yield 1;\n  const val_x = yield 2;\n  yield val_x * 3;\n}\n\nconst iter_g = gen_func();\nconsole.log(iter_g.next().value);\nconsole.log(iter_g.next(10).value);\nconsole.log(iter_g.next().value);",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "1, 2, NaN",
+            "type": "correct",
+            "explanation": "First .next() returns 1 (stops at first yield). Second .next(10) sends 10 into val_x, yielding 2. Third .next() has no argument, so val_x remains 10? Wait, let's trace carefully: Second .next(10) resumes execution, assigns 10 to val_x, and yields 2. Third .next() resumes execution, evaluating val_x * 3 (10 * 3 = 30). Thus output is 1, 2, 30. Let's review the options."
+          },
+          {
+            "text": "1, 2, 30",
+            "type": "correct",
+            "explanation": "First .next() yields 1. Second .next(10) assigns 10 to val_x and yields 2. Third .next() resumes execution, evaluates val_x * 3 (10 * 3 = 30), and yields 30."
+          },
+          {
+            "text": "1, 10, 30",
+            "type": "misconception",
+            "explanation": "Assumes that passing an argument to .next() replaces the value of the current yield expression rather than supplying the value for the *previous* yield expression that paused the generator."
+          },
+          {
+            "text": "1, 2, 3",
+            "type": "near_miss",
+            "explanation": "Assumes that generator arguments passed to subsequent .next() calls do not affect internal variable bindings and that expressions evaluate based on initial lexical defaults."
+          },
+          {
+            "text": "TypeError, 2, 30",
+            "type": "plausible_wrong_1",
+            "explanation": "Incorrectly assumes that passing an argument to the very first .next() call throws a TypeError (which it does, but the first call here has no argument)."
+          },
+          {
+            "text": "1, undefined, NaN",
+            "type": "plausible_wrong_2",
+            "explanation": "Assumes arguments passed to .next() are ignored unless explicitly bound via closure parameters."
+          },
+          {
+            "text": "1, 2, undefined",
+            "type": "plausible_wrong_3",
+            "explanation": "Fails to account for the third .next() call evaluating the expression using the value injected by the second .next(10) call."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "Docker",
+      "number": 23,
+      "question": {
+        "question_text": "A DevOps engineer is optimizing a CI/CD pipeline using BuildKit. They want to leverage remote caching using an external registry to speed up builds across multiple ephemeral runner instances. The build command is executed as:\n\ndocker buildx build --cache-from type=registry,ref=myregistry.com/app:cache --cache-to type=registry,ref=myregistry.com/app:cache,mode=max -t myregistry.com/app:latest .\n\nDuring execution, subsequent builds on different runners show zero cache hits from the remote registry, despite the images successfully pushing layers. What configuration oversight is most likely causing this?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "The build is utilizing an ephemeral default builder instance instead of a dedicated container driver instance (e.g., docker buildx create --use), which does not support exporting cache attributes like inline or registry cache metadata correctly.",
+            "type": "correct",
+            "explanation": "The default BuildKit driver (docker-container or kubernetes are required for advanced cache export/import features) running under the default backend does not support complex cache-to/cache-from options like registry storage backends."
+          },
+          {
+            "text": "The cache mode parameter must be set to 'min' instead of 'max' when utilizing remote container registries to prevent manifest size limits from rejecting the layer metadata.",
+            "type": "misconception",
+            "explanation": "Mode=max caches all intermediate build stages, whereas mode=min only caches the final image layers. Mode=max is actually preferred for aggressive CI caching, and registry size limits are rarely breached by manifest lists."
+          },
+          {
+            "text": "The tag reference provided in the cache-from parameter must match the exact image digest rather than a mutable tag like 'cache'.",
+            "type": "near_miss",
+            "explanation": "While digests ensure immutability, BuildKit registry caches are explicitly designed to use mutable tags as pointers to cache manifests. The issue lies in the builder driver backend capability, not the tag mutability."
+          },
+          {
+            "text": "Docker daemon authentication credentials were not passed explicitly using the --secret flag pointing to the Docker config.json file.",
+            "type": "plausible_wrong_1",
+            "explanation": "BuildKit inherits registry authentication from standard Docker login configurations stored on the host or runner environment."
+          },
+          {
+            "text": "The Dockerfile contains non-deterministic instructions such as 'apt-get update' without pinning package versions, causing BuildKit to invalidate the cache hashes locally.",
+            "type": "misconception",
+            "explanation": "Non-deterministic instructions invalidate local caches during the build run, but would still result in cache pulls from the remote registry; it wouldn't cause zero hits across all runners universally."
+          },
+          {
+            "text": "BuildKit requires an explicit '--load' or '--push' flag accompanying the cache-to specification to synchronize the local layer store with the remote registry.",
+            "type": "plausible_wrong_3",
+            "explanation": "Cache-to exports independently of whether the image is loaded locally or pushed, provided the build command completes the cache export phase."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "Apache Kafka",
+      "number": 22,
+      "question": {
+        "question_text": "An enterprise Kafka cluster running version 3.4 experiences intermittent `NotLeaderOrFollowerException` errors during high-throughput rolling upgrades of the broker fleet. The custom client application uses the following producer configurations:\n\n```properties\nacks=all\nretries=2147483647\nmax.in.flight.requests.per.connection=5\nenable.idempotence=false\n```\n\nWhat is the primary root cause of data corruption or out-of-order sequencing in this scenario, and how does the configuration interact with broker leadership changes?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "With `max.in.flight.requests.per.connection > 1` and `enable.idempotence=false`, broker leadership changes cause retries of unacknowledged batches to arrive out of order, violating ordering guarantees and risking data corruption.",
+            "type": "correct",
+            "explanation": "This combination of settings without idempotence allows multiple in-flight requests to be retried out of sequence when a leader changes, causing ordering issues."
+          },
+          {
+            "text": "Setting `acks=all` with multiple in-flight requests forces the broker to synchronously block until all ISR replicas acknowledge, causing socket timeouts during rolling restarts.",
+            "type": "near_miss",
+            "explanation": "While `acks=all` affects throughput and latency during restarts, it does not directly cause out-of-order sequencing like disabling idempotence with high in-flight requests does."
+          },
+          {
+            "text": "The high retry count combined with `max.in.flight.requests.per.connection=5` automatically triggers the Kafka broker's internal circuit breaker, dropping all messages until the cluster stabilizes.",
+            "type": "misconception",
+            "explanation": "Kafka brokers do not have an internal client-facing circuit breaker that drops messages based on client retry counts and in-flight configurations."
+          },
+          {
+            "text": "The `NotLeaderOrFollowerException` is caused by the producer exhausting its retry budget because the metadata cache is not refreshed frequently enough during broker shutdowns.",
+            "type": "plausible_wrong_1",
+            "explanation": "The exception indicates a transient routing error, but with `retries` set to max integer, the producer would not exhaust its budget easily."
+          },
+          {
+            "text": "Enabling `enable.idempotence=false` causes the producer to bypass the local batch accumulator, resulting in thread-safety violations across multiple sender threads.",
+            "type": "plausible_wrong_2",
+            "explanation": "Disabling idempotence does not bypass the accumulator or cause thread-safety violations; it simply removes sequence numbering from batch headers."
+          },
+          {
+            "text": "Broker rolling upgrades invalidate the SSL certificates used by the producer, causing the connection pool to leak file descriptors and corrupt batch headers.",
+            "type": "plausible_wrong_3",
+            "explanation": "SSL handshake failures result in authentication exceptions, not `NotLeaderOrFollowerException` or message reordering."
+          },
+          {
+            "text": "Broker rolling upgrades invalidate the SSL certificates used by the producer, causing the connection pool to leak file descriptors and corrupt batch headers.",
+            "type": "plausible_wrong_3",
+            "explanation": "SSL handshake failures result in authentication exceptions, not `NotLeaderOrFollowerException` or message reordering."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "Apache Kafka",
+      "number": 25,
+      "question": {
+        "question_text": "Examine the following Kafka Connect source connector configuration snippet designed to ingest high-frequency database changes:\n\n```json\n{\n  \"name\": \"db-source-connector\",\n  \"config\": {\n    \"connector.class\": \"io.confluent.connect.jdbc.JdbcSourceConnector\",\n    \"connection.url\": \"jdbc:postgresql://db.internal:5432/prod\",\n    \"mode\": \"incrementing\",\n    \"incrementing.column.name\": \"id\",\n    \"topic.prefix\": \"pg-data-\",\n    \"poll.interval.ms\": \"100\"\n  }\n}\n```\n\nUnder high ingestion load, the connector begins missing newly inserted records that contain out-of-order `id` values due to parallel database transactions committing concurrently. What architectural adjustment resolves this gap without switching to a full-table polling mode?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "Switch to `mode=timestamp+incrementing`, using a combination of a monotonically increasing sequence and a high-precision transaction timestamp column, while handling potential clock skew.",
+            "type": "correct",
+            "explanation": "Combining timestamp and incrementing modes mitigates issues where incrementing IDs alone miss concurrently committed out-of-order records."
+          },
+          {
+            "text": "Increase the `poll.interval.ms` to 5000 milliseconds to give the database query planner enough time to sort the result set before the connector fetches it.",
+            "type": "near_miss",
+            "explanation": "Increasing the poll interval slows down ingestion frequency but does not solve the underlying issue of out-of-order ID generation in concurrent transactions."
+          },
+          {
+            "text": "Enable connector-level distributed transactions by setting `transactional.id` inside the JDBC source connector properties to enforce strict ACID compliance.",
+            "type": "misconception",
+            "explanation": "Kafka Connect source connectors do not use transactional IDs in the same way producers do for exactly-once semantics without offset management integration."
+          },
+          {
+            "text": "Configure the connector to use a custom Kafka interceptor that re-sorts records based on the payload hash before serializing them into the broker topic.",
+            "type": "plausible_wrong_1",
+            "explanation": "Interceptors operate on batches during send/poll, but they cannot re-order database query results fetched by a source connector before ingestion."
+          },
+          {
+            "text": "Increase the number of connector tasks (`tasks.max`) to match the number of CPU cores on the database server to parallelize the incrementing queries.",
+            "type": "plausible_wrong_2",
+            "explanation": "Increasing tasks without partitioning the query appropriately will result in duplicate reads or missed rows when using a single incrementing column."
+          },
+          {
+            "text": "Disable offset storage for the connector so it performs a full table scan on every poll cycle, ensuring no records are ever skipped.",
+            "type": "plausible_wrong_3",
+            "explanation": "Disabling offset storage destroys state tracking and turns the connector into an inefficient full-table poller, which was explicitly excluded."
+          },
+          {
+            "text": "Disable offset storage for the connector so it performs a full table scan on every poll cycle, ensuring no records are ever skipped.",
+            "type": "plausible_wrong_3",
+            "explanation": "Disabling offset storage destroys state tracking and turns the connector into an inefficient full-table poller, which was explicitly excluded."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "accounting",
+      "number": 18,
+      "question": {
+        "question_text": "A retail firm uses the retail inventory method to estimate ending inventory at cost. Beginning inventory is $50,000 at cost and $80,000 at retail. Net purchases are $200,000 at cost and $320,000 at retail. Net markups are $20,000; net markdowns are $40,000. Net sales for the period are $300,000. Using the conventional (ungsverified / lower of cost or net realizable value) retail method, what is the cost-to-retail percentage?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "62.5%",
+            "type": "correct",
+            "explanation": "Conventional retail method excludes markdowns from the cost-to-retail ratio denominator. Cost pool = $50,000 + $200,000 = $250,000. Retail pool = $80,000 + $320,000 + $20,000 (markups) = $420,000. Ratio = $250,000 / $420,000 = 59.52%? Wait, let's recalculate: Cost ($50k+$200k=$250k), Retail ($80k+$320k=$400k + markups $20k = $420k). $250k / $420k = 59.52%. Let's check the options. Wait, if markdowns are included in retail for ending inventory but excluded from the ratio, let's look at option values. Let's verify standard math: ($50,000+$200,000) / ($80,000+$320,000+$20,000) = 250,000 / 420,000 = 59.5%. If LIFO or average retail is used, numbers change. Let's provide a clean distractor set where 62.5% is FIFO/Average retail including markdowns ($250k / ($400k + $20k - $40k) = $250k / $380k = 65.7%). Let's adjust the correct answer option text to 59.5% if it's conventional, or format the prompt so the intended correct choice aligns with standard formulas."
+          },
+          {
+            "text": "59.5%",
+            "type": "correct",
+            "explanation": "Under the conventional retail inventory method (approximate lower of cost or net realizable value), markdowns are excluded from the cost-to-retail percentage calculation. Cost ($250,000) divided by Retail including markups ($420,000) yields 59.52%."
+          },
+          {
+            "text": "65.8%",
+            "type": "misconception",
+            "explanation": "This includes markdowns in the denominator, which is used in the average cost retail method but violates the conservative nature of the conventional retail method."
+          },
+          {
+            "text": "50.0%",
+            "type": "plausible_wrong_1",
+            "explanation": "This results from dividing beginning inventory cost by total retail sales, which ignores current period purchases."
+          },
+          {
+            "text": "71.4%",
+            "type": "plausible_wrong_2",
+            "explanation": "This inverts the numerator and denominator or improperly adds sales back into the cost pool."
+          },
+          {
+            "text": "60.0%",
+            "type": "plausible_wrong_3",
+            "explanation": "This is a rounded estimation that ignores net markups and beginning inventory weighting."
+          },
+          {
+            "text": "62.5%",
+            "type": "near_miss",
+            "explanation": "This represents the cost-to-retail ratio if markups and markdowns are completely ignored, using only base cost and retail sums ($250k / $400k)."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "financial analysis",
+      "number": 17,
+      "question": {
+        "question_text": "An institutional investor is evaluating a real estate investment property using the capitalization rate approach. The property generates a Net Operating Income (NOI) of $800,000. Comparable properties trade at a cap rate of 8.5%. If the investor expects NOI to grow at a constant rate of 2.5% perpetually, what is the value of the property using the Gordon Growth (Direct Capitalization with Growth) model?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "$13,333,333",
+            "type": "correct",
+            "explanation": "Value = NOI1 / (Cap Rate - Growth Rate). Here, the cap rate provided is the capitalization rate ($r - g$). Wait, if Cap Rate = r - g = 8.5% (0.085), then Value = NOI / Cap Rate = $800,000 / 0.085 = $9,411,764? Let's re-read: If cap rate is given as 8.5% and it incorporates growth, or if r = 8.5% and g = 2.5%. If capitalization rate is $r - g$, then Value = $800,000 / 0.085 = $9,411,764. Wait! If the cap rate is *specified* as 8.5% and there is a 2.5% growth rate, the true discount rate r = Cap Rate + g = 8.5% + 2.5% = 11%. Then Gordon Growth model formula is Value = NOI / (r - g) = $800,000 * 1.025 / (0.11 - 0.025) = $820,000 / 0.085 = $9,647,058. Let's simplify this question to avoid ambiguity."
+          },
+          {
+            "text": "$9,411,764",
+            "type": "correct",
+            "explanation": "Using the direct capitalization method where the cap rate represents the initial yield ($R = NOI / Value$), Value = $800,000 / 0.085 = $9,411,764. Growth is already implicit in the market cap rate derived from comparable transactions."
+          },
+          {
+            "text": "$13,333,333",
+            "type": "near_miss",
+            "explanation": "This incorrectly subtracts the growth rate from the cap rate in the denominator ($0.085 - 0.025 = 0.06$), double-counting growth already priced into comparable market cap rates."
+          },
+          {
+            "text": "$6,800,000",
+            "type": "misconception",
+            "explanation": "This multiplies NOI by the cap rate instead of dividing, which contradicts the fundamental valuation relationship."
+          },
+          {
+            "text": "$10,666,665",
+            "type": "plausible_wrong_1",
+            "explanation": "This applies an incorrect arithmetic adjustment adding the growth rate directly to the cap rate divisor."
+          },
+          {
+            "text": "$32,000,000",
+            "type": "plausible_wrong_2",
+            "explanation": "This divides the cap rate by the NOI, inverting the formula and producing an economically nonsensical valuation."
+          },
+          {
+            "text": "$8,000,000",
+            "type": "plausible_wrong_3",
+            "explanation": "This applies a flat 10x multiplier based on a simplistic rule of thumb, ignoring market-derived cap rate metrics."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "financial analysis",
+      "number": 19,
+      "question": {
+        "question_text": "An equity research analyst is performing a valuation of a cyclical commodity firm using the Dividend Discount Model (DDM). The firm currently pays a dividend of $2.00 per share. Due to an upcoming commodity super-cycle, dividends are expected to grow at 15% per year for the next 3 years, after which the growth rate will stabilize at a mature rate of 4% per year indefinitely. If the required rate of return is 10%, what is the intrinsic value of the stock?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "$42.85",
+            "type": "correct",
+            "explanation": "D1 = $2.30, D2 = $2.645, D3 = $3.04175. Terminal Price at t=3 (P3) = D4 / (r - g) = ($3.04175 * 1.04) / (0.10 - 0.04) = $3.16342 / 0.06 = $52.7237. Discounting cash flows: $2.30/1.1 + $2.645/1.1^2 + ($3.04175 + $52.7237)/1.1^3 = $2.09 + $2.185 + $41.05 = ~$45.32? Let's recalculate precisely: D1=2.30 (PV=2.09), D2=2.645 (PV=2.185), D3=3.04175. P3 = 3.04175 * 1.04 / 0.06 = 52.7237. Total cash flow at t=3 = 55.765. PV = 55.765 / 1.331 = 41.90. Sum = 2.09 + 2.185 + 41.90 = $46.175? Let me adjust options to match standard multi-stage DDM calculation outputs."
+          },
+          {
+            "text": "$45.82",
+            "type": "correct",
+            "explanation": "Summing the discounted cash flows for the high-growth phase ($D_1$ through $D_3$) and adding the discounted Gordon Growth terminal value at year 3 yields an intrinsic value of approximately $45.82."
+          },
+          {
+            "text": "$33.33",
+            "type": "near_miss",
+            "explanation": "This uses the Gordon Growth model directly on the current dividend with the mature growth rate ($2.00 * 1.04 / (0.10 - 0.04)$), ignoring the 3-year high-growth super-cycle phase."
+          },
+          {
+            "text": "$54.10",
+            "type": "misconception",
+            "explanation": "This applies the high-growth rate (15%) perpetually in the terminal value formula instead of transitioning to the sustainable 4% growth rate."
+          },
+          {
+            "text": "$28.50",
+            "type": "plausible_wrong_1",
+            "explanation": "This applies an incorrect discounting mechanism that assumes cash flows occur at the beginning of the year rather than the end."
+          },
+          {
+            "text": "$62.15",
+            "type": "plausible_wrong_2",
+            "explanation": "This compounds the dividend growth for too many periods, overestimating the terminal value phase cash flows."
+          },
+          {
+            "text": "$38.40",
+            "type": "plausible_wrong_3",
+            "explanation": "This uses an arithmetic average of the growth rates rather than compounding, distorting the present value timeline."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "Microsoft Excel",
+      "number": 6,
+      "question": {
+        "question_text": "Which feature should you use if you want to temporarily hide rows that do not meet specific criteria (such as showing only rows where the region is 'East')?",
+        "proficiency_level": "Beginner",
+        "options": [
+          {
+            "text": "Filter",
+            "type": "correct",
+            "explanation": "Filters allow users to display only rows that meet specific conditions while hiding the rest."
+          },
+          {
+            "text": "Sort",
+            "type": "near_miss",
+            "explanation": "Sorting rearranges the order of the data alphabetically or numerically, but it does not hide rows."
+          },
+          {
+            "text": "Conditional Formatting",
+            "type": "misconception",
+            "explanation": "Conditional formatting changes the visual appearance (like cell color) of cells based on rules, but it does not hide non-matching rows."
+          },
+          {
+            "text": "Group",
+            "type": "plausible_wrong_1",
+            "explanation": "Grouping lets you collapse sections of rows or columns manually, but it is not a criteria-based hiding tool like filtering."
+          },
+          {
+            "text": "Freeze Panes",
+            "type": "plausible_wrong_2",
+            "explanation": "Freeze Panes keeps specific rows or columns visible while scrolling, unrelated to data hiding."
+          },
+          {
+            "text": "Data Validation",
+            "type": "plausible_wrong_1",
+            "explanation": "Data validation restricts what users can type into a cell, not what rows are displayed."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "Git",
+      "number": 6,
+      "question": {
+        "question_text": "You want to create a new isolated workspace to work on a feature without disrupting the main codebase. Which command creates and immediately switches you to a new branch named 'feature-login'?",
+        "proficiency_level": "Beginner",
+        "options": [
+          {
+            "text": "git checkout -b feature-login",
+            "type": "correct",
+            "explanation": "The '-b' flag with 'git checkout' creates the branch and switches to it in one step."
+          },
+          {
+            "text": "git branch feature-login",
+            "type": "near_miss",
+            "explanation": "'git branch feature-login' creates the branch but leaves you on your current branch without switching to it."
+          },
+          {
+            "text": "git switch -c feature-login",
+            "type": "near_miss",
+            "explanation": "While 'git switch -c' is valid and modern, 'git checkout -b' is the traditional beginner standard taught in most legacy and foundational materials."
+          },
+          {
+            "text": "git new-branch feature-login",
+            "type": "misconception",
+            "explanation": "'git new-branch' is not a command; users often confuse subcommand names with natural language."
+          },
+          {
+            "text": "git create branch feature-login",
+            "type": "plausible_wrong_1",
+            "explanation": "Git command syntax does not use space-separated nested verbs like 'create branch'."
+          },
+          {
+            "text": "git make-branch feature-login",
+            "type": "plausible_wrong_2",
+            "explanation": "'git make-branch' does not exist in the core Git suite."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "Git",
+      "number": 19,
+      "question": {
+        "question_text": "A developer accidentally ran 'git reset --hard HEAD~5' and then performed various other commands, losing track of where their original work was. They realize the commits still exist in the repository object database, but are dangling. Which command should they use to review the complete history of all HEAD movements to locate the hash of the lost commit?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "git reflog",
+            "type": "correct",
+            "explanation": "git reflog records every time HEAD changes (commits, checkouts, resets, rebases), making it the definitive tool for recovering lost commits or reset points."
+          },
+          {
+            "text": "git log --all --graph",
+            "type": "near_miss",
+            "explanation": "git log --all shows reachable branches and tags, but by default it does not display dangling commits or detached HEAD states that are unreferenced by active branches or tags."
+          },
+          {
+            "text": "git history",
+            "type": "misconception",
+            "explanation": "'git history' is not a valid built-in Git command; developers often confuse it with git log or external shell aliases."
+          },
+          {
+            "text": "git fsck --lost-found",
+            "type": "plausible_wrong_1",
+            "explanation": "While git fsck can find dangling objects, it is a low-level diagnostic tool and usually unnecessary when reflog easily retains the chronological user action history."
+          },
+          {
+            "text": "git stash list --all",
+            "type": "plausible_wrong_2",
+            "explanation": "Stashes are distinct from committed history; a hard reset destroys working directory changes unless stashed beforehand, so reflog is required rather than stash list."
+          },
+          {
+            "text": "git blame HEAD",
+            "type": "plausible_wrong_1",
+            "explanation": "git blame attributes lines of code in a specific file to the developers who last modified them, completely unrelated to recovering lost HEAD states."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "TensorFlow",
+      "number": 23,
+      "question": {
+        "question_text": "When optimizing a TensorFlow model for edge deployment via TensorFlow Lite (TFLite), you notice that post-training integer quantization (PTQ) introduces severe accuracy degradation on a custom attention layer. Which mitigation strategy is architecturally sound?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "Implement Quantization-Aware Training (QAT) using tf.quantization experimental APIs to insert fake-quantization nodes into the graph during the fine-tuning phase, allowing weights to adapt to lower precision constraints.",
+            "type": "correct",
+            "explanation": "QAT is the standard solution for PTQ accuracy degradation by simulating quantization effects during training/fine-tuning."
+          },
+          {
+            "text": "Manually cast all weights to float16 within the TFLite converter configuration file, which bypasses quantization altogether while reducing model size by half.",
+            "type": "near_miss",
+            "explanation": "While float16 casting can mitigate accuracy drops, it is not full integer quantization and does not utilize integer-only hardware accelerators effectively."
+          },
+          {
+            "text": "Disable the TFLite converter's constant folding optimization pass so that attention weights retain their full 64-bit precision floating-point representation.",
+            "type": "misconception",
+            "explanation": "Disabling constant folding does not preserve quantization accuracy; it merely prevents pre-calculating constant subgraphs."
+          },
+          {
+            "text": "Increase the representative dataset sample size to include 10,000 batches, forcing the post-training quantization calibration to learn global attention maps.",
+            "type": "plausible_wrong_1",
+            "explanation": "While a representative dataset is needed for INT8 calibration, 10,000 batches is excessive and does not structurally resolve the representation bottleneck of attention mechanisms."
+          },
+          {
+            "text": "Convert the Keras model into a TensorFlow SavedModel format and wrap the attention layer inside a tf.function with jit_compile=True.",
+            "type": "near_miss",
+            "explanation": "JIT compilation via XLA optimizes graph execution speed on accelerators, but it does not resolve the precision loss inherent to post-training quantization."
+          },
+          {
+            "text": "Apply dynamic range quantization instead of full integer quantization, which dynamically converts weights at runtime without calibration.",
+            "type": "plausible_wrong_3",
+            "explanation": "Dynamic range quantization often suffers from similar or worse accuracy degradation compared to full integer quantization on sensitive layers like attention."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "PyTorch",
+      "number": 22,
+      "question": {
+        "question_text": "Examine the following PyTorch custom autograd function snippet:\n\n```python\nclass Func_A(torch.autograd.Function):\n    @staticmethod\n    def forward(ctx, var_q, var_k):\n        ctx.save_for_backward(var_q, var_k)\n        return var_q * var_k\n\n    @staticmethod\n    def backward(ctx, grad_output):\n        var_q, var_k = ctx.saved_tensors\n        return grad_output * var_k, None\n```\n\nIf this custom function is invoked with `var_q` requiring gradients and `var_k` as a tensor where `requires_grad=False`, what will occur during the backward pass?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "PyTorch will raise a RuntimeError because the backward method returns a tuple whose length does not match the number of inputs passed to forward.",
+            "type": "correct",
+            "explanation": "The forward method takes two inputs (`var_q`, `var_k`), meaning backward must return a gradient for each input. Returning `grad_output * var_k, None` provides two outputs, which matches the input count. Wait, let's verify: inputs are 2, outputs of backward must be 2. The code returns `grad_output * var_k, None`, which is 2 elements. Therefore, this option is incorrect, let's check the true correct behavior. Actually, if `var_k` does not require gradients, returning `None` for its gradient is standard, but the length matches. Let's re-read the options carefully to find the true correct one."
+          },
+          {
+            "text": "It executes successfully because autograd expects a gradient output for every input argument to forward, mapping `None` correctly to non-diff inputs.",
+            "type": "correct",
+            "explanation": "PyTorch autograd requires `backward()` to return a gradient tensor (or None) for every argument passed to `forward()`, regardless of whether `requires_grad` is True or False. Returning `None` for non-diff inputs is fully supported."
+          },
+          {
+            "text": "It throws a C++ level assertion error because `var_k` was not marked as a non-tensor or detached explicitly inside the forward context setup.",
+            "type": "near_miss",
+            "explanation": "While it might seem that non-differentiated inputs need explicit handling via `ctx.mark_non_differentiable`, that method is used when outputs are tensors that shouldn't receive gradients, not for forward inputs."
+          },
+          {
+            "text": "The backward pass will silently drop the gradient for `var_q` due to the missing gradient component for `var_k`.",
+            "type": "misconception",
+            "explanation": "PyTorch does not silently drop gradients for mismatching return lengths; it explicitly checks that the number of returned gradients matches the number of inputs."
+          },
+          {
+            "text": "It causes a memory leak because `var_k` was saved for backward via `ctx.save_for_backward` even though it has `requires_grad=False`.",
+            "type": "plausible_wrong_1",
+            "explanation": "`ctx.save_for_backward` accepts tensors regardless of `requires_grad` status; PyTorch's internal mechanism handles non-diff tensors safely without leaking memory outside the autograd graph lifecycle."
+          },
+          {
+            "text": "The backward method must explicitly call `.clone().detach()` on `var_k` before computing derivatives.",
+            "type": "plausible_wrong_2",
+            "explanation": "Tensors retrieved via `ctx.saved_tensors` are already detached from the computation graph tracking forward operations; manual cloning is unnecessary."
+          },
+          {
+            "text": "PyTorch will automatically convert `var_k`'s gradient to a zero-filled tensor instead of allowing `None`.",
+            "type": "plausible_wrong_3",
+            "explanation": "Returning `None` is standard and preferred over allocating zero-filled tensors because it allows autograd to optimize graph pruning."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "PyTorch",
+      "number": 26,
+      "question": {
+        "question_text": "A machine learning engineer is training a large transformer model using PyTorch's Fully Sharded Data Parallel (FSDP) framework (`torch.distributed.fsdp`). During training, they notice severe memory fragmentation on GPU 0. Which FSDP configuration parameter adjustment is most critical to mitigate CUDA memory fragmentation caused by sharded parameter allocation and gathering?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "Configure `CPUOffload(offload_params=True)` combined with a custom memory allocator configuration like `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`.",
+            "type": "correct",
+            "explanation": "FSDP frequently allocates and frees buffers for all-gather and reduce-scatter operations, causing fragmentation. PyTorch's `expandable_segments` allocator flag allows the caching allocator to grow virtual memory allocations without full reallocations, mitigating fragmentation."
+          },
+          {
+            "text": "Disable gradient checkpointing across all transformer encoder layers to keep memory allocations stable and predictable.",
+            "type": "near_miss",
+            "explanation": "Disabling gradient checkpointing would drastically increase activation memory consumption, likely causing immediate Out-Of-Memory (OOM) errors rather than helping fragmentation."
+          },
+          {
+            "text": "Set `fsdp_auto_wrap_policy` to wrap every individual scalar parameter rather than Transformer block layers.",
+            "type": "misconception",
+            "explanation": "Wrapping every single parameter creates millions of individual FSDP communication units, destroying performance due to massive RPC overhead and exacerbating metadata fragmentation."
+          },
+          {
+            "text": "Switch from `FULL_SHARD` sharding strategy to `NO_SHARD`, effectively converting FSDP into standard DistributedDataParallel (DDP).",
+            "type": "plausible_wrong_1",
+            "explanation": "Switching to `NO_SHARD` eliminates model parameter sharding entirely, replicating full weights on every GPU and negating the memory-saving purpose of FSDP."
+          },
+          {
+            "text": "Increase the `backward_prefetch` parameter to `BackwardPrefetch.BACKWARD_PRE` without modifying memory allocation settings.",
+            "type": "correct",
+            "explanation": "Wait, option formatting check: let's check the option types. The correct answer was already given as the first option. This option is a plausible wrong distractor."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "SAS",
+      "number": 20,
+      "question": {
+        "question_text": "Consider a scenario where a SAS program utilizes macro quoting functions to safely resolve special characters and macro triggers in dynamic code generation. Specifically, a macro variable `usr_val` contains the string `A & B`. The developer wants to pass this into a PROC SQL title without triggering macro resolution on the ampersand. Which macro quoting function should be used?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "%STR() or %NRSTR() during definition, or %BQUOTE() / %NRBQUOTE() during resolution, depending on whether the text contains active macro triggers.",
+            "type": "correct",
+            "explanation": "%NRBQUOTE masks ampersands and percent signs at execution time, preventing them from being interpreted as macro triggers while preserving normal text characters."
+          },
+          {
+            "text": "The standard DATA step function QUOTE() must be used because macro quoting functions only apply to macro parameter definitions.",
+            "type": "misconception",
+            "explanation": "The QUOTE() function adds literal quotation marks around a string value in data processing, whereas macro quoting functions manage macro tokenization and resolution rules."
+          },
+          {
+            "text": "Use the %EVAL() function to wrap the string so that special operators like ampersands are evaluated mathematically.",
+            "type": "near_miss",
+            "explanation": "%EVAL performs integer arithmetic on expressions and will fail or misinterpret non-numeric strings containing ampersands."
+          },
+          {
+            "text": "Use single quotes around the macro variable reference, such as '&usr_val', which automatically disables all macro facility parsing.",
+            "type": "plausible_wrong_1",
+            "explanation": "Single quotes in SAS suppress macro resolution within data steps, but inside macro triggers or titles, double quotes resolve macro variables and single quotes inside macro text do not suppress macro quoting functions."
+          },
+          {
+            "text": "Use the %SUPERQ() function during definition to compile the macro variable without evaluation.",
+            "type": "misconception",
+            "explanation": "%SUPERQ is used during macro variable resolution (referencing) to prevent immediate resolution of its value, not during definition."
+          },
+          {
+            "text": "No special quoting is required because PROC SQL automatically escapes all ampersands in titles.",
+            "type": "plausible_wrong_3",
+            "explanation": "PROC SQL and title statements do not automatically escape ampersands; unquoted ampersands will prompt the macro processor to attempt resolution."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "Autodesk AutoCAD",
+      "number": 27,
+      "question": {
+        "question_text": "A manufacturing firm uses parametric 3D solids and surface models extensively. An engineer creates a complex lofted surface (`LOFT`) that must be trimmed using a intersecting spline curve. Executing the `SURFACESPLIT` or `TRIM` command results in the error: 'The operation failed because the resulting surface topology is non-manifold or self-intersecting.' Inspection of the surface curvature using `ZEBRA` analysis reveals sharp inflection points. What is the most robust geometric strategy to resolve this topological failure?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "Convert the surface into a polygon mesh using `SURFTOMESH`, perform the trim operation, and convert it back to a surface using `MESHTOSURF`.",
+            "type": "misconception",
+            "explanation": "Converting to polygon meshes discards exact mathematical NURBS definitions, resulting in severe data loss and faceted geometry."
+          },
+          {
+            "text": "Reconstruct the loft using guide curves and path constraints with continuity set to G2 (Curvature) or G1 (Tangency) across the inflection boundaries, then rebuild the cutting spline with controlled control-vertex distribution.",
+            "type": "correct",
+            "explanation": "Topological failures during trimming stem from poor surface continuity (G0) or self-intersecting folds; enforcing G1/G2 continuity ensures clean mathematical intersections."
+          },
+          {
+            "text": "Increase the system variable `FACETRES` to 10 and execute a drawing audit before re-running the trim operation.",
+            "type": "plausible_wrong_1",
+            "explanation": "FACETRES only controls the display tessellation of curved solids and surfaces in shaded viewports; it has no effect on underlying ACIS kernel mathematical intersection calculations."
+          },
+          {
+            "text": "Explode the surface into its constituent face elements using `BURST` and delete the offending individual faces manually.",
+            "type": "plausible_wrong_2",
+            "explanation": "Surfaces cannot be exploded with BURST; attempting to break them apart manually destroys model integrity."
+          },
+          {
+            "text": "Adjust the system variable `ISOLINES` to a higher density to force the ACIS kernel to recalculate the face normals automatically.",
+            "type": "near_miss",
+            "explanation": "ISOLINES controls the number of surface isolines displayed for visualization, not the underlying topological calculation engine."
+          },
+          {
+            "text": "Apply a uniform 3D scale transformation with a factor of 0.999 to the cutting spline to eliminate coplanar floating-point rounding errors.",
+            "type": "plausible_wrong_3",
+            "explanation": "Scaling arbitrarily does not fix underlying mathematical inflection points or self-intersections in lofted surfaces."
+          },
+          {
+            "text": "Export the model to IGES format, re-import it with healing enabled, and run the `SOLIDEDIT` cleanup suite.",
+            "type": "plausible_wrong_3",
+            "explanation": "Exporting to IGES often drops parametric history and introduces translation errors rather than fixing surface topology."
+          }
+        ]
+      },
+      "expected_error": "expected 6 options"
+    },
+    {
+      "skill_name": "PTC Creo Parametric",
+      "number": 25,
+      "question": {
+        "question_text": "In Creo Parametric Mechanism Design Extension (MDX / MMX), you are simulating a complex multi-body linkage. During the run, the analysis fails to converge and throws a 'Singular Matrix' error at a specific kinematic step. Which condition within the mechanism constraints causes this numerical singularity?",
+        "proficiency_level": "Advanced",
+        "options": [
+          {
+            "text": "The mechanism has achieved an instantaneous degree of freedom (DOF) change or dead-point configuration where joint axes become collinear, resulting in zero determinant for the system's Jacobian matrix.",
+            "type": "correct",
+            "explanation": "A singular matrix in multi-body dynamics typically indicates a kinematic singularity (such as alignment of joint axes or reaching a dead point) where the Jacobian matrix becomes non-invertible, rendering infinitesimal motion unsolvable."
+          },
+          {
+            "text": "The gravity vector was defined along the X-axis instead of the negative Z-axis, preventing the solver from calculating initial static equilibrium.",
+            "type": "misconception",
+            "explanation": "Gravity vector orientation affects static load bias and falling direction, but an incorrect gravity direction does not cause a mathematical matrix singularity during kinematic step evaluations."
+          },
+          {
+            "text": "The spring-damper elements defined between the links exceeded the maximum allowable stiffness threshold of 1e6 N/mm.",
+            "type": "plausible_wrong_1",
+            "explanation": "High stiffness values can cause numerical stiffness (stiff differential equations), leading to time-step reduction or integration failure, but not strictly a kinematic Jacobian matrix singularity."
+          },
+          {
+            "text": "The user applied a Motion Constraint that conflicted with a pre-existing Assembly Pin connection.",
+            "type": "plausible_wrong_2",
+            "explanation": "Conflicting constraints usually throw an 'Overconstrained Mechanism' or redundancy error during setup, long before reaching a dynamic matrix singularity during mid-simulation steps."
+          },
+          {
+            "text": "The simulation frame rate was set to frames per second (fps) higher than the maximum integration step limit of the Runge-Kutta solver.",
+            "type": "misconception",
+            "explanation": "Output frame rate only dictates how frequently data is sampled and recorded to disk, completely independent of the internal solver integration step size."
+          },
+          {
+            "text": "The mass properties of at least one moving rigid body were calculated as zero because material assignment was omitted.",
+            "type": "near_miss",
+            "explanation": "Zero mass will cause dynamic inertia matrix errors, but kinematic-only solutions do not require mass properties to solve constraint equations unless dynamic forces are evaluated."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "thermodynamics",
+      "number": 14,
+      "question": {
+        "question_text": "An insulated piston-cylinder device contains saturated liquid-vapor mixture of water at 100 kPa. An electric resistance heater inside the cylinder is turned on and passes a current of 2 A for 5 minutes from a 120 V source. During this process, 40% of the liquid mass vaporizes. What is the total mass of the water inside the cylinder?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "The total mass of the water is approximately 0.274 kg.",
+            "type": "correct",
+            "explanation": "Electrical work input W_e = V * I * t = 120 * 2 * (5 * 60) = 72,000 J = 72 kJ. Since the system is insulated and pressure is constant, W_e = Delta H = m * h_fg at 100 kPa. From steam tables, h_fg at 100 kPa is roughly 2258 kJ/kg. However, only 40% vaporizes, so Delta U or enthalpy change corresponds to m * (x2 - x1) * h_fg. Correct application: Total energy supplied goes into phase change of a fraction of mass: 72 kJ = m * (0.40) * h_fg. With h_fg = 2258 kJ/kg, m = 72 / (0.40 * 2258) = 0.0797 kg. Wait, let's recalculate carefully: 72 kJ / (0.4 * 2258 kJ/kg) = 0.0797 kg. Let's adjust options to make 0.0797 kg the correct choice."
+          },
+          {
+            "text": "The total mass of the water is approximately 0.080 kg.",
+            "type": "correct",
+            "explanation": "Electrical work input W_e = 120 * 2 * 300 = 72,000 J = 72 kJ. For a constant-pressure process in a piston-cylinder device, Q - W_b = Delta U -> Q = Delta H. Here Q is electrical work. Thus Delta H = 72 kJ. The enthalpy change during vaporization of a fraction of mass is Delta H = m * Delta_x * h_fg. Since Delta_x = 0.40 and h_fg at 100 kPa is ~2257 kJ/kg, m = 72 / (0.40 * 2257) = 0.0797 kg."
+          },
+          {
+            "text": "The total mass of the water is approximately 0.319 kg.",
+            "type": "near_miss",
+            "explanation": "This is calculated by dividing the total electrical work by the entire latent heat of vaporization without factoring in that only 40% of the mass changes phase."
+          },
+          {
+            "text": "The total mass of the water is 1.200 kg.",
+            "type": "misconception",
+            "explanation": "This arises from multiplying voltage and current directly into mass units, ignoring the time dimension and specific latent heat."
+          },
+          {
+            "text": "The total mass of the water is approximately 1.432 kg.",
+            "type": "plausible_wrong_1",
+            "explanation": "This results from using the saturated liquid enthalpy instead of the latent heat of vaporization in the energy balance."
+          },
+          {
+            "text": "The total mass cannot be calculated because the initial quality is unknown.",
+            "type": "plausible_wrong_2",
+            "explanation": "Since the process involves a change in quality (Delta_x = 0.40), the absolute initial and final qualities are mathematically canceled out during the enthalpy change calculation."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "Google Analytics",
+      "number": 12,
+      "question": {
+        "question_text": "A digital marketer is setting up cross-domain tracking in GA4 for two separate domains: 'example-store.com' and 'example-checkout.org'. They configure the 'domains' setting in the gtag.js configuration. However, sessions are still breaking and splitting into two separate user journeys when a user transitions from the primary store to the checkout domain. What is the most likely architectural root cause?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "The cross-domain configuration was only applied to the container property of the first site, and the linker parameter (_gl) is being stripped or not recognized because the target domain's gtag initialization does not share the identical Stream ID or allowlisting parameters.",
+            "type": "correct",
+            "explanation": "Cross-domain tracking via gtag requires explicit configuration on both source and destination properties to append and read the _gl linker parameter correctly."
+          },
+          {
+            "text": "The domains must be registered under different GA4 properties, and a rollup property must be used to stitch the sessions together.",
+            "type": "near_miss",
+            "explanation": "Rollup properties are a GA360 feature, but cross-domain tracking within a single property is standard practice and does not require multiple properties."
+          },
+          {
+            "text": "GA4 automatically handles cross-domain tracking natively through IP address matching, so explicit gtag linker configurations are completely obsolete.",
+            "type": "misconception",
+            "explanation": "GA4 relies on client-side cookies and URL parameters (_gl) for session continuity across domains, not IP matching."
+          },
+          {
+            "text": "The cookie domain setting must be set to 'auto', which automatically blocks cross-domain parameters for security reasons.",
+            "type": "plausible_wrong_1",
+            "explanation": "'auto' is actually the default and recommended cookie domain setting, which allows subdomains to share cookies, but doesn't handle distinct top-level domains without the linker."
+          },
+          {
+            "text": "Enhanced Measurement automatically handles cross-domain redirects if the destination domain is verified in Google Search Console.",
+            "type": "misconception",
+            "explanation": "Search Console verification has no bearing on GA4 cross-domain tracking functionality."
+          },
+          {
+            "text": "The session timeout threshold must be explicitly increased to 7 hours to account for the latency of cross-domain cookie propagation.",
+            "type": "plausible_wrong_2",
+            "explanation": "Session timeouts do not affect the transmission of the URL linker parameter during an immediate redirect."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "food safety standards",
+      "number": 7,
+      "question": {
+        "question_text": "What is the correct internal cooking temperature for poultry (such as turkey and chicken) according to standard food safety regulations?",
+        "proficiency_level": "Beginner",
+        "options": [
+          {
+            "text": "165°F (74°C) for a minimum of 15 seconds.",
+            "type": "correct",
+            "explanation": "Poultry must reach an internal temperature of 165°F to ensure harmful pathogens are destroyed."
+          },
+          {
+            "text": "145°F (63°C) for 15 seconds.",
+            "type": "near_miss",
+            "explanation": "145°F is the standard for whole cuts of beef, pork, and fish, but insufficient for poultry."
+          },
+          {
+            "text": "155°F (68°C) for 15 seconds.",
+            "type": "misconception",
+            "explanation": "155°F is appropriate for ground meats and injected meats, but poultry requires a higher threshold."
+          },
+          {
+            "text": "135°F (57°C) held for 4 minutes.",
+            "type": "plausible_wrong_1",
+            "explanation": "135°F is only applicable to commercially raised fruits, vegetables, or hot-held ready-to-eat plant foods."
+          },
+          {
+            "text": "180°F (82°C) with no holding time requirement.",
+            "type": "plausible_wrong_2",
+            "explanation": "While 180°F is safe, it overcooks the meat and is higher than the regulatory safety minimum."
+          },
+          {
+            "text": "150°F (66°C) as long as the juices run completely clear.",
+            "type": "misconception",
+            "explanation": "Visual cues like 'clear juices' are unreliable; only a calibrated thermometer measuring internal temperature guarantees safety."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    },
+    {
+      "skill_name": "food safety standards",
+      "number": 9,
+      "question": {
+        "question_text": "Which personal hygiene practice is legally required for food handlers working with exposed food in a commercial kitchen?",
+        "proficiency_level": "Beginner",
+        "options": [
+          {
+            "text": "Wearing effective hair restraints such as a hairnet or hat to keep hair away from food.",
+            "type": "correct",
+            "explanation": "Hair restraints prevent physical contamination of food products by hair and skin flakes."
+          },
+          {
+            "text": "Wearing long-sleeved shirts to cover arm hair completely.",
+            "type": "near_miss",
+            "explanation": "While arm cleanliness matters, arm hair containment is not a standard legal requirement compared to head hair restraints."
+          },
+          {
+            "text": "Applying scented hand lotion after every handwash to prevent dry skin.",
+            "type": "misconception",
+            "explanation": "Lotion can interfere with hand sanitizers and leave residues on food-contact surfaces."
+          },
+          {
+            "text": "Keeping fingernails long and polished to project a professional appearance.",
+            "type": "misconception",
+            "explanation": "Long nails and nail polish harbor bacteria and are prohibited or require gloves in food service."
+          },
+          {
+            "text": "Wearing wristwatches and wedding bands to keep track of cooking times.",
+            "type": "plausible_wrong_1",
+            "explanation": "Jewelry on hands and wrists traps dirt and bacteria and is generally prohibited in food preparation areas."
+          },
+          {
+            "text": "Chewing gum while prepping food to maintain high energy levels during long shifts.",
+            "type": "plausible_wrong_2",
+            "explanation": "Chewing gum is prohibited because saliva droplets can easily transfer to hands and food products."
+          }
+        ]
+      },
+      "expected_error": "one of each"
+    }
+  ],
+  "valid_edge_cases": [
+    {
+      "skill_name": "Google Ads",
+      "number": 19,
+      "question": {
+        "question_text": "An account is running a Search campaign with dynamic keyword insertion (DKI) implemented in the headline format: `Headline: Buy {KeyWord:Default Product}`. The search query triggering the ad is capitalized as 'industrial widgets wholesale'. Assuming the characters fit within the character limit, how will the rendered headline appear in the search results?",
+        "proficiency_level": "Intermediate",
+        "options": [
+          {
+            "text": "Industrial Widgets Wholesale",
+            "type": "correct",
+            "explanation": "Using title casing (`KeyWord`) capitalizes the first letter of all words in the triggering search query if the query triggered the insertion."
+          },
+          {
+            "text": "industrial widgets wholesale",
+            "type": "misconception",
+            "explanation": "All lowercase (`keyword`) would render it in lowercase, but `KeyWord` applies title case capitalization to each word."
+          },
+          {
+            "text": "Industrial widgets wholesale",
+            "type": "near_miss",
+            "explanation": "Only capitalizing the first letter (`keyword` vs `KeyWord`) capitalizes only the very first word; `KeyWord` capitalizes every word in the matched query."
+          },
+          {
+            "text": "Default Product",
+            "type": "plausible_wrong_1",
+            "explanation": "The default text only appears if the search query causes the insertion to exceed character limits or if it fails structural criteria, which is not stated here."
+          },
+          {
+            "text": "INDUSTRIAL WIDGETS WHOLESALE",
+            "type": "plausible_wrong_2",
+            "explanation": "Uppercase (`KEYWORD`) would render all caps, but `KeyWord` specifies title casing."
+          },
+          {
+            "text": "Industrial_Widgets_Wholesale",
+            "type": "plausible_wrong_3",
+            "explanation": "DKI replaces spaces with underscores only if requested or malformed; standard DKI preserves spaces from the query."
+          }
+        ]
+      },
+      "note": "options differ only in capitalisation; must stay valid"
+    }
+  ]
+}
