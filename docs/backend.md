@@ -354,7 +354,7 @@ Orchestrates the full pipeline for generating required position skills.
 1. Load position from database.
 2. Return existing `PositionSkill` records immediately if they exist (cache-first).
 3. Fetch ESCO skills via `EscoService.get_role_skills(position.title)`.
-4. Send ESCO skills to `generate_perfect_profile()` (Gemini AI).
+4. Send ESCO skills to `generate_perfect_profile()` (Gemini AI), with the names of skills that have question-bank questions as preferred names.
 5. For each skill in the `PerfectProfile`: find or create a `Skill` record, create a `PositionSkill` record.
 6. Commit to database.
 
@@ -414,19 +414,20 @@ Handles PDF/DOCX resume import.
 
 ### perfect_profile.py
 
-**`generate_perfect_profile(job_title, esco_skills, api_key, model_name)`:**
+**`generate_perfect_profile(job_title, esco_skills, api_key, model_name, preferred_skill_names)`:**
 
 Uses Gemini with a structured system instruction that:
 1. Filters generic ESCO noise ("use internet", "work in teams").
 2. Normalizes skill names to industry standards ("NodeJS" → "Node.js").
 3. Infers required proficiency levels based on seniority markers in the job title.
 4. Adds missing industry-standard skills not covered by ESCO.
+5. Uses a name from `preferred_skill_names` (skills the assessment question bank covers) exactly when a skill means the same thing.
 
 Output: `PerfectProfile {position: str, skills: [TargetSkill, ...]}`
 
 Each `TargetSkill`: `{name: str, target_proficiency: Literal["Beginner","Intermediate","Advanced"], priority: Literal["Essential","Optional"]}`.
 
-Note: `target_proficiency` only supports `Beginner/Intermediate/Advanced` (not `Expert`). `Expert` is only used for `EmployeeSkill.level`.
+Note: levels are `Beginner/Intermediate/Advanced` everywhere (`Expert` was removed).
 
 ### gap_analysis_ai.py
 
