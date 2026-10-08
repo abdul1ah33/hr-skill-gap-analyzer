@@ -14,6 +14,8 @@ import PositionsPage from "./pages/PositionsPage";
 import PositionDetailsPage from "./pages/PositionDetailsPage";
 import GapAnalysisPage from "./pages/GapAnalysisPage";
 import GapAnalysisResultPage from "./pages/GapAnalysisResultPage";
+import SkillAssessmentsPage from "./pages/SkillAssessmentsPage";
+import EmployeeSkillAssessmentsPage from "./pages/EmployeeSkillAssessmentsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AssessmentInstructionsPage from "./pages/AssessmentInstructionsPage";
 import AssessmentPage from "./pages/AssessmentPage";
@@ -43,6 +45,8 @@ function App() {
               <Route path="/positions/:id" element={<PositionDetailsPage />} />
               <Route path="/gap-analysis" element={<GapAnalysisPage />} />
               <Route path="/gap-analysis/:id" element={<GapAnalysisResultPage />} />
+              <Route path="/skill-assessments" element={<SkillAssessmentsPage />} />
+              <Route path="/skill-assessments/:id" element={<EmployeeSkillAssessmentsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Route>
 

@@ -115,7 +115,7 @@ Endpoints, session header, error codes and response fields are documented in [ap
 |---|---|---|
 | Types / API | `src/types/assessment.ts`, `src/services/assessmentService.ts` | Mirror the backend schemas; all calls, including the HR "start on behalf" (assign + start) |
 | Employee portal | `src/layouts/EmployeeLayout.tsx`, `src/pages/MyAssessmentsPage.tsx` | Assigned / in-progress test, skills the next test covers, history |
-| HR | `src/components/assessment/EmployeeAssessmentsCard.tsx` (on `EmployeeDetailsPage`) | **Start Test** (runs it now on HR's screen), **Assign Test** (the employee starts it from their account), Cancel, history; "Verified" badges on tested skills |
+| HR | `src/components/assessment/EmployeeAssessmentsCard.tsx` (on `EmployeeDetailsPage` and the sidebar's **Assessments** page, `/skill-assessments/:id`) | **Start Test** (runs it now on HR's screen), **Assign Test** (the employee starts it from their account), Cancel, history; "Verified" badges on tested skills |
 | Instructions | `src/pages/AssessmentInstructionsPage.tsx` (`/assessments/start[?employee=<id>]`) | Skills in the test, time and violation limits from the server; starts the test and enters fullscreen |
 | Test | `src/pages/AssessmentPage.tsx` | Opens the session, resumes after refresh, saves each answer, heartbeat every 20 s, per-question timer capped by the server deadline, "open on another device" screen with retry countdown |
 | Result | `src/pages/AssessmentResultPage.tsx` | Per skill: level before → assessed, required, correct / 5, profile change |

@@ -9,6 +9,7 @@ import {
   Bell,
   LogOut,
   BarChart3,
+  ClipboardCheck,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logout } from "../lib/auth";
@@ -38,6 +39,11 @@ const navigation = [
     name: "Gap Analysis",
     path: "/gap-analysis",
     icon: BarChart3,
+  },
+  {
+    name: "Assessments",
+    path: "/skill-assessments",
+    icon: ClipboardCheck,
   },
   {
     name: "Skills",

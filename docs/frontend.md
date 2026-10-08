@@ -50,6 +50,7 @@ my_frontend/src/
 │   └── DashboardLayout.tsx      # Older unstyled layout, not used
 ├── pages/                       # One file per route (see below)
 ├── services/                    # Axios wrappers, one file per resource
+├── components/EmployeePicker.tsx  # Searchable employee grid (Gap Analysis and Assessments pages)
 ├── components/assessment/       # AssessmentHistoryTable, EmployeeAssessmentsCard (HR)
 ├── hooks/assessment/            # useAssessmentTimer, useAssessmentSecurity
 ├── types/                       # TS interfaces mirroring backend schemas (snake_case)
@@ -80,6 +81,8 @@ Defined in `src/App.tsx`. Routes are grouped by role with `ProtectedRoute roles=
 | `/positions/:id` | `PositionDetailsPage` | Required skills for a position: view, add, edit level/essential, delete, regenerate with AI |
 | `/gap-analysis` | `GapAnalysisPage` | Pick an employee (those with a position) to analyse |
 | `/gap-analysis/:id` | `GapAnalysisResultPage` | Skill diff + Gemini report (readiness score, pathways, reconciled skills, strengths) |
+| `/skill-assessments` | `SkillAssessmentsPage` | Pick an employee (those with a position) to test (sidebar "Assessments") |
+| `/skill-assessments/:id` | `EmployeeSkillAssessmentsPage` | Employee header + `EmployeeAssessmentsCard`: Start Test, Assign Test, Cancel, history |
 | `/skills` | `SkillsPage` | Placeholder ("coming soon") |
 | `/settings` | `SettingsPage` | Theme selection and logout |
 | `/my/assessments` | `MyAssessmentsPage` | **Employee portal:** assigned / in-progress test, skills the next test covers, history |

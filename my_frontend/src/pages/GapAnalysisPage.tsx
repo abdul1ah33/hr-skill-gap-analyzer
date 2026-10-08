@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getEmployees } from "../services/employeeService";
 import type { Employee } from "../types/employee";
-import { Input } from "../components/ui/input";
-import { Search, TrendingUp, Zap, BarChart3, UserCircle2 } from "lucide-react";
+import EmployeePicker from "../components/EmployeePicker";
+import { TrendingUp, Zap, BarChart3, UserCircle2 } from "lucide-react";
 
 /* ─── tiny animated counter hook ─────────────────────────────────── */
 function useCounter(target: number, duration = 1200) {
@@ -82,7 +82,6 @@ export default function GapAnalysisPage() {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [heroVisible, setHeroVisible] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -101,16 +100,6 @@ export default function GapAnalysisPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  const filtered = employees.filter((e) => {
-    const q = search.toLowerCase();
-    return (
-      `${e.first_name} ${e.last_name}`.toLowerCase().includes(q) ||
-      e.email.toLowerCase().includes(q) ||
-      e.employee_number.toLowerCase().includes(q) ||
-      (e.position?.title ?? "").toLowerCase().includes(q)
-    );
-  });
-
   const withPosition = employees.filter((e) => e.position).length;
 
   return (
@@ -120,23 +109,6 @@ export default function GapAnalysisPage() {
         @keyframes float {
           from { transform: translateY(0px) scale(1); opacity: 0.5; }
           to   { transform: translateY(-18px) scale(1.15); opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes pulse-ring {
-          0%, 100% { box-shadow: 0 0 0 0 #6c63ff33; }
-          50%       { box-shadow: 0 0 0 10px #6c63ff00; }
-        }
-        .employee-card:hover .run-analysis-hint {
-          opacity: 1;
-          transform: translateX(0);
-        }
-        .employee-card .run-analysis-hint {
-          opacity: 0;
-          transform: translateX(8px);
-          transition: all 0.2s ease;
         }
       `}</style>
 
@@ -193,113 +165,16 @@ export default function GapAnalysisPage() {
         </div>
 
         {/* ── SEARCH + LIST ────────────────────────────────────────────── */}
-        <div
-          className="overflow-hidden rounded-2xl"
-          style={{ background: "var(--card)", border: "1px solid var(--border)", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
-        >
-          {/* toolbar */}
-          <div className="flex items-center justify-between gap-4 px-6 py-4" style={{ borderBottom: "1px solid var(--border)" }}>
-            <div>
-              <h2 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>Select Employee</h2>
-              <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>Choose an employee to run their gap analysis</p>
-            </div>
-
-            <div
-              className="flex items-center gap-2 rounded-xl px-4 py-2"
-              style={{ background: "var(--muted)", border: "1px solid var(--border)", minWidth: 260 }}
-            >
-              <Search style={{ width: 15, height: 15, color: "var(--muted-foreground)", flexShrink: 0 }} />
-              <Input
-                placeholder="Search by name, email, position…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="border-0 bg-transparent p-0 text-sm shadow-none outline-none focus-visible:ring-0"
-                style={{ color: "var(--foreground)" }}
-              />
-            </div>
-          </div>
-
-          {/* employee cards */}
-          <div className="p-4">
-            {loading ? (
-              <div className="flex flex-col gap-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="h-20 animate-pulse rounded-2xl" style={{ background: "var(--muted)" }} />
-                ))}
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 py-16">
-                <UserCircle2 style={{ width: 48, height: 48, color: "var(--border)" }} />
-                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No employees found.</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((emp, idx) => {
-                  const initials = `${emp.first_name[0]}${emp.last_name[0]}`;
-                  const hasPosition = !!emp.position;
-                  return (
-                    <button
-                      key={emp.id}
-                      type="button"
-                      onClick={() => navigate(`/gap-analysis/${emp.id}`)}
-                      disabled={!hasPosition}
-                      title={!hasPosition ? "No position assigned — cannot run analysis" : undefined}
-                      className="employee-card group relative flex items-center gap-4 rounded-2xl p-4 text-left transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{
-                        background: "var(--muted)",
-                        border: "1px solid var(--border)",
-                        animation: `slideUp 0.4s ease both`,
-                        animationDelay: `${idx * 40}ms`,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!hasPosition) return;
-                        (e.currentTarget as HTMLElement).style.background = "var(--accent)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--accent)";
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(108,99,255,0.15)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "var(--muted)";
-                        (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                      }}
-                    >
-                      {/* avatar */}
-                      <div
-                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-base font-bold text-white"
-                        style={{ background: "linear-gradient(135deg, #6c63ff, #a78bfa)", animation: "pulse-ring 2.5s ease-in-out infinite" }}
-                      >
-                        {initials}
-                      </div>
-
-                      {/* info */}
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold" style={{ color: "var(--foreground)" }}>
-                          {emp.first_name} {emp.last_name}
-                        </p>
-                        <p className="truncate text-xs" style={{ color: "var(--primary)", fontWeight: 600 }}>
-                          {emp.position?.title ?? <span style={{ color: "var(--muted-foreground)" }}>No position</span>}
-                        </p>
-                        <p className="truncate text-xs mt-0.5" style={{ color: "var(--muted-foreground)" }}>
-                          {emp.department?.name ?? "—"} · {emp.employee_number}
-                        </p>
-                      </div>
-
-                      {/* arrow hint */}
-                      {hasPosition && (
-                        <div className="run-analysis-hint flex items-center gap-1 shrink-0">
-                          <span className="text-xs font-semibold" style={{ color: "var(--primary)" }}>Analyse</span>
-                          <Zap style={{ width: 13, height: 13, color: "var(--primary)" }} />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
+        <EmployeePicker
+          employees={employees}
+          loading={loading}
+          title="Select Employee"
+          subtitle="Choose an employee to run their gap analysis"
+          actionLabel="Analyse"
+          actionIcon={Zap}
+          noPositionTitle="No position assigned — cannot run analysis"
+          onSelect={(emp) => navigate(`/gap-analysis/${emp.id}`)}
+        />
       </div>
     </>
   );
