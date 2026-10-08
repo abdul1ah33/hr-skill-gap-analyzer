@@ -77,6 +77,6 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - ✅ ~~Answer-length bias~~ fixed: 183 Claude-written and 77 Gemini-written questions had a correct option >15% longer than every other option. Near-miss options were rewritten (and 40 overly long Gemini correct answers shortened); now 0 in both files. The generator rejects such questions from now on (`MAX_CORRECT_LENGTH_RATIO` in `app/ai/question_generator.py`).
 - ✅ ~~`POST /skills` broken~~ fixed: create/update accept only `name` (normalised to lowercase); responses still include `category`/`description` as null. Tests added (16 passing).
 - ✅ ~~Leftover database `ai_hr_assistant_migration_test`~~ dropped.
-- ⚠️ **Teammate's bank:** 22 invalid questions. Per D8 the importer will skip and report them; fixing them is a content decision for the teammate (which of two "correct" options is right, which extra option to drop).
+- ✅ ~~Teammate's bank: 22 invalid questions~~ fixed in `output_question_bank.jsonl`: duplicated option types retyped, duplicate 7th options dropped, and wrong answers corrected (Python descriptors, JavaScript generator, accounting retail method 59.5%, two-stage DDM $46.17, Gordon growth reworded, thermodynamics reworded to the computable initial liquid mass, PyTorch autograd, `git switch -c` replaced as it was also correct). Google Ads #19 was valid; option uniqueness is now case-sensitive. The whole bank passes validation.
 - ⚠️ **`backend/app/test_ai_service.py`** imports `ai.perfect_profile`, which doesn't exist (pre-existing).
-- ⚠️ Nothing is committed yet.
+- ✅ Committed in 13 commits and pushed to `origin/main` (2026-10-08).
