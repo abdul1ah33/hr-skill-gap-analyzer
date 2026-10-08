@@ -73,11 +73,12 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] Unit tests for all 18 combinations (`tests/test_assessment_scoring.py`); also `score_skill` (unanswered = wrong, 1 B / 2 I / 2 A layout check) and `profile_action_for` (§A.8)
 
 ## Phase 7 — Comparison integration and targeting
-- [ ] `skill_comparison_service.py`: add `skill_id` to every entry
-- [ ] (Optional) strip `skill_id` in `gap_analysis_service.py` before calling Gemini
-- [ ] `services/assessment_target_service.py`: categories (D2), bank availability, order matched → needs_improvement → unmatched with essential first, cap 8 (§A.6), cooldown (D10), not-assessable reasons
-- [ ] `crud/question_bank.py`: availability counts, seen-question ids per employee
-- [ ] Tests: comparison still returns the same categories; target selection rules
+- [x] `skill_comparison_service.py`: add `skill_id` to every entry
+- [x] Strip `skill_id` in `gap_analysis_service.py` before calling Gemini (still returned to the API)
+- [x] `services/assessment_target_service.py`: categories (D2), bank availability, order matched → needs_improvement → unmatched with essential first, cap 8 (§A.6), not-assessable reasons
+- [ ] **Postponed by the user (2026-10-08):** retake cooldown (D10, 30 days per skill, reason `recently_assessed`); will be implemented later
+- [x] `crud/question_bank.py`: availability counts (seen-question ids move to Phase 8, where they're used)
+- [x] Tests: comparison still returns the same categories; target selection rules (`tests/test_assessment_targets.py`)
 
 ## Phase 8 — Generation and persistence
 - [ ] `services/assessment_generation_service.py`: per-level sampling with `SystemRandom`, prefer unseen, option shuffle into `option_order`, single transaction

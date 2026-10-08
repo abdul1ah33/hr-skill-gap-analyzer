@@ -62,14 +62,20 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `profile_action_for(claimed, assessed)`: CREATED / NO_CHANGE / REMOVED / UPGRADED / DOWNGRADED / CONFIRMED (§A.8), ready for grading in Phase 9
 - [x] `tests/test_assessment_scoring.py`: all 18 outcomes, the table checked against the short rule, layout errors, every profile action; 135 tests passing
 
+### ✅ Phase 7 — Comparison integration and targeting
+- [x] `skill_comparison_service.py`: every entry has `skill_id`; `gap_analysis_service.py` removes it before sending the comparison to Gemini (the API response still includes it)
+- [x] `app/services/assessment_target_service.py`: candidates = every required skill (matched / needs_improvement / unmatched, not additional), ordered matched → needs_improvement → unmatched, essential first, then name; skills without 1 B / 2 I / 2 A active questions skipped as `no_question_bank` / `insufficient_questions`; cap `ASSESSMENT_MAX_SKILLS` (default 8, `core/config.py`), rest `over_limit`
+- [x] Errors in `core/exceptions.py`: `PositionHasNoSkillsError`, `NoAssessableSkillsError` (carries the not-assessable list); HTTP handlers come in Phase 9
+- [x] `app/crud/question_bank.py`: active question counts per skill and level
+- [x] Test factory `bank_questions(skill, beginner, intermediate, advanced, is_active)`; `tests/test_assessment_targets.py` (11 tests); 146 tests passing
+- [x] Checked read-only on the dev DB: e.g. Machine Learning Engineer → 8 skills tested, 4 over limit
+- ⏸️ **Retake cooldown (D10) postponed by the user**; to be implemented later
+
 ---
 
 ## Next
 
-### 🔜 Phase 7 — Comparison integration and targeting
-- [ ] `skill_id` in comparison results; target selection (matched → needs_improvement → unmatched, essential first, cap 8, 30-day cooldown)
-
-### ⬜ Phase 8 — Generation and persistence
+### 🔜 Phase 8 — Generation and persistence
 - [ ] Random 1 B / 2 I / 2 A per skill (prefer unseen), option shuffle, single transaction, idempotent start, expiry
 
 ### ⬜ Phase 9 — API, grading, profile application
