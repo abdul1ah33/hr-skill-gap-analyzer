@@ -1,13 +1,14 @@
 import os
 import json
 import logging
+import time
 from typing import List, Optional, Literal
 from pydantic import BaseModel, Field, ValidationError
 
 # Modern Google GenAI SDK
 from google import genai
 from google.genai import types
-from google.genai.errors import APIError
+from google.genai.errors import APIError, ServerError
 
 try:
     from dotenv import load_dotenv
@@ -152,6 +153,10 @@ CRITICAL RULES:
 # LLM model version
 TARGET_MODEL = "gemini-3.5-flash-lite"
 
+# Retries for temporary Gemini server errors (5xx)
+MAX_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 2
+
 
 # -----------------------------------------------------------------------------
 # Core Microservice Function
@@ -192,12 +197,21 @@ def generate_gap_report(job_title: str, skill_diff: dict, api_key: str) -> Optio
     )
 
     try:
-        # Call the API
-        response = client.models.generate_content(
-            model=TARGET_MODEL,
-            contents=prompt,
-            config=config
-        )
+        # Call the API. Gemini sometimes answers 503 "high demand" for a
+        # few seconds, so retry server errors before giving up.
+        for attempt in range(1, MAX_ATTEMPTS + 1):
+            try:
+                response = client.models.generate_content(
+                    model=TARGET_MODEL,
+                    contents=prompt,
+                    config=config
+                )
+                break
+            except ServerError as e:
+                if attempt == MAX_ATTEMPTS:
+                    raise
+                logger.warning(f"Gemini server error (attempt {attempt}/{MAX_ATTEMPTS}), retrying: {e}")
+                time.sleep(RETRY_DELAY_SECONDS * attempt)
 
         response_text = response.text
         if not response_text:

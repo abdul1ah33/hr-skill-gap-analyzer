@@ -159,7 +159,7 @@ def employee_skill_gap_route(
     service = SkillGapService()
 
     try:
-        return service.generate_employee_gap_analysis(
+        result = service.generate_employee_gap_analysis(
             db=db,
             employee_id=employee_id,
             api_key=GEMINI_API_KEY,
@@ -176,6 +176,15 @@ def employee_skill_gap_route(
             status_code=500,
             detail=str(e),
         )
+
+    # The AI call failed (e.g. Gemini overloaded); the details are in the log
+    if result["gap_analysis"] is None:
+        raise HTTPException(
+            status_code=503,
+            detail="The AI service is busy or unavailable right now. Please try again in a minute.",
+        )
+
+    return result
 
 
 # ─── NESTED EMPLOYEE SKILLS ENDPOINTS ──────────────────────────────────────────
