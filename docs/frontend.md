@@ -63,15 +63,15 @@ my_frontend/src/
 
 ## Routing
 
-Defined in `src/App.tsx`. Everything except `/login` is wrapped in `ProtectedRoute` and rendered inside `AppLayout`.
+Defined in `src/App.tsx`. Routes are grouped by role with `ProtectedRoute roles={[...]}` (the role is read from the JWT): HR pages render inside `AppLayout`, the employee portal inside `EmployeeLayout`, and the test pages without a layout (full screen). A user who opens a page of the other role is sent to their own home page (`/dashboard` for HR, `/my/assessments` for employees).
 
 | Route | Page | Purpose |
 |---|---|---|
-| `/login` | `LoginPage` | Email/username + password login. Redirects to `/dashboard` if a token already exists. |
+| `/login` | `LoginPage` | Email/username + password login. Redirects to the role's home page (`/dashboard` or `/my/assessments`). |
 | `/dashboard` | `DashboardPage` | Employee, department and position counts plus quick links |
 | `/employees` | `EmployeesPage` | Employee list with search |
 | `/employees/add` | `AddEmployeePage` | Create an employee manually, or upload a PDF/DOCX resume to create one with AI |
-| `/employees/:id` | `EmployeeDetailsPage` | Profile, education, certifications; add/edit/remove employee skills; delete employee |
+| `/employees/:id` | `EmployeeDetailsPage` | Profile, education, certifications; add/edit/remove employee skills ("Verified" badge for tested levels); delete employee; **Skill Assessments** card (Start Test / Assign Test / Cancel, history) |
 | `/employees/:id/edit` | `EditEmployeePage` | Edit employee details |
 | `/departments` | `DepartmentsPage` | List, create, delete departments |
 | `/positions` | `PositionsPage` | List, create, edit, delete positions |
@@ -80,11 +80,12 @@ Defined in `src/App.tsx`. Everything except `/login` is wrapped in `ProtectedRou
 | `/gap-analysis/:id` | `GapAnalysisResultPage` | Skill diff + Gemini report (readiness score, pathways, reconciled skills, strengths) |
 | `/skills` | `SkillsPage` | Placeholder ("coming soon") |
 | `/settings` | `SettingsPage` | Theme selection and logout |
-| `/assessments/:id/instructions` | `AssessmentInstructionsPage` | Rules, timing and proctoring info before starting |
-| `/assessments/:id` | `AssessmentPage` | One question at a time with a per-question timer |
-| `/assessments/:id/result` | `AssessmentResultPage` | Submission confirmation |
+| `/my/assessments` | `MyAssessmentsPage` | **Employee portal:** assigned / in-progress test, skills the next test covers, history |
+| `/assessments/start` | `AssessmentInstructionsPage` | Skills in the test and the rules; starts the employee's own test. With `?employee=<id>` (HR) it starts the test on that employee's behalf |
+| `/assessments/:id` | `AssessmentPage` | Takes the test (employee or HR): one question at a time, per-question and overall timers, answers saved immediately, heartbeat, "open on another device" screen |
+| `/assessments/:id/result` | `AssessmentResultPage` | Per-skill result: level before → assessed, required level, correct / 5, profile change |
 
-There is no role-based routing yet: any logged-in user gets the HR interface. The backend enforces HR-only access on most routers (see [api.md](api.md)).
+The test pages are open to both roles; the backend decides access (owner or HR).
 
 ---
 
@@ -92,14 +93,15 @@ There is no role-based routing yet: any logged-in user gets the HR interface. Th
 
 - `LoginPage` calls `authService.login({ login, password })` → `POST /auth/login` and stores the token in `localStorage` under **`access_token`**.
 - `services/api.ts` attaches `Authorization: Bearer <token>` to every request.
-- `ProtectedRoute` only checks that the token exists. It does not decode it or check expiry, and there is no 401 response interceptor, so an expired token shows up as failed API calls until the user logs out.
-- Logout (sidebar button or Settings page) removes `access_token` and navigates to `/login`.
+- `lib/auth.ts` decodes the role and expiry from the JWT payload (`getRole`); `ProtectedRoute` sends users without a valid token to `/login` and users of the wrong role to their home page. There is still no 401 response interceptor.
+- Logout (`lib/auth.logout`) removes `access_token` and any assessment session tokens, so the next account on the same tab can't reuse an open test session.
+- Employee accounts are created with `POST /auth/signup` (the employee's email) or the demo seed (`python -m app.scripts.seed_assessment_demo`).
 
 ---
 
 ## Services
 
-All services use the shared axios instance in `services/api.ts` (`baseURL: "http://localhost:8000"`, hard-coded). Request and response bodies use the backend's snake_case field names directly; there is no camelCase mapping layer.
+All services use the shared axios instance in `services/api.ts` (`baseURL` from `VITE_API_URL`, default `http://localhost:8000`). Request and response bodies use the backend's snake_case field names directly; there is no camelCase mapping layer.
 
 | File | Functions | Endpoints |
 |---|---|---|
@@ -113,7 +115,9 @@ All services use the shared axios instance in `services/api.ts` (`baseURL: "http
 | `resumeService.ts` | `extractResume` | `POST /resume/extract` (multipart) |
 | `gapAnalysisService.ts` | `getSkillGapAnalysis` | `GET /employees/{id}/skill-gap` |
 
-There is no assessment service yet; the assessment pages read `data/mockAssessment.ts`.
+| `assessmentService.ts` | employee: `getMyPreview`, `startMyAssessment`, `listMyAssessments`; any: `openSession`, `getAssessment`, `sendHeartbeat`, `saveAnswer`, `reportViolation`, `submitAssessment`, `getResult`; HR: `getEmployeePreview`, `listEmployeeAssessments`, `assignAssessment`, `cancelAssessment`, `startOnBehalf` (assigns first if needed, then starts); `toAssessmentError` | `/assessments…`, `/employees/{id}/assessments…` |
+
+The assessment session token is kept per tab in `sessionStorage` (`assessment-session:<id>`) and sent as `X-Assessment-Session`.
 
 ---
 
@@ -124,13 +128,13 @@ There is no assessment service yet; the assessment pages read `data/mockAssessme
 | File | Main types |
 |---|---|
 | `employee.ts` | `Employee`, `CreateEmployeeRequest`, `EmployeeUpdate` |
-| `employeeSkills.ts` | `SkillLevel` (`Beginner` / `Intermediate` / `Advanced` / `Expert`), `EmployeeSkill`, `AddEmployeeSkillData` |
+| `employeeSkills.ts` | `SkillLevel` (`Beginner` / `Intermediate` / `Advanced`), `EmployeeSkill` (with `verified`, `last_assessed_at`), `AddEmployeeSkillData` |
 | `department.ts` | `Department`, `CreateDepartmentData` |
 | `position.ts` | `Position` |
 | `positionSkill.ts` | `PositionSkill` (`required_skill_level`, `is_essential`, `short_description`), add/update payloads |
 | `skill.ts` | `Skill` |
 | `gapAnalysis.ts` | `SkillDiff`, `GapAnalysisReport`, `ReconciledSkill`, `UpskillRecommendation`, `SkillGapResult` |
-| `assessment.ts` | `Assessment`, `AssessmentConfig`, `AssessmentQuestion`, `AssessmentAttempt`, `AssessmentStatus` |
+| `assessment.ts` | Mirrors `backend/app/schemas/assessment.py`: `AssessmentDetail`, `AssessmentSession`, `AssessmentQuestion`, `AssessmentPreview`, `AssessmentResult`, `AssessmentSummary`, statuses and profile actions |
 
 ---
 
@@ -140,9 +144,10 @@ Used by `AssessmentPage`. Full feature description in [assessment.md](assessment
 
 | Hook | Responsibility |
 |---|---|
-| `useAssessmentAttempt` | Holds the attempt in local state: current question index, selected answers, violation count, status (`in_progress` / `completed` / `terminated`). Reaching `config.maxViolations` sets status to `terminated`. |
-| `useAssessmentTimer` | Counts down `config.timePerQuestion` seconds, resets when the question changes, calls `onExpire` at zero (the page then moves to the next question or submits). |
-| `useAssessmentSecurity` | Listens for `visibilitychange` (tab hidden) and window `blur`, reporting a violation at most once per second. |
+| `useAssessmentTimer` | Seconds left until a deadline (ms timestamp), calling `onExpire` once per deadline. Used for the per-question timer (capped by the overall deadline) and the overall timer from the server's `remaining_seconds`. |
+| `useAssessmentSecurity` | Reports `tab_hidden`, `window_blur` and `fullscreen_exit` violations (at most one per second) and blocks copy / cut / paste / context menu (copy and cut count as `copy_attempt`). The server counts violations and ends the test at the limit. |
+
+`AssessmentPage` keeps the attempt state itself: answers come from the server on load (resume at the first unanswered question after a refresh) and every selection is saved with `PUT …/answer`.
 
 ---
 
@@ -162,10 +167,6 @@ Used by `AssessmentPage`. Full feature description in [assessment.md](assessment
 
 ## Known Gaps
 
-- The sidebar's "Assessment Instructions" link points to the literal path `/assessments/:id/instructions`; it needs a real assessment ID.
-- Assessment pages use mock data and a hard-coded `employeeId: 1`; answers are only logged to the console on submit.
-- Fullscreen and copy protection are described on the instructions page but not enforced yet; only tab-switch/blur detection runs.
 - `SkillsPage` is a placeholder; skill aliases have no UI.
-- The API base URL is hard-coded in `services/api.ts`.
+- Proctoring is a deterrent only: a modified client can skip reporting violations.
 - `layouts/DashboardLayout.tsx` is unused.
-- `my_frontend/dist/` is a build output and is ignored by `.gitignore`.

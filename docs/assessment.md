@@ -108,33 +108,13 @@ These are the only question fields the frontend should receive.
 
 | Piece | File | Role |
 |---|---|---|
-| Types | `src/types/assessment.ts` | `Assessment`, `AssessmentConfig`, `AssessmentQuestion`, `AssessmentAttempt`, `AssessmentStatus` |
-| Mock data | `src/data/mockAssessment.ts` | 8-question "Supply Chain Specialist" assessment |
-| Instructions | `src/pages/AssessmentInstructionsPage.tsx` | Shows question count, time per question, violation limit and proctoring rules |
-| Test | `src/pages/AssessmentPage.tsx` | One question at a time, timer, next/submit |
-| Result | `src/pages/AssessmentResultPage.tsx` | "Assessment submitted" confirmation (no score yet) |
-| Attempt state | `src/hooks/assessment/useAssessmentAttempt.ts` | Answers, current index, violations, status |
-| Timer | `src/hooks/assessment/useAssessmentTimer.ts` | Per-question countdown; on expiry moves to the next question or submits |
-| Proctoring | `src/hooks/assessment/useAssessmentSecurity.ts` | Tab hidden / window blur → violation (debounced 1s) |
-
-### `AssessmentConfig`
-
-| Field | Meaning | Enforced? |
-|---|---|---|
-| `timePerQuestion` | Seconds per question | ✅ |
-| `maxViolations` | Violations before the attempt is terminated | ✅ |
-| `detectTabSwitch` | Count tab switches / focus loss as violations | ✅ |
-| `requireFullscreen` | Run in fullscreen | ❌ shown in instructions only |
-| `preventCopy` | Block copy/cut/paste/context menu | ❌ shown in instructions only |
-
-### Frontend/backend mismatches to resolve
-
-| Frontend (`types/assessment.ts`) | Backend (`schemas/assessment.py`) |
-|---|---|
-| `question` | `question_text` |
-| option `id: string` (`"A"`, `"B"`…) | option `id: int` |
-| no level | `proficiency_level` |
-| `order` | — |
+| Types / API | `src/types/assessment.ts`, `src/services/assessmentService.ts` | Mirror the backend schemas; all calls, including the HR "start on behalf" (assign + start) |
+| Employee portal | `src/layouts/EmployeeLayout.tsx`, `src/pages/MyAssessmentsPage.tsx` | Assigned / in-progress test, skills the next test covers, history |
+| HR | `src/components/assessment/EmployeeAssessmentsCard.tsx` (on `EmployeeDetailsPage`) | **Start Test** (runs it now on HR's screen), **Assign Test** (the employee starts it from their account), Cancel, history; "Verified" badges on tested skills |
+| Instructions | `src/pages/AssessmentInstructionsPage.tsx` (`/assessments/start[?employee=<id>]`) | Skills in the test, time and violation limits from the server; starts the test and enters fullscreen |
+| Test | `src/pages/AssessmentPage.tsx` | Opens the session, resumes after refresh, saves each answer, heartbeat every 20 s, per-question timer capped by the server deadline, "open on another device" screen with retry countdown |
+| Result | `src/pages/AssessmentResultPage.tsx` | Per skill: level before → assessed, required, correct / 5, profile change |
+| Hooks | `src/hooks/assessment/useAssessmentTimer.ts`, `useAssessmentSecurity.ts` | Deadline countdown; tab / blur / fullscreen violations and copy blocking |
 
 ---
 
