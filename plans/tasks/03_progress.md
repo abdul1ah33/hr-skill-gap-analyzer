@@ -113,13 +113,21 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] 197 backend tests passing
 - [ ] Verified levels on the gap analysis result page → moved to Phase 12
 
+### ✅ Phase 12 — Docs and cleanup
+- [x] "Verified" levels on the gap analysis result page
+- [x] Docs brought up to date: `assessment.md`, `api.md`, `database.md`, `backend.md`, `frontend.md`, `architecture.md`, `ai-analysis.md`, `README.md`, `my_frontend/README.md`
+- [x] Removed root `testing_assessments.py`
+- [x] Kept `services/old/` (needed by the CV skill test endpoint)
+
 ---
 
 ## Next
 
-### 🔜 Phase 12 — Docs and cleanup
-- [ ] Verified levels on the gap analysis result page (left over from Phase 11)
-- [ ] Final pass over `docs/` (database.md, README status table), delete root `testing_assessments.py`, optional removal of `services/old/` with its test script
+All planned phases (0–12) are done. Left for later, by decision:
+
+- ⏸️ Retake cooldown (D10, e.g. 30 days per skill), postponed by the user
+- ⚠️ Length bias in the teammate's curated bank (see Open issues): rewrite or send back
+- Gemini question generation for new skills is ready (`app/scripts/generate_question_bank.py`) but parked
 
 ---
 
@@ -130,5 +138,5 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - ✅ ~~Leftover database `ai_hr_assistant_migration_test`~~ dropped.
 - ✅ ~~Teammate's bank: 22 invalid questions~~ fixed in `output_question_bank.jsonl`: duplicated option types retyped, duplicate 7th options dropped, and wrong answers corrected (Python descriptors, JavaScript generator, accounting retail method 59.5%, two-stage DDM $46.17, Gordon growth reworded, thermodynamics reworded to the computable initial liquid mass, PyTorch autograd, `git switch -c` replaced as it was also correct). Google Ads #19 was valid; option uniqueness is now case-sensitive. The whole bank passes validation.
 - ⚠️ **Length bias in the teammate's bank:** in 1,534 of the 2,490 curated questions the correct option is more than 15% longer than every other option. They import fine (warning only), but test-takers can often guess by picking the longest answer. Options: rewrite the near-miss/misconception options as was done for the generated files, or ask the teammate to.
-- ⚠️ **`backend/app/test_ai_service.py`** imports `ai.perfect_profile`, which doesn't exist (pre-existing).
+- ✅ ~~`backend/app/test_ai_service.py` broken import~~: not broken; it is a manual script meant to be run from `backend/app`.
 - ✅ Committed in 13 commits and pushed to `origin/main` (2026-10-08).

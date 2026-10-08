@@ -129,6 +129,8 @@ Notes: `get_assessment_actor` became an owner-or-HR check inside `assessment_ser
 - Bug found by the browser run and fixed: demo employees used `@demo.local` emails, which the employee response rejects (500); now `@example.com` (seed + dev DB updated), with an API test
 
 ## Phase 12 — Docs and cleanup
-- [ ] Update `docs/assessment.md`, `docs/api.md`, `docs/database.md`, `docs/backend.md`, `docs/setup.md` (migration + import step), `README.md` status table
-- [ ] Delete root `testing_assessments.py`
-- [ ] Remove `backend/app/services/old/skill_gap_service.py` / `skill_alias_service.py` together with `backend/test_skill_alias_system.py` (optional cleanup)
+- [x] Verified levels on the gap analysis result page (left over from Phase 11): comparison entries carry `verified` (kept out of the Gemini prompt); "Verified" badge on matched / needs-improvement skills
+- [x] Update `docs/assessment.md` (flow, scoring, profile update, code map, limitations), `docs/api.md`, `docs/database.md` (new tables, constraints, migration, seeds; old assessment tables and orphan cleanup removed), `docs/backend.md`, `docs/frontend.md`, `docs/architecture.md`, `docs/ai-analysis.md`, `docs/setup.md`, `README.md` (status table, quick start), `my_frontend/README.md`
+- [x] Delete root `testing_assessments.py`
+- [ ] ~~Remove `backend/app/services/old/skill_gap_service.py` / `skill_alias_service.py` with `backend/test_skill_alias_system.py`~~: **not done on purpose**. The kept CV skill test endpoint (`/assessment`) imports `old/assessment_service.py`, which imports both files; removing them would break it. The project convention is also to keep superseded code in `old/`
+- `backend/app/test_ai_service.py`: not broken (a manual script run from `backend/app`, where `ai.perfect_profile` resolves; pytest doesn't collect it). The earlier open issue was wrong
