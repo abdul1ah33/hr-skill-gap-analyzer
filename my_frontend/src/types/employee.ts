@@ -18,6 +18,9 @@ export interface EmployeeSkill {
   id: number;
   level: string;
   skill: Skill;
+  // Set by a graded skill assessment; reset when the level is edited by hand
+  verified?: boolean;
+  last_assessed_at?: string | null;
 }
 
 export interface Education {

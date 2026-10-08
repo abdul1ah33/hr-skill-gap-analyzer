@@ -1,14 +1,15 @@
 export type SkillLevel =
   | "Beginner"
   | "Intermediate"
-  | "Advanced"
-  | "Expert";
+  | "Advanced";
 
 export interface EmployeeSkill {
   id: number;
   employee_id: number;
   skill_id: number;
   level: SkillLevel;
+  verified?: boolean;
+  last_assessed_at?: string | null;
   skill: {
     id: number;
     name: string;

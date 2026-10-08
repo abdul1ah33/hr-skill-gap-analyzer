@@ -14,8 +14,11 @@ import { getSkills } from "../services/skillService";
 import type { Skill } from "../types/employee";
 import type { SkillLevel } from "../types/employeeSkills";
 
+import EmployeeAssessmentsCard from "../components/assessment/EmployeeAssessmentsCard";
+
 import {
   ArrowLeft,
+  BadgeCheck,
   BarChart3,
   Pencil,
   Plus,
@@ -33,10 +36,6 @@ const levelBadgeClasses: Record<string, string> = {
   Beginner: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
   Intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
   Advanced: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-};
-
-const levelBadgeStyle: Record<string, { background: string; color: string }> = {
-  Expert: { background: "var(--accent)", color: "var(--primary)" },
 };
 
 function EmployeeDetailsPage() {
@@ -253,9 +252,9 @@ function EmployeeDetailsPage() {
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             { icon: Mail, label: "Email", value: employee.email },
-            { icon: Phone, label: "Phone", value: employee.phone || "â€”" },
+            { icon: Phone, label: "Phone", value: employee.phone || "—" },
             { icon: Building2, label: "Department", value: employee.department?.name ?? employee.position?.department?.name ?? "—" },
-            { icon: BriefcaseBusiness, label: "Position", value: employee.position?.title ?? "â€”" },
+            { icon: BriefcaseBusiness, label: "Position", value: employee.position?.title ?? "—" },
           ].map(({ icon: Icon, label, value }) => (
             <div
               key={label}
@@ -425,7 +424,6 @@ function EmployeeDetailsPage() {
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
                   </select>
                 </div>
 
@@ -451,7 +449,6 @@ function EmployeeDetailsPage() {
             <div className="space-y-2">
               {employee.employee_skills.map((employeeSkill) => {
                 const levelClass = levelBadgeClasses[employeeSkill.level] ?? levelBadgeClasses["Beginner"];
-                const levelStyle = levelBadgeStyle[employeeSkill.level];
                 return (
                   <div
                     key={employeeSkill.id}
@@ -466,9 +463,18 @@ function EmployeeDetailsPage() {
                       {editingSkillId !== employeeSkill.id && (
                         <span
                           className={`rounded-lg px-2 py-0.5 text-xs font-medium ${levelClass}`}
-                          style={levelStyle}
                         >
                           {employeeSkill.level}
+                        </span>
+                      )}
+
+                      {employeeSkill.verified && (
+                        <span
+                          className="flex items-center gap-1 rounded-lg bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+                          title={`Verified by a skill test${employeeSkill.last_assessed_at ? ` on ${new Date(employeeSkill.last_assessed_at).toLocaleDateString()}` : ""}`}
+                        >
+                          <BadgeCheck style={{ width: "12px", height: "12px" }} />
+                          Verified
                         </span>
                       )}
                     </div>
@@ -486,7 +492,6 @@ function EmployeeDetailsPage() {
                           <option value="Beginner">Beginner</option>
                           <option value="Intermediate">Intermediate</option>
                           <option value="Advanced">Advanced</option>
-                          <option value="Expert">Expert</option>
                         </select>
 
                         <Button
@@ -538,6 +543,9 @@ function EmployeeDetailsPage() {
           )}
         </div>
       </div>
+
+      {/* Skill assessments (HR) */}
+      <EmployeeAssessmentsCard employeeId={employee.id} />
     </div>
   );
 }
