@@ -10,6 +10,7 @@ from app.models.employee import Employee
 from app.models.position import Position
 from app.models.skill import Skill
 from app.models.employee_skill import EmployeeSkill, SkillLevel
+from app.utils.skill_names import normalize_skill_name
 from app.models.education import Education
 from app.models.certification import Certification
 
@@ -105,12 +106,12 @@ class ResumeService:
 
         for skill_data in candidate.get("skills", []):
 
-            skill_name = skill_data["name"]
+            skill_name = normalize_skill_name(skill_data["name"])
             proficiency = skill_data["proficiency"]
 
             skill = (
                 db.query(Skill)
-                .filter(Skill.name.ilike(skill_name))
+                .filter(Skill.name == skill_name)
                 .first()
             )
 

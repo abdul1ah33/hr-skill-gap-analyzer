@@ -9,6 +9,7 @@ if str(backend_dir) not in sys.path:
 from app.db.database import SessionLocal
 from app.models.skill import Skill
 from app.models.skill_alias import SkillAlias
+from app.utils.skill_names import normalize_skill_name
 
 
 SEED_DATA = {
@@ -160,24 +161,25 @@ def seed_skill_aliases():
         aliases_created = 0
 
         for skill_name, aliases in SEED_DATA.items():
+            skill_name = normalize_skill_name(skill_name)
             # Check or create canonical Skill
             skill = (
                 db.query(Skill)
-                .filter(Skill.name.ilike(skill_name.strip()))
+                .filter(Skill.name == skill_name)
                 .first()
             )
             if not skill:
-                skill = Skill(name=skill_name.strip(), category="General")
+                skill = Skill(name=skill_name)
                 db.add(skill)
                 db.flush()
                 skills_created += 1
 
             # Populate Aliases idempotently
             for alias_str in aliases:
-                clean_alias = alias_str.strip()
+                clean_alias = normalize_skill_name(alias_str)
                 existing_alias = (
                     db.query(SkillAlias)
-                    .filter(SkillAlias.alias.ilike(clean_alias))
+                    .filter(SkillAlias.alias == clean_alias)
                     .first()
                 )
                 if not existing_alias:

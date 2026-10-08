@@ -10,6 +10,7 @@ from app.models.position import Position
 from app.models.skill import Skill
 from app.models.position_skill import PositionSkill
 from app.models.employee_skill import SkillLevel
+from app.utils.skill_names import normalize_skill_name
 
 from app.services.esco_skills_extractor import EscoService
 
@@ -226,7 +227,7 @@ class PositionSkillService:
 
         for target_skill in perfect_profile.skills:
 
-            skill_name = target_skill.name.strip()
+            skill_name = normalize_skill_name(target_skill.name)
 
             if not skill_name:
                 continue
@@ -238,7 +239,7 @@ class PositionSkillService:
             skill = (
                 db.query(Skill)
                 .filter(
-                    Skill.name.ilike(skill_name)
+                    Skill.name == skill_name
                 )
                 .first()
             )
