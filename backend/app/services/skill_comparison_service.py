@@ -12,6 +12,9 @@ class SkillComparisonService:
     Compares an employee's actual skills against the skills
     required by the employee's position.
 
+    Every entry includes the skill_id, so callers (e.g. the assessment
+    target selection) don't have to look skills up by name again.
+
     The comparison produces four categories:
 
         1. matched
@@ -204,6 +207,7 @@ class SkillComparisonService:
 
                 result["unmatched"].append(
                     {
+                        "skill_id": position_skill.skill_id,
                         "skill": skill_name,
                         "employee_level": "None",
                         "required_level": required_level,
@@ -237,6 +241,7 @@ class SkillComparisonService:
 
                 result["matched"].append(
                     {
+                        "skill_id": position_skill.skill_id,
                         "skill": skill_name,
                         "employee_level": employee_level,
                         "required_level": required_level,
@@ -252,6 +257,7 @@ class SkillComparisonService:
 
                 result["needs_improvement"].append(
                     {
+                        "skill_id": position_skill.skill_id,
                         "skill": skill_name,
                         "employee_level": employee_level,
                         "required_level": required_level,
@@ -280,6 +286,7 @@ class SkillComparisonService:
 
                 result["additional_skills"].append(
                     {
+                        "skill_id": employee_skill.skill_id,
                         "skill": skill_name,
                         "employee_level": (
                             employee_skill.level.value

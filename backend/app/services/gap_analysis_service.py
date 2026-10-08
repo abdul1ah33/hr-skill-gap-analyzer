@@ -100,14 +100,23 @@ class SkillGapService:
         # ---------------------------------------------------------
         # 4. PHASE D
         # ---------------------------------------------------------
-        # Send the exact Phase C result to the AI.
+        # Send the Phase C result (without skill ids) to the AI.
         #
         # We do NOT modify the AI file.
         # We simply call its existing function.
 
+        # skill_id is only for our own code; keep it out of the prompt
+        prompt_skill_diff = {
+            category: [
+                {key: value for key, value in entry.items() if key != "skill_id"}
+                for entry in entries
+            ]
+            for category, entries in skill_diff.items()
+        }
+
         gap_analysis = generate_gap_report(
             job_title=job_title,
-            skill_diff=skill_diff,
+            skill_diff=prompt_skill_diff,
             api_key=api_key,
         )
 
