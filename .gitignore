@@ -49,3 +49,6 @@ build/
 # docx & pdf files
 *.docx
 *.pdf
+.db_backups/
+backend/app/data/question_bank/generated/*.progress.json
+backend/app/data/question_bank/generated/*.rejections.log
