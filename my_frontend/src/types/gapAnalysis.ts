@@ -5,6 +5,7 @@ export interface MatchedSkill {
   employee_level: string;
   required_level: string;
   priority: "Essential" | "Optional";
+  verified?: boolean; // level set by a skill assessment
 }
 
 export interface NeedsImprovementSkill {
@@ -12,6 +13,7 @@ export interface NeedsImprovementSkill {
   employee_level: string;
   required_level: string;
   priority: "Essential" | "Optional";
+  verified?: boolean;
 }
 
 export interface UnmatchedSkill {
@@ -24,6 +26,7 @@ export interface UnmatchedSkill {
 export interface AdditionalSkill {
   skill: string;
   employee_level: string;
+  verified?: boolean;
 }
 
 export interface SkillDiff {

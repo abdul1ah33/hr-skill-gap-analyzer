@@ -49,6 +49,7 @@ def test_comparison_entries_include_skill_id(db, factory):
     assert [e["skill_id"] for e in result["needs_improvement"]] == [needs.id]
     assert [e["skill_id"] for e in result["unmatched"]] == [unmatched.id]
     assert [e["skill_id"] for e in result["additional_skills"]] == [extra.id]
+    assert [e["verified"] for e in result["matched"] + result["additional_skills"]] == [False, False]
 
 
 # ==========================================
@@ -212,4 +213,5 @@ def test_gap_analysis_keeps_skill_id_out_of_the_prompt(db, factory, monkeypatch)
     )
 
     assert "skill_id" not in sent["unmatched"][0]
+    assert all("verified" not in entry for entries in sent.values() for entry in entries)
     assert result["skill_diff"]["unmatched"][0]["skill_id"] == skill.id

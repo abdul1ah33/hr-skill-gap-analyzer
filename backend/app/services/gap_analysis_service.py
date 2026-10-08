@@ -105,10 +105,11 @@ class SkillGapService:
         # We do NOT modify the AI file.
         # We simply call its existing function.
 
-        # skill_id is only for our own code; keep it out of the prompt
+        # skill_id and verified are only for our own code and the UI;
+        # keep them out of the prompt
         prompt_skill_diff = {
             category: [
-                {key: value for key, value in entry.items() if key != "skill_id"}
+                {key: value for key, value in entry.items() if key not in ("skill_id", "verified")}
                 for entry in entries
             ]
             for category, entries in skill_diff.items()

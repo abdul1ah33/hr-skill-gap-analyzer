@@ -6,6 +6,7 @@ import type { Employee } from "../types/employee";
 import type { SkillGapResult } from "../types/gapAnalysis";
 import { Button } from "../components/ui/button";
 import {
+  BadgeCheck,
   ArrowLeft,
   Zap,
   CheckCircle2,
@@ -156,6 +157,19 @@ function AnalysisSkeleton() {
         <div key={i} className="rounded-2xl" style={{ height: h, background: "var(--muted)" }} />
       ))}
     </div>
+  );
+}
+
+/** The employee's level was set by a graded skill assessment. */
+function VerifiedBadge() {
+  return (
+    <span
+      className="flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400"
+      title="Level verified by a skill assessment"
+    >
+      <BadgeCheck style={{ width: 12, height: 12 }} />
+      Verified
+    </span>
   );
 }
 
@@ -478,6 +492,7 @@ export default function GapAnalysisResultPage() {
                             <CheckCircle2 className="text-emerald-600 dark:text-emerald-400" style={{ width: 15, height: 15, flexShrink: 0 }} />
                             <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>{sk.skill}</span>
                             <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>{pb.label}</span>
+                            {sk.verified && <VerifiedBadge />}
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="flex w-16 justify-center">
@@ -577,6 +592,7 @@ export default function GapAnalysisResultPage() {
                               <TrendingUp className="text-amber-700 dark:text-amber-400" style={{ width: 14, height: 14 }} />
                               <span className="text-sm font-bold" style={{ color: "var(--foreground)" }}>{sk.skill}</span>
                               <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${pb.className}`}>{pb.label}</span>
+                              {sk.verified && <VerifiedBadge />}
                             </div>
                             <div className="flex items-center gap-2">
                               <LevelBadge level={sk.employee_level} />

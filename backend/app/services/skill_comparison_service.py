@@ -13,7 +13,9 @@ class SkillComparisonService:
     required by the employee's position.
 
     Every entry includes the skill_id, so callers (e.g. the assessment
-    target selection) don't have to look skills up by name again.
+    target selection) don't have to look skills up by name again. Entries
+    for skills the employee has also say whether the level was verified
+    by a skill assessment.
 
     The comparison produces four categories:
 
@@ -246,6 +248,7 @@ class SkillComparisonService:
                         "employee_level": employee_level,
                         "required_level": required_level,
                         "priority": priority,
+                        "verified": employee_skill.verified,
                     }
                 )
 
@@ -262,6 +265,7 @@ class SkillComparisonService:
                         "employee_level": employee_level,
                         "required_level": required_level,
                         "priority": priority,
+                        "verified": employee_skill.verified,
                     }
                 )
 
@@ -291,6 +295,7 @@ class SkillComparisonService:
                         "employee_level": (
                             employee_skill.level.value
                         ),
+                        "verified": employee_skill.verified,
                     }
                 )
 
