@@ -71,14 +71,24 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] Checked read-only on the dev DB: e.g. Machine Learning Engineer → 8 skills tested, 4 over limit
 - ⏸️ **Retake cooldown (D10) postponed by the user**; to be implemented later
 
+### ✅ Phase 8 — Generation and persistence
+- [x] `app/services/assessment_generation_service.py` `start()`:
+  - returns the running assessment if there is one (same questions, same option order → refresh-safe)
+  - starts an HR-assigned assessment in place (keeps `assigned_by`), otherwise creates a new one
+  - per skill 1 B / 2 I / 2 A with `SystemRandom`, unseen questions first, then seen ones; Beginner → Intermediate → Advanced inside a skill
+  - options shuffled once into `option_order`; config snapshot (`seconds_per_question`, `max_violations`), position snapshot, `expires_at = start + questions × 60 s + 120 s`
+  - one transaction; losing the race on the one-active-assessment index returns the winner's assessment
+  - an in-progress assessment past `expires_at` is marked EXPIRED and a new one starts (**grading of expired attempts comes with Phase 9**)
+- [x] `app/crud/assessment.py` (owner-scoped and `FOR UPDATE` loaders, served question ids); `crud/question_bank.py` pools and option ids
+- [x] Settings in `core/config.py` and `docs/setup.md`: `ASSESSMENT_SECONDS_PER_QUESTION` (60), `ASSESSMENT_GRACE_SECONDS` (120), `ASSESSMENT_MAX_VIOLATIONS` (3)
+- [x] `tests/test_assessment_generation.py` (14 tests); 160 tests passing
+- [x] Checked on the dev DB inside a rolled-back transaction: Machine Learning Engineer → 8 skills, 40 questions, 42 min deadline
+
 ---
 
 ## Next
 
-### 🔜 Phase 8 — Generation and persistence
-- [ ] Random 1 B / 2 I / 2 A per skill (prefer unseen), option shuffle, single transaction, idempotent start, expiry
-
-### ⬜ Phase 9 — API, grading, profile application
+### 🔜 Phase 9 — API, grading, profile application
 - [ ] Employee, HR-assign and HR-on-behalf endpoints; session lock + heartbeat; grading; None → delete employee skill
 
 ### ⬜ Phase 10 — Gemini vocabulary alignment

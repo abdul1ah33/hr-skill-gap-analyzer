@@ -81,11 +81,11 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] Tests: comparison still returns the same categories; target selection rules (`tests/test_assessment_targets.py`)
 
 ## Phase 8 — Generation and persistence
-- [ ] `services/assessment_generation_service.py`: per-level sampling with `SystemRandom`, prefer unseen, option shuffle into `option_order`, single transaction
-- [ ] Idempotent start: return the existing IN_PROGRESS assessment; handle the partial-index race
-- [ ] Expiry handling (D12), `expires_at` computation (D15)
-- [ ] `crud/assessment.py`: owner-scoped loaders, `FOR UPDATE` loader
-- [ ] Tests (§13 "Random selection", "Persistence")
+- [x] `services/assessment_generation_service.py`: per-level sampling with `SystemRandom`, prefer unseen, option shuffle into `option_order`, single transaction
+- [x] Idempotent start: return the existing IN_PROGRESS assessment; start an ASSIGNED one in place; handle the partial-index race
+- [x] Expiry handling (D12: marked EXPIRED on the next start; grading it is Phase 9), `expires_at` computation (D15)
+- [x] `crud/assessment.py`: owner-scoped loaders, `FOR UPDATE` loader, served question ids
+- [x] Tests (§13 "Random selection", "Persistence"): `tests/test_assessment_generation.py`
 
 ## Phase 9 — API, grading and profile application
 - [ ] `auth/dependencies.py`: `get_current_user_with_employee`
