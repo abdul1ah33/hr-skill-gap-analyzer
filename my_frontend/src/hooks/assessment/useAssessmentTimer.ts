@@ -1,46 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UseAssessmentTimerProps {
-  duration: number;
-  questionKey: number;
+  /** Time (ms since epoch) the countdown ends; null = not running. */
+  deadline: number | null;
   onExpire: () => void;
 }
 
-export function useAssessmentTimer({
-  duration,
-  questionKey,
-  onExpire,
-}: UseAssessmentTimerProps) {
-  const [timeRemaining, setTimeRemaining] = useState(duration);
+/**
+ * Seconds left until `deadline`, ticking every 250 ms. Calls onExpire once
+ * per deadline. Deadlines come from the server (expires_at), so the client
+ * timer can never give more time than the server allows.
+ */
+export function useAssessmentTimer({ deadline, onExpire }: UseAssessmentTimerProps) {
+  const [now, setNow] = useState(() => Date.now());
+  const expiredFor = useRef<number | null>(null);
 
   useEffect(() => {
-    // Reset timer whenever the question changes.
-    setTimeRemaining(duration);
+    if (deadline === null) {
+      return;
+    }
 
-    const interval = window.setInterval(() => {
-      setTimeRemaining((previousTime) => {
-        if (previousTime <= 1) {
-          window.clearInterval(interval);
+    const interval = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(interval);
+  }, [deadline]);
 
-          return 0;
-        }
-
-        return previousTime - 1;
-      });
-    }, 1000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [duration, questionKey]);
+  const timeRemaining = deadline === null ? 0 : Math.max(0, Math.ceil((deadline - now) / 1000));
 
   useEffect(() => {
-    if (timeRemaining === 0) {
+    if (deadline !== null && timeRemaining === 0 && expiredFor.current !== deadline) {
+      expiredFor.current = deadline;
       onExpire();
     }
-  }, [timeRemaining, onExpire]);
+  }, [deadline, timeRemaining, onExpire]);
 
-  return {
-    timeRemaining,
-  };
+  return { timeRemaining };
 }
