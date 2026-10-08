@@ -139,6 +139,7 @@ This applies all migration files located in `backend/alembic/versions/`:
 | `b6b4472c0459_initial_clean_schema.py` | Creates all base tables |
 | `1e2cc2ec63e7_make_department_optional.py` | Makes department optional on Employee |
 | `f2908fc365d4_update_position_skills.py` | Updates position_skills table |
+| `a7c3e91d4b20_skill_assessment_system.py` | Skill assessment tables and question bank; removes `Expert` level; stores skill names in lowercase |
 
 ### Seed skill aliases (optional but recommended)
 
@@ -153,14 +154,11 @@ This is idempotent — running it multiple times is safe.
 
 ### Seed roles (required)
 
-The authentication system requires `HR` and `Employee` role records to exist in the `roles` table. Create them manually in PostgreSQL:
+The authentication system requires `HR` and `Employee` role records to exist in the `roles` table. Create them with the seed script (safe to run repeatedly):
 
-```sql
-INSERT INTO roles (name, description, created_at, updated_at)
-VALUES
-  ('HR', 'Human Resources manager with full administrative access', NOW(), NOW()),
-  ('Employee', 'Regular employee with self-service access', NOW(), NOW())
-ON CONFLICT (name) DO NOTHING;
+```bash
+# From inside backend/
+python -m app.scripts.seed_roles
 ```
 
 > **Note:** Without role records, all signup attempts will raise a `ValueError: Employee role not found.`
@@ -248,6 +246,20 @@ npm run dev
 
 ---
 
+## 9. Running Backend Tests
+
+Tests use a separate PostgreSQL database. By default it is your `DATABASE_URL` database name with a `_test` suffix (for example `ai_hr_assistant_test`); set `TEST_DATABASE_URL` in `.env` to use another one. The database user needs permission to create databases.
+
+```bash
+# From inside backend/
+pip install -r requirements.txt   # includes pytest
+python -m pytest
+```
+
+Each run drops and recreates the test database, applies all Alembic migrations, and rolls back every test's changes. The development database is never touched (the test setup refuses to run if both URLs point at the same database).
+
+---
+
 ## Common Setup Problems
 
 ### `ModuleNotFoundError: No module named 'app'`
@@ -270,7 +282,7 @@ The `SECRET_KEY` in `.env` does not match the key that signed the token. Make su
 
 ### `ValueError: Employee role not found.`
 
-The `roles` table does not have an `"Employee"` row. Run the role seed SQL above.
+The `roles` table does not have an `"Employee"` row. Run `python -m app.scripts.seed_roles`.
 
 ### `HTTPException: 500 Gemini API key is not configured`
 

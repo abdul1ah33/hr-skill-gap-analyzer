@@ -26,8 +26,8 @@ npm run dev
 ## Repository Conventions
 
 - **`my_frontend/` is the only frontend under development.** `frontend/` is legacy and kept for reference; don't add features there.
-- `ai/` holds standalone Ollama experiments that the backend does not use.
-- Superseded code is moved to `old/` folders (`backend/app/services/old/`, `backend/app/api/endpoints/old_Ollama/`) instead of being deleted.
+- `ai/` (repo root) holds the Ollama agents used by `POST /assessment/employee/{id}/assess` (CV skill test). Keep it while that endpoint exists.
+- Superseded code is moved to `old/` folders (`backend/app/services/old/`) instead of being deleted.
 - Design notes and diagrams live in `docs/` as `.txt` / `.png` / `.pdf`; maintained docs are the `.md` files.
 
 ---
@@ -105,7 +105,7 @@ npm run build   # also type-checks
 1. **Unprotected routes:** `get_current_hr` is commented out on the `/employees` and `/skills` routers.
 2. **CORS:** `allow_origins=["*"]`; restrict it to the frontend URL.
 3. **`backend.`-prefixed imports:** `assessment.py` and `resume.py` import via `backend.app…`, which only works because `app/core/paths.py` edits `sys.path` (and prints on startup).
-4. **Legacy assessment endpoint:** `/assessment/employee/{id}/assess` uses `services/old/assessment_service`; replace it with the new assessment service ([assessment.md](assessment.md)).
+4. **CV skill test endpoint:** `/assessment/employee/{id}/assess` is in use. It depends on `services/old/assessment_service` and the root `ai/` Ollama agents, and needs a local Ollama server. Not to be confused with the new `/assessments` (question-based test).
 5. **Frontend auth:** `ProtectedRoute` only checks that a token exists; no expiry check, no role check, no 401 handling.
 6. **Hard-coded API URL** in `my_frontend/src/services/api.ts`; move it to a Vite env variable (`VITE_API_URL`).
 7. **Skill aliases are unused in comparison:** `SkillComparisonService` does exact name matching and ignores `skill_aliases`.

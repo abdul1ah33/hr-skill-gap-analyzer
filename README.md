@@ -25,7 +25,7 @@ HR teams spend a lot of manual effort deciding what a role requires and whether 
 | `backend/` | **Active** | FastAPI + SQLAlchemy + PostgreSQL REST API, ESCO and Gemini integrations |
 | `my_frontend/` | **Active — main frontend** | React 19 + TypeScript + Vite + Tailwind v4 + shadcn/ui |
 | `frontend/` | Legacy — kept for reference, not maintained | The original React frontend. See [docs/legacy-frontend.md](docs/legacy-frontend.md) |
-| `ai/` | Experimental | Standalone Ollama-based agents, not wired into the backend |
+| `ai/` | Active (CV skill test) | Ollama agents used by `POST /assessment/employee/{id}/assess` |
 | `docs/` | — | Project documentation and design notes |
 
 ```
@@ -59,7 +59,7 @@ hr-skill-gap-analyzer/
 │       ├── contexts/                # ThemeContext (light/dark/system)
 │       └── data/                    # Mock assessment data
 ├── frontend/                        # Legacy frontend (unused)
-├── ai/                              # Experimental Ollama agents
+├── ai/                              # Ollama agents used by the CV skill test endpoint
 └── docs/
 ```
 

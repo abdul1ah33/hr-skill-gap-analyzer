@@ -90,8 +90,7 @@ backend/
     │       ├── position_skill.py
     │       ├── me.py
     │       ├── resume.py
-    │       ├── assessment.py    # Legacy assessment endpoint
-    │       └── old_Ollama/      # Old Ollama-based position skill router (unused)
+    │       ├── assessment.py    # CV skill test (Ollama, uses root ai/)
     ├── services/                # Business logic
     │   ├── esco_skills_extractor.py
     │   ├── position_skill_service.py

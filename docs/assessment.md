@@ -154,9 +154,24 @@ Existing tables (see `backend/app/models/assessment*.py`):
 
 ---
 
-## Legacy Endpoint
+## Generated Questions
 
-`POST /assessment/employee/{employee_id}/assess` (`backend/app/api/endpoints/assessment.py`) is from an earlier design. It imports `backend.app.services.old.assessment_service` and returns a skill comparison plus an AI text report, not a test. It should be replaced by the new endpoints.
+Skills without curated questions get Gemini-generated ones:
+
+```bash
+# from backend/
+python -m app.scripts.generate_question_bank --dry-run   # list target skills
+python -m app.scripts.generate_question_bank             # generate (resumable)
+```
+
+- Targets skills required by a position that no file under `app/data/question_bank/` covers, minus a skip list of vague skills (`SKIPPED_SKILLS` in the script).
+- Writes 5 questions per level (`--per-level`) to `app/data/question_bank/generated/position_skills.jsonl`, in the same format as the curated bank, with lowercase skill names.
+- Every question is validated by `app/schemas/question_bank.py` (exactly 6 options, one of each type, unique texts). Invalid ones are regenerated; rejections are logged to `position_skills.rejections.log`.
+- If the Gemini quota is reached the script stops with exit code 2. Run it again later to continue from `position_skills.progress.json`.
+
+## CV Skill Test Endpoint
+
+`POST /assessment/employee/{employee_id}/assess` (`backend/app/api/endpoints/assessment.py`) is a separate, still-used feature: it compares the employee's current (CV) skills with a position and returns an Ollama-generated report. It is kept as is and is unrelated to the new `/assessments` endpoints.
 
 ---
 

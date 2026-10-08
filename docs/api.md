@@ -239,9 +239,9 @@ Uploads a resume and automatically creates an employee record.
 
 ## Assessment
 
-### `POST /assessment/employee/{employee_id}/assess` (legacy)
+### `POST /assessment/employee/{employee_id}/assess` (CV skill test)
 - **Query:** `position_id` (optional)
 - Returns `matched`, `missing`, `needs_improvement`, `match_percentage`, `ai_report`, `employee_data`.
-- Imports `backend.app.services.old.assessment_service` and predates the current gap analysis and test-based assessment design. It will be replaced. See [assessment.md](assessment.md).
+- Uses `backend.app.services.old.assessment_service` and the Ollama agents in the root `ai/` folder (needs a local Ollama server). In use; it is separate from the new question-based `/assessments` endpoints. See [assessment.md](assessment.md).
 
 The new assessment endpoints (start session, get questions, submit answers, get result) are not built yet.
