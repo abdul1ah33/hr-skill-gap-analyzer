@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { login } from "../services/authService";
+import { getRole, getToken, homePathFor, setToken } from "../lib/auth";
 import { Sparkles } from "lucide-react";
 
 function LoginPage() {
@@ -14,10 +15,8 @@ function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-
-    if (token) {
-      navigate("/dashboard", { replace: true });
+    if (getToken() && getRole()) {
+      navigate(homePathFor(getRole()), { replace: true });
     }
   }, [navigate]);
 
@@ -33,11 +32,9 @@ function LoginPage() {
         password: password,
       });
 
-      console.log("Login successful:", data);
-
       if (data.access_token) {
-        localStorage.setItem("access_token", data.access_token);
-        navigate("/dashboard");
+        setToken(data.access_token);
+        navigate(homePathFor(getRole()));
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -146,4 +143,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default LoginPage;

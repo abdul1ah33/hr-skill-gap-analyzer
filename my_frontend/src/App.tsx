@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import AppLayout from "./layouts/AppLayout";
+import EmployeeLayout from "./layouts/EmployeeLayout";
 
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -17,6 +18,7 @@ import SettingsPage from "./pages/SettingsPage";
 import AssessmentInstructionsPage from "./pages/AssessmentInstructionsPage";
 import AssessmentPage from "./pages/AssessmentPage";
 import AssessmentResultPage from "./pages/AssessmentResultPage";
+import MyAssessmentsPage from "./pages/MyAssessmentsPage";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -26,7 +28,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
 
-        <Route element={<ProtectedRoute />}>
+        {/* HR */}
+        <Route element={<ProtectedRoute roles={["HR"]} />}>
 
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -41,13 +44,25 @@ function App() {
               <Route path="/gap-analysis" element={<GapAnalysisPage />} />
               <Route path="/gap-analysis/:id" element={<GapAnalysisResultPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/assessments/:id/instructions" element={<AssessmentInstructionsPage />} />
-              <Route path="/assessments/:id/result" element={<AssessmentResultPage />} />
-              <Route path="/assessments/:id" element={<AssessmentPage />} />
             </Route>
 
-
         </Route>
+
+        {/* Employee portal */}
+        <Route element={<ProtectedRoute roles={["Employee"]} />}>
+          <Route element={<EmployeeLayout />}>
+            <Route path="/my/assessments" element={<MyAssessmentsPage />} />
+          </Route>
+        </Route>
+
+        {/* Taking a test (employee, or HR on the employee's behalf): full screen, no layout */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/assessments/start" element={<AssessmentInstructionsPage />} />
+          <Route path="/assessments/:id/result" element={<AssessmentResultPage />} />
+          <Route path="/assessments/:id" element={<AssessmentPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
 
       </Routes>
     </BrowserRouter>

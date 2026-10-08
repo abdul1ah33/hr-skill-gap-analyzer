@@ -11,6 +11,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { logout } from "../lib/auth";
 
 const navigation = [
   {
@@ -43,18 +44,13 @@ const navigation = [
     path: "/skills",
     icon: Sparkles,
   },
-  {
-    name: "Assessment Instructions",
-    path: "/assessments/:id/instructions",
-    icon: Sparkles,
-  },
 ];
 
 export default function AppLayout() {
   const navigate = useNavigate();
 
   function handleLogout() {
-    localStorage.removeItem("access_token");
+    logout();
     navigate("/login");
   }
 

@@ -1,10 +1,21 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-function ProtectedRoute() {
-  const token = localStorage.getItem("access_token");
+import { getRole, getToken, homePathFor, type UserRole } from "../lib/auth";
 
-  if (!token) {
+interface ProtectedRouteProps {
+  /** Roles allowed here; omit to allow any logged-in user. */
+  roles?: UserRole[];
+}
+
+function ProtectedRoute({ roles }: ProtectedRouteProps) {
+  const role = getRole();
+
+  if (!getToken() || role === null) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (roles && !roles.includes(role)) {
+    return <Navigate to={homePathFor(role)} replace />;
   }
 
   return <Outlet />;
