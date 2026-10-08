@@ -16,6 +16,9 @@ from app.api.endpoints.position_skill import router as position_skill_router
 from app.api.endpoints.skill_aliases import router as skill_alias_router
 from app.api.endpoints.resume import router as resume_router
 from app.api.endpoints.assessment import router as assessment_router
+from app.api.endpoints.assessments import router as assessments_router
+from app.api.endpoints.employee_assessments import router as employee_assessments_router
+from app.api.endpoints.question_bank import router as question_bank_router
 
 from app.core.exception_handlers import register_exception_handlers
 
@@ -102,6 +105,24 @@ app.include_router(
     assessment_router,
     prefix="/assessment",
     tags=["Assessment"],
+)
+
+app.include_router(
+    assessments_router,
+    prefix="/assessments",
+    tags=["Skill Assessments"],
+)
+
+app.include_router(
+    employee_assessments_router,
+    prefix="/employees/{employee_id}/assessments",
+    tags=["Skill Assessments (HR)"],
+)
+
+app.include_router(
+    question_bank_router,
+    prefix="/question-bank",
+    tags=["Question Bank"],
 )
 
 # ─── Health check ─────────────────────────────────────────────────────────────
