@@ -44,6 +44,8 @@ from app.models.employee_skill import EmployeeSkill, SkillLevel  # noqa: E402
 from app.models.position_skill import PositionSkill  # noqa: E402
 from app.models.role import Role  # noqa: E402
 from app.models.skill import Skill  # noqa: E402
+from app.models.assessment_enums import QuestionOptionType  # noqa: E402
+from app.models.skill_question import SkillQuestion, SkillQuestionOption  # noqa: E402
 from app.models.user import User  # noqa: E402
 
 
@@ -176,6 +178,43 @@ class Factory:
         self.db.add(row)
         self.db.flush()
         return row
+
+    def bank_questions(
+        self,
+        skill: Skill,
+        beginner: int = 1,
+        intermediate: int = 2,
+        advanced: int = 2,
+        is_active: bool = True,
+    ) -> list[SkillQuestion]:
+        """Bank questions with six options each (one of every type)."""
+        questions = []
+        for level, count in (
+            (SkillLevel.BEGINNER, beginner),
+            (SkillLevel.INTERMEDIATE, intermediate),
+            (SkillLevel.ADVANCED, advanced),
+        ):
+            for _ in range(count):
+                n = self._next()
+                questions.append(SkillQuestion(
+                    skill_id=skill.id,
+                    question_text=f"{skill.name} question {n}",
+                    proficiency_level=level,
+                    content_hash=f"{n:064d}",
+                    source="test",
+                    is_active=is_active,
+                    options=[
+                        SkillQuestionOption(
+                            text=f"{option_type.value} {n}",
+                            option_type=option_type,
+                            explanation="Test option.",
+                        )
+                        for option_type in QuestionOptionType
+                    ],
+                ))
+        self.db.add_all(questions)
+        self.db.flush()
+        return questions
 
     @staticmethod
     def auth_headers(user: User) -> dict[str, str]:
