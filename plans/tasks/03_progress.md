@@ -100,7 +100,8 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `PositionSkillService` passes `skill_names_with_questions(db)` (skills with active questions)
 - [x] `tests/test_position_vocabulary.py` (5 tests); 192 tests passing; docs updated (`assessment.md`, `backend.md`)
 - [x] Coverage of existing positions (assessable / required skills): Computer Engineering Student 15/16, ML Engineer & Software Developer 16/18, Machine Learning Engineer 12/12, Senior Supply Chain Specialist 12/12, Software Engineer 15/16, Operation Engineer 12/17, Petrochemical Shift Supervisor 6/10, AI & ML Engineer 20/20, Electrical Power Engineer 10/10, HR Manager 0/0
-- ⏸️ Creating the 9 target positions and generating HR Manager skills: waiting for the user (uses ESCO + Gemini quota, writes to the dev DB)
+- [x] **Demo data** (`app/scripts/seed_assessment_demo.py`, documented in `docs/setup.md`): 9 positions from the bank's skill families with fixed bank skills, one mock employee each (DEMO001–DEMO009) with matched / needs-improvement / unmatched skills, Employee logins `firstname.lastname` / `Demo@1234`. Seeded into the dev DB; checked end to end in a rolled-back transaction (employee login → preview → start 35 questions; HR assign → start on behalf 40 questions). 195 tests passing
+- Agreed HR flow for Phase 11: HR "Start test" on any employee = assign + start on behalf (two calls behind one button); HR "Assign test" = assign only, the employee starts it from their own account
 
 ---
 

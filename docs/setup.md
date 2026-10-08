@@ -180,6 +180,15 @@ python -m app.scripts.import_question_bank
 
 Options: `--strict` aborts on the first invalid question; `--report file.json` writes the full report (rejected questions with file, line and reason).
 
+### Seed assessment demo data (optional)
+
+Creates 9 positions built from the question bank's skill families (Backend Software Engineer, Cloud DevOps Engineer, Data Scientist, Mechanical Design Engineer, Civil Construction Engineer, Finance Manager, Recruitment Manager, Digital Marketing Specialist, Restaurant Manager), one mock employee per position (`DEMO001`–`DEMO009`) with matched, below-level and missing skills, and an Employee login for each (`firstname.lastname`, password `Demo@1234`). Every position skill has questions. Run after the role seed and the question-bank import; safe to run repeatedly.
+
+```bash
+# From inside backend/
+python -m app.scripts.seed_assessment_demo
+```
+
 ### Create the first HR user
 
 The signup endpoint (`POST /auth/signup`) is for employees (people who already exist as `Employee` records) to create their own account. To bootstrap the first HR user, insert directly:

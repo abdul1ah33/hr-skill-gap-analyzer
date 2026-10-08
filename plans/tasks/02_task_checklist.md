@@ -108,7 +108,7 @@ Notes: `get_assessment_actor` became an owner-or-HR check inside `assessment_ser
 ## Phase 10 — Vocabulary alignment (D17)
 - [x] Pass active bank skill names to `generate_perfect_profile` as preferred names (`ai/perfect_profile.py`, `services/position_skill_service.py`, `crud/question_bank.skill_names_with_questions`); tests in `tests/test_position_vocabulary.py`
 - [x] Checked coverage of existing positions (read-only): 6 of 10 fully assessable, the rest miss only skipped vague skills; HR Manager (employee 1) has no skills yet
-- [ ] Create the 9 target positions / generate HR Manager skills: **waiting for the user** (calls ESCO + Gemini and writes to the dev DB)
+- [x] 9 target positions created by `app/scripts/seed_assessment_demo.py` with fixed bank skills (not via Gemini, so every skill is testable and the data is reproducible), one mock employee each (DEMO001–DEMO009, mixed gap categories) and an Employee login each (password `Demo@1234`); run on the dev DB (backup `.db_backups/ai_hr_assistant_before_demo_seed.sql`); tests in `tests/test_seed_assessment_demo.py`
 
 ## Phase 11 — React integration (`my_frontend`)
 - [ ] `services/assessmentService.ts`; rewrite `types/assessment.ts`
