@@ -90,7 +90,29 @@ You are an expert Staff AI Engineer and HR Data Specialist. Your objective is to
    - ESCO data is often incomplete. Identify if any absolute, industry-standard core skills are missing for the provided job_title.
    - ADD these missing mandatory skills to the output.
    - Assign them a priority of "Essential" and infer the correct target_proficiency based on the role's seniority.
+
+6. PREFERRED SKILL NAMES (WHEN A LIST IS PROVIDED)
+   - The prompt may include "Preferred Skill Names": skills our assessment question bank covers.
+   - When a skill you output means the same thing as a preferred name, use the preferred name EXACTLY as written (e.g. output "machine learning" instead of "Machine Learning Algorithms" if "machine learning" is preferred).
+   - Do NOT add a preferred skill just because it is listed; only use it when it belongs in this job's profile per rules 1-5.
 """
+
+
+def build_prompt(
+    job_title: str,
+    esco_skills: Dict[str, List[str]],
+    preferred_skill_names: Optional[List[str]] = None,
+) -> str:
+    """User prompt for one job title; preferred names are listed when given."""
+    prompt = (
+        f"Job Title: {job_title}\n\n"
+        f"Raw ESCO Skills: {json.dumps(esco_skills, indent=2)}\n\n"
+    )
+    if preferred_skill_names:
+        listed = "\n".join(f"- {name}" for name in sorted(preferred_skill_names))
+        prompt += f"Preferred Skill Names:\n{listed}\n\n"
+    prompt += "Please generate the perfect candidate profile JSON following the system instructions."
+    return prompt
 
 
 # ==========================================
@@ -100,7 +122,8 @@ def generate_perfect_profile(
     job_title: str,
     esco_skills: Dict[str, List[str]],
     api_key: str,
-    model_name: str = "gemini-3.5-flash-lite"
+    model_name: str = "gemini-3.5-flash-lite",
+    preferred_skill_names: Optional[List[str]] = None,
 ) -> Optional[PerfectProfile]:
     """
     Takes a raw list of ESCO skills and a job title, filters out noise, normalizes terms,
@@ -110,7 +133,9 @@ def generate_perfect_profile(
         job_title (str): The target job title (e.g., "Senior Machine Learning Engineer").
         esco_skills (Dict[str, List[str]]): Dictionary with 'essential' and 'optional' keys containing lists of skills.
         api_key (str): The Google Gemini API key.
-        model_name (str): The specific Gemini model to use. Default is 'gemini-2.0-flash'.
+        model_name (str): The specific Gemini model to use. Default is 'gemini-3.5-flash-lite'.
+        preferred_skill_names (List[str], optional): Skill names to reuse when they fit
+            (the skills the assessment question bank covers).
 
     Returns:
         Optional[PerfectProfile]: A Pydantic model containing the parsed profile or None if processing fails.
@@ -127,11 +152,7 @@ def generate_perfect_profile(
         client = genai.Client(api_key=api_key)
 
         # Construct the user payload
-        prompt = (
-            f"Job Title: {job_title}\n\n"
-            f"Raw ESCO Skills: {json.dumps(esco_skills, indent=2)}\n\n"
-            f"Please generate the perfect candidate profile JSON following the system instructions."
-        )
+        prompt = build_prompt(job_title, esco_skills, preferred_skill_names)
 
         logger.debug(f"Sending prompt to {model_name}...")
         

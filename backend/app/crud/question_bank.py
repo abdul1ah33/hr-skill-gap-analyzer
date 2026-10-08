@@ -4,6 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.employee_skill import SkillLevel
+from app.models.skill import Skill
 from app.models.skill_question import SkillQuestion, SkillQuestionOption
 
 
@@ -75,3 +76,16 @@ def option_ids_by_question(db: Session, question_ids: list[int]) -> dict[int, li
     for question_id, option_id in rows:
         options[question_id].append(option_id)
     return dict(options)
+
+
+def skill_names_with_questions(db: Session) -> list[str]:
+    """Names of skills that have active bank questions, sorted."""
+    rows = (
+        db.query(Skill.name)
+        .join(SkillQuestion, SkillQuestion.skill_id == Skill.id)
+        .filter(SkillQuestion.is_active.is_(True))
+        .distinct()
+        .order_by(Skill.name)
+        .all()
+    )
+    return [name for (name,) in rows]

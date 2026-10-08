@@ -11,6 +11,7 @@ from app.models.skill import Skill
 from app.models.position_skill import PositionSkill
 from app.models.employee_skill import SkillLevel
 from app.utils.skill_names import normalize_skill_name
+from app.crud.question_bank import skill_names_with_questions
 
 from app.services.esco_skills_extractor import EscoService
 
@@ -202,10 +203,13 @@ class PositionSkillService:
             "filtering and normalization."
         )
 
+        # Prefer skill names the question bank covers, so the
+        # position's skills can be assessed
         perfect_profile = generate_perfect_profile(
             job_title=position.title,
             esco_skills=esco_skills,
             api_key=api_key,
+            preferred_skill_names=skill_names_with_questions(db),
         )
 
         if not perfect_profile:
