@@ -89,6 +89,7 @@ GEMINI_API_KEY=<your-google-gemini-api-key>
 | `ASSESSMENT_SECONDS_PER_QUESTION` | No | Time per assessment question. The server deadline is questions × seconds + grace. Defaults to 60. | `60` |
 | `ASSESSMENT_GRACE_SECONDS` | No | Extra seconds added to the assessment deadline. Defaults to 120. | `120` |
 | `ASSESSMENT_MAX_VIOLATIONS` | No | Tab switches / fullscreen exits allowed before an assessment is terminated. Defaults to 3. | `3` |
+| `ASSESSMENT_SESSION_TIMEOUT_SECONDS` | No | An assessment session idle this long can be taken over by another device or user. Defaults to 60. | `60` |
 
 ### Generate a SECRET_KEY
 
