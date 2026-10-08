@@ -221,6 +221,8 @@ def test_expired_assessment_is_closed_and_a_new_one_started(db, factory):
 
     assert new.id != old.id
     assert old.status == AssessmentStatus.EXPIRED
+    assert old.applied_to_profile is True  # graded and applied (D12)
+    assert all(s.graded_at == later for s in old.skills)
     assert new.status == AssessmentStatus.IN_PROGRESS
 
 

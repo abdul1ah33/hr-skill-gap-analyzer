@@ -9,6 +9,8 @@ Starts assessments: picks the questions and stores the attempt (plan §7.2–7.4
 - Starting is idempotent: a running assessment is returned instead of a new
   one, an assigned one is started, and a concurrent start that loses the race
   on the "one active assessment" index returns the winner's assessment.
+- A running assessment past its deadline is graded and applied as EXPIRED
+  (D12) before a new one starts.
 """
 import random
 from datetime import datetime, timedelta, timezone
@@ -30,6 +32,7 @@ from app.models.assessment_question import AssessmentQuestion
 from app.models.assessment_skill import AssessmentSkill
 from app.models.employee import Employee
 from app.models.employee_skill import SkillLevel
+from app.services.assessment_grading_service import finalize_assessment
 from app.services.assessment_scoring_service import QUESTIONS_PER_LEVEL
 from app.services.assessment_target_service import AssessmentTargetService, CandidateSkill
 
@@ -99,7 +102,7 @@ class AssessmentGenerationService:
         if active is not None and active.status == AssessmentStatus.IN_PROGRESS:
             if not is_expired(active, now):
                 return active
-            self.expire(db, active)
+            finalize_assessment(db, active, AssessmentStatus.EXPIRED, now)
             active = None
 
         selection = self.target_service.select_targets(db, employee_id, max_skills)
@@ -137,16 +140,6 @@ class AssessmentGenerationService:
 
         db.commit()
         return assessment
-
-    def expire(self, db: Session, assessment: Assessment) -> None:
-        """
-        Close an assessment whose deadline passed (D12). Unanswered questions
-        stay unanswered and count as wrong when graded.
-        """
-        assessment.status = AssessmentStatus.EXPIRED
-        assessment.session_token_hash = None
-        assessment.session_user_id = None
-        db.flush()
 
     # ==========================================
     # Question selection
