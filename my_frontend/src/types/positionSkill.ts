@@ -1,4 +1,4 @@
-export type SkillLevel = "Beginner" | "Intermediate" | "Advanced" | "Expert";
+export type SkillLevel = "Beginner" | "Intermediate" | "Advanced";
 
 export interface PositionSkill {
   id: number;

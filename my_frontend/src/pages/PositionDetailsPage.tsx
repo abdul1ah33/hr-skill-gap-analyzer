@@ -31,8 +31,6 @@ const levelColors: Record<string, { className?: string; style?: CSSProperties }>
   Beginner: { className: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400" },
   Intermediate: { className: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400" },
   Advanced: { className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400" },
-  // Expert uses the theme's accent color pair rather than a fixed status color
-  Expert: { style: { background: "var(--accent)", color: "var(--accent-foreground)" } },
 };
 
 const priorityColors: Record<"essential" | "optional", { className?: string; style?: CSSProperties }> = {
@@ -399,7 +397,6 @@ function PositionDetailsPage() {
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
                   </select>
                 </div>
 
@@ -515,7 +512,6 @@ function PositionDetailsPage() {
                           <option value="Beginner">Beginner</option>
                           <option value="Intermediate">Intermediate</option>
                           <option value="Advanced">Advanced</option>
-                          <option value="Expert">Expert</option>
                         </select>
 
                         {/* Priority */}

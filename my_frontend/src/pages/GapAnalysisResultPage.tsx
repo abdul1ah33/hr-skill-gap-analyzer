@@ -66,13 +66,12 @@ function priorityBadge(priority: "Essential" | "Optional") {
 }
 
 const levelOrder: Record<string, number> = {
-  Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4,
+  Beginner: 1, Intermediate: 2, Advanced: 3,
 };
 const LEVEL_COLORS: Record<string, string> = {
   Beginner:     "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-400",
   Intermediate: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400",
   Advanced:     "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-400",
-  Expert:       "bg-accent text-primary",
 };
 function LevelBadge({ level }: { level: string | null }) {
   if (!level) return <span className="text-xs italic" style={{ color: "var(--muted-foreground)" }}>None</span>;
@@ -163,7 +162,7 @@ function AnalysisSkeleton() {
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 
 function LevelBar({ from, to }: { from: string | null; to: string }) {
-  const levels = ["Beginner", "Intermediate", "Advanced", "Expert"];
+  const levels = ["Beginner", "Intermediate", "Advanced"];
   return (
     <div className="flex items-center gap-1">
       {levels.map((l) => {
