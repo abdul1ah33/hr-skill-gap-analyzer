@@ -1,79 +1,89 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
+    Boolean,
     DateTime,
+    Enum as SQLAlchemyEnum,
     ForeignKey,
     Integer,
-    String,
-    Text,
+    UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+from app.models.assessment_enums import QuestionOptionType
+from app.models.employee_skill import SkillLevel
+
+if TYPE_CHECKING:
+    from .assessment import Assessment
+    from .assessment_skill import AssessmentSkill
+    from .skill_question import SkillQuestion, SkillQuestionOption
 
 
 class AssessmentQuestion(Base):
+    """
+    A bank question presented in one assessment, and the employee's answer.
+
+    Its id is the question id the frontend sees. Options are shown in the
+    order stored in option_order (bank option ids); the frontend only sees
+    their 1-based positions, never bank ids or option types.
+    """
+
     __tablename__ = "assessment_questions"
+
+    __table_args__ = (
+        UniqueConstraint("assessment_id", "display_order"),
+        UniqueConstraint("assessment_id", "skill_question_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
     assessment_id: Mapped[int] = mapped_column(
-        ForeignKey("assessments.id"),
+        ForeignKey("assessments.id", ondelete="CASCADE"),
         nullable=False,
     )
 
-    question_text: Mapped[str] = mapped_column(
-        Text,
+    assessment_skill_id: Mapped[int] = mapped_column(
+        ForeignKey("assessment_skills.id", ondelete="CASCADE"),
         nullable=False,
     )
 
-    question_type: Mapped[str | None] = mapped_column(
-        String(30)
+    skill_question_id: Mapped[int] = mapped_column(
+        ForeignKey("skill_questions.id", ondelete="RESTRICT"),
+        nullable=False,
     )
 
-    option_a: Mapped[str | None] = mapped_column(
-        String(255)
+    display_order: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    proficiency_level: Mapped[SkillLevel] = mapped_column(
+        SQLAlchemyEnum(SkillLevel, name="skilllevel", create_type=False),
+        nullable=False,
     )
 
-    option_b: Mapped[str | None] = mapped_column(
-        String(255)
+    # Bank option ids in the order shown to the employee
+    option_order: Mapped[list[int]] = mapped_column(JSONB, nullable=False)
+
+    selected_option_id: Mapped[int | None] = mapped_column(
+        ForeignKey("skill_question_options.id", ondelete="RESTRICT"),
+    )
+    # Stored for later analysis (near_miss vs misconception...); scoring only
+    # uses is_correct
+    selected_option_type: Mapped[QuestionOptionType | None] = mapped_column(
+        SQLAlchemyEnum(QuestionOptionType, name="questionoptiontype", create_type=False),
+    )
+    is_correct: Mapped[bool | None] = mapped_column(Boolean)
+    answered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    assessment: Mapped["Assessment"] = relationship(back_populates="questions")
+
+    assessment_skill: Mapped["AssessmentSkill"] = relationship(
+        back_populates="questions",
     )
 
-    option_c: Mapped[str | None] = mapped_column(
-        String(255)
-    )
+    skill_question: Mapped["SkillQuestion"] = relationship()
 
-    option_d: Mapped[str | None] = mapped_column(
-        String(255)
-    )
-
-    correct_answer: Mapped[str | None] = mapped_column(
-        String(255)
-    )
-
-    points: Mapped[int] = mapped_column(
-        Integer,
-        default=1,
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.utcnow,
-    )
-
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-    )
-
-    assessment: Mapped["Assessment"] = relationship(
-        back_populates="questions"
-    )
-
-    answers: Mapped[list["AssessmentAnswer"]] = relationship(
-        back_populates="question",
-        cascade="all, delete-orphan",
-    )
+    selected_option: Mapped["SkillQuestionOption | None"] = relationship()

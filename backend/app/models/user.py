@@ -67,7 +67,3 @@ class User(Base):
     employee: Mapped["Employee | None"] = relationship(
         back_populates="user"
     )
-
-    created_assessments: Mapped[list["Assessment"]] = relationship(
-        back_populates="creator"
-    )

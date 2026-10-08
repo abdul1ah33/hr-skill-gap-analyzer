@@ -1,5 +1,3 @@
-from datetime import date
-
 from sqlalchemy.orm import Session, selectinload
 
 from app.crud.helpers import get_employee_or_raise, get_skill_or_raise
@@ -101,11 +99,13 @@ def update_employee_skill(
         raise EmployeeSkillNotFoundError()
 
     update_data = employee_skill.model_dump(exclude_unset=True)
+
+    # A manual level change is no longer the assessed level
+    if "level" in update_data and update_data["level"] != db_employee_skill.level:
+        db_employee_skill.verified = False
+
     for key, value in update_data.items():
         setattr(db_employee_skill, key, value)
-
-    if "verified" in update_data and update_data["verified"]:
-        db_employee_skill.last_assessed = date.today()
 
     db.commit()
     db.refresh(db_employee_skill)

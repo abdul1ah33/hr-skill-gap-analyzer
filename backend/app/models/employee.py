@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .position import Position
     from .user import User
     from .employee_skill import EmployeeSkill
-    from .assessment_result import AssessmentResult
+    from .assessment import Assessment
     from .recommendation import Recommendation
     from .role import Role
     from .education import Education
@@ -116,9 +116,11 @@ class Employee(Base):
         cascade="all, delete-orphan",
     )
 
-    assessment_results: Mapped[list["AssessmentResult"]] = relationship(
+    assessments: Mapped[list["Assessment"]] = relationship(
         back_populates="employee",
         cascade="all, delete-orphan",
+        passive_deletes=True,
+        foreign_keys="Assessment.employee_id",
     )
 
     recommendations: Mapped[list["Recommendation"]] = relationship(

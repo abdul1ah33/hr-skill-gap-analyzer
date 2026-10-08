@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from app.models.employee_skill import SkillLevel
 
@@ -22,18 +22,17 @@ class EmployeeSkillCreate(EmployeeSkillBase):
 
 
 class EmployeeSkillUpdate(BaseModel):
+    # Verification is set only by graded assessments, not by manual edits
     level: Optional[SkillLevel] = None
-    years_experience: Optional[int] = Field(default=None, ge=0)
-    verified: Optional[bool] = None
 
 
 class EmployeeSkillResponse(BaseModel):
     id: int
     skill_id: int
     level: Optional[SkillLevel] = None
-    years_experience: Optional[int] = None
     verified: bool = False
-    last_assessed: Optional[date] = None
+    last_assessed_at: Optional[datetime] = None
+    last_assessment_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
     skill: SkillSimple

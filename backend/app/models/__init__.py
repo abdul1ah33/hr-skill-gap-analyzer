@@ -9,11 +9,10 @@ from .employee_skill import EmployeeSkill
 from .position_skill import PositionSkill
 from .course import Course
 from .course_skill import CourseSkill
+from .skill_question import SkillQuestion, SkillQuestionOption
 from .assessment import Assessment
 from .assessment_skill import AssessmentSkill
 from .assessment_question import AssessmentQuestion
-from .assessment_result import AssessmentResult
-from .assessment_answer import AssessmentAnswer
 from .recommendation import Recommendation
 from .education import Education
 from .certification import Certification

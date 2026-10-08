@@ -3,7 +3,7 @@ from __future__ import annotations
 import enum
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, UniqueConstraint, Enum as SQLAlchemyEnum, DateTime
+from sqlalchemy import ForeignKey, UniqueConstraint, Enum as SQLAlchemyEnum, DateTime, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -13,7 +13,6 @@ class SkillLevel(str, enum.Enum):
     BEGINNER = "Beginner"
     INTERMEDIATE = "Intermediate"
     ADVANCED = "Advanced"
-    EXPERT = "Expert"
 
 
 class EmployeeSkill(Base):
@@ -38,6 +37,22 @@ class EmployeeSkill(Base):
     level: Mapped[SkillLevel] = mapped_column(
         SQLAlchemyEnum(SkillLevel),
         nullable=False,
+    )
+
+    # Set by a graded assessment; reset when the level is edited manually
+    verified: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default="false",
+    )
+
+    last_assessed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+    )
+
+    last_assessment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("assessments.id", ondelete="SET NULL"),
     )
 
     created_at: Mapped[datetime] = mapped_column(

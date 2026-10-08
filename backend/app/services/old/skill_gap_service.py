@@ -8,7 +8,6 @@ LEVEL_ORDER = {
     SkillLevel.BEGINNER: 0,
     SkillLevel.INTERMEDIATE: 1,
     SkillLevel.ADVANCED: 2,
-    SkillLevel.EXPERT: 3,
 }
 
 

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .assessment_skill import AssessmentSkill
     from .position_skill import PositionSkill
     from .skill_alias import SkillAlias
+    from .skill_question import SkillQuestion
 
 
 class Skill(Base):
@@ -47,6 +48,10 @@ class Skill(Base):
     )
 
     assessment_skills: Mapped[list["AssessmentSkill"]] = relationship(
+        back_populates="skill",
+    )
+
+    questions: Mapped[list["SkillQuestion"]] = relationship(
         back_populates="skill",
     )
 
