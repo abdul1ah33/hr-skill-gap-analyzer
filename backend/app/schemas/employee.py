@@ -41,6 +41,9 @@ class EmployeeSkillSimple(BaseModel):
     id: int
     skill: SkillSimple
     level: str
+    # True when the level was set by a graded skill assessment
+    verified: bool = False
+    last_assessed_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
