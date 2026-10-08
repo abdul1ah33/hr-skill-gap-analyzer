@@ -75,7 +75,7 @@ The frontend (`my_frontend/`) is a React 19 single-page application built with V
 No global store. Each page fetches what it needs through the service functions on mount and keeps it in local `useState`. Shared state is limited to:
 
 - **`ThemeContext`** — light / dark / system theme, persisted in `localStorage`.
-- **Assessment hooks** — `useAssessmentAttempt`, `useAssessmentTimer`, `useAssessmentSecurity` hold the state of a running assessment.
+- **Running assessment** — `AssessmentPage` holds the attempt state (loaded from the server, answers saved immediately); `useAssessmentTimer` and `useAssessmentSecurity` handle the countdowns and proctoring. The session token lives in `sessionStorage`.
 
 ### API Communication
 
@@ -340,9 +340,9 @@ EmployeeResponse (department, position, employee_skills,
 | **Background skill generation** | Position creation triggers skill generation as a FastAPI `BackgroundTask` so the HTTP response is returned immediately without waiting for ESCO + Gemini. |
 | **In-memory ESCO cache** | The `EscoService` caches results per Python process to avoid redundant API calls for the same occupation. |
 | **Case-insensitive skill matching** | `SkillComparisonService` lowercases all skill names before comparison to avoid false mismatches from capitalization. |
-| **Skill-level ranking** | Proficiency levels are ranked numerically (Beginner=1, Intermediate=2, Advanced=3, Expert=4) to enable `>=` comparisons. |
+| **Skill-level ranking** | Proficiency levels are ranked numerically (Beginner=1, Intermediate=2, Advanced=3) to enable `>=` comparisons. |
 | **Cascading deletes** | Foreign key `ondelete="CASCADE"` on `EmployeeSkill`, `PositionSkill`, `Education`, `Certification` ensures clean removal when parent records are deleted. |
-| **Orphan skill cleanup** | When a position is deleted or its title changes, skills that are no longer referenced by any `PositionSkill` row are also deleted. |
+| **Skills are never deleted automatically** | Deleting a position or changing its title only removes its `PositionSkill` rows; `Skill` rows are shared with employees, the question bank and assessment history. |
 | **CRUD layer separation** | Database queries are in `app/crud/`, business logic is in `app/services/`, and HTTP routing is in `app/api/endpoints/`. |
 | **Semantic reconciliation by AI** | Exact-name comparison is deterministic; Gemini then lists near-identical skills under different names in `reconciled_skills`, and the service removes them from the gap lists. |
 | **Server-side assessment grading** | The planned assessment flow sends questions without answers and grades on the backend (see [assessment.md](assessment.md)). |

@@ -45,18 +45,20 @@ my_frontend/src/
 ├── contexts/
 │   └── ThemeContext.tsx         # light / dark / system theme
 ├── layouts/
-│   ├── AppLayout.tsx            # Sidebar + header shell used by every page
+│   ├── AppLayout.tsx            # HR sidebar + header shell
+│   ├── EmployeeLayout.tsx       # Employee portal header
 │   └── DashboardLayout.tsx      # Older unstyled layout, not used
 ├── pages/                       # One file per route (see below)
 ├── services/                    # Axios wrappers, one file per resource
-├── hooks/assessment/            # useAssessmentAttempt, useAssessmentTimer, useAssessmentSecurity
+├── components/assessment/       # AssessmentHistoryTable, EmployeeAssessmentsCard (HR)
+├── hooks/assessment/            # useAssessmentTimer, useAssessmentSecurity
 ├── types/                       # TS interfaces mirroring backend schemas (snake_case)
 ├── schemas/
 │   └── employeeSchema.ts        # Zod schemas for create/update employee forms
-├── data/
-│   └── mockAssessment.ts        # Mock assessment used until the backend is ready
 └── lib/
-    └── utils.ts                 # cn() helper (clsx + tailwind-merge)
+    ├── utils.ts                 # cn() helper (clsx + tailwind-merge)
+    ├── auth.ts                  # token, role from JWT, assessment session tokens, logout
+    └── assessmentLabels.ts      # labels / colours for statuses, levels, profile actions
 ```
 
 ---

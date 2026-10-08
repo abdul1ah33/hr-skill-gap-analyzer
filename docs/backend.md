@@ -16,6 +16,8 @@ backend/
 ├── generate_hash_pass.py        # Utility: generate a bcrypt password hash
 ├── test_skill_alias_system.py   # Test: skill alias matching
 ├── test_skill_comparison.py     # Test: skill comparison service
+├── pytest.ini                   # pytest config (run `pytest` from backend/)
+├── tests/                       # pytest suite: assessments, question bank, skills (separate test DB)
 ├── alembic/
 │   ├── env.py                   # Alembic environment configuration
 │   └── versions/                # Migration files
@@ -49,11 +51,11 @@ backend/
     │   ├── position_skill.py
     │   ├── education.py
     │   ├── certification.py
-    │   ├── assessment.py
-    │   ├── assessment_question.py
-    │   ├── assessment_answer.py
-    │   ├── assessment_result.py
-    │   ├── assessment_skill.py
+    │   ├── assessment_enums.py  # Assessment status, option types, profile actions, ...
+    │   ├── skill_question.py    # SkillQuestion, SkillQuestionOption (question bank)
+    │   ├── assessment.py        # One attempt (assignment, session lock, config snapshot)
+    │   ├── assessment_skill.py  # Tested skill + grading result
+    │   ├── assessment_question.py  # Served question + answer
     │   ├── course.py
     │   ├── course_skill.py
     │   └── recommendation.py
@@ -65,11 +67,14 @@ backend/
     │   ├── skill_alias.py
     │   ├── employee_skill.py
     │   ├── position_skill.py
-    │   ├── assessment.py        # Assessment question/option responses (no answers)
+    │   ├── assessment.py        # Assessment requests/responses (never contain answers)
     │   └── question_bank.py     # Question bank format and validation (SkillQuestionBank)
+    ├── utils/
+    │   └── skill_names.py       # normalize_skill_name (lowercase, single spaces)
     ├── data/
     │   └── question_bank/
-    │       └── output_question_bank.jsonl  # 83 skills × 30 questions (see assessment.md)
+    │       ├── output_question_bank.jsonl  # curated: 83 skills × 30 questions
+    │       └── generated/                  # generated: 67 skills × 15 questions
     ├── crud/                    # Database CRUD operations
     │   ├── employee.py
     │   ├── department.py
@@ -78,6 +83,8 @@ backend/
     │   ├── skill_alias.py
     │   ├── employee_skill.py
     │   ├── position_skill.py
+    │   ├── assessment.py        # Assessment loaders (owner-scoped, FOR UPDATE), served questions
+    │   ├── question_bank.py     # Question counts and pools per skill / level
     │   └── helpers.py
     ├── api/
     │   └── endpoints/
@@ -91,6 +98,9 @@ backend/
     │       ├── me.py
     │       ├── resume.py
     │       ├── assessment.py    # CV skill test (Ollama, uses root ai/)
+    │       ├── assessments.py   # Skill tests (employee / owner or HR)
+    │       ├── employee_assessments.py  # HR: assign, cancel, start on behalf, history
+    │       └── question_bank.py # HR: question coverage
     ├── services/                # Business logic
     │   ├── esco_skills_extractor.py
     │   ├── position_skill_service.py
@@ -98,13 +108,24 @@ backend/
     │   ├── gap_analysis_service.py
     │   ├── resume_service.py
     │   ├── pdf_extractor.py
+    │   ├── assessment_target_service.py      # Which skills to test
+    │   ├── assessment_generation_service.py  # Picks questions, starts tests
+    │   ├── assessment_scoring_service.py     # Scoring table
+    │   ├── assessment_grading_service.py     # Grading + profile update
+    │   ├── assessment_service.py             # Sessions, answers, submit, HR assign
+    │   ├── question_bank_import_service.py   # Imports the JSONL bank
     │   └── old/                 # Superseded services (still imported by assessment.py)
     ├── ai/                      # Gemini AI modules
     │   ├── perfect_profile.py
     │   ├── gap_analysis_ai.py
-    │   └── resume_parser.py
+    │   ├── resume_parser.py
+    │   └── question_generator.py # Gemini question generation
     └── scripts/
-        └── seed_skill_aliases.py
+        ├── seed_skill_aliases.py
+        ├── seed_roles.py
+        ├── import_question_bank.py
+        ├── generate_question_bank.py
+        └── seed_assessment_demo.py
 ```
 
 ---
@@ -139,7 +160,10 @@ app = FastAPI(
 | `employee_skill_router` | `/employees/{employee_id}/skills` | Employee Skills |
 | `position_skill_router` | `/positionSkills` | Position Skills |
 | `resume_router` | `/resume` | Resume Import |
-| `assessment_router` | `/assessment` | Assessment |
+| `assessment_router` | `/assessment` | Assessment (CV skill test) |
+| `assessments_router` | `/assessments` | Skill Assessments |
+| `employee_assessments_router` | `/employees/{employee_id}/assessments` | Skill Assessments (HR) |
+| `question_bank_router` | `/question-bank` | Question Bank |
 
 **Health check:**
 - `GET /` returns `{"message": "Welcome to the AI HR Assistant API"}`.
@@ -228,7 +252,7 @@ Two public endpoints:
 | `created_at` | DateTime | Auto |
 | `updated_at` | DateTime | Auto, onupdate |
 
-Relationships: `department`, `position`, `user` (one-to-one), `employee_skills`, `education`, `certifications`, `assessment_results`, `recommendations`.
+Relationships: `department`, `position`, `user` (one-to-one), `employee_skills`, `education`, `certifications`, `assessments`, `recommendations`.
 
 Property `role` — returns `user.role` if the user account exists.
 
@@ -275,7 +299,9 @@ Relationships: `employee_skills`, `position_skills`, `aliases`.
 | `id` | Integer PK | |
 | `employee_id` | FK employees.id CASCADE | |
 | `skill_id` | FK skills.id CASCADE | |
-| `level` | Enum(SkillLevel) | Beginner/Intermediate/Advanced/Expert |
+| `level` | Enum(SkillLevel) | Beginner/Intermediate/Advanced |
+| `verified` | Boolean | Set by a graded assessment; reset by a manual level change |
+| `last_assessed_at`, `last_assessment_id` | DateTime(tz), FK assessments SET NULL | Last assessment that set the level |
 | `created_at` | DateTime | Auto |
 | `updated_at` | DateTime | Auto |
 
@@ -304,8 +330,9 @@ class SkillLevel(str, enum.Enum):
     BEGINNER = "Beginner"
     INTERMEDIATE = "Intermediate"
     ADVANCED = "Advanced"
-    EXPERT = "Expert"
 ```
+
+The assessment tables (`skill_questions`, `skill_question_options`, `assessments`, `assessment_skills`, `assessment_questions`) are described in [database.md](database.md#question-bank-tables).
 
 ---
 
@@ -374,7 +401,7 @@ Each item in the lists is a dict: `{skill, employee_level, required_level, prior
 
 **Proficiency rank:**
 ```python
-LEVEL_RANK = {"Beginner": 1, "Intermediate": 2, "Advanced": 3, "Expert": 4}
+LEVEL_RANK = {"Beginner": 1, "Intermediate": 2, "Advanced": 3}
 ```
 A skill is `matched` if `employee_rank >= required_rank`, `needs_improvement` if employee has the skill but at a lower level.
 

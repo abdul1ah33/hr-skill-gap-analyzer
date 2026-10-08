@@ -1,54 +1,68 @@
 # Skill Assessment Feature
 
-The assessment feature checks an employee's real proficiency in the skills where the gap analysis found a problem. The self-reported or resume-derived level is not trusted on its own; the employee takes a timed multiple-choice test, and the backend grades it and works out the level.
+The assessment feature checks an employee's real proficiency in the skills their position requires. The self-reported or resume-derived level is not trusted on its own; the employee takes a timed multiple-choice test, the backend grades it, and the employee's skill levels are updated and marked **verified**.
 
-**Status:** In progress. The frontend flow works end to end on mock data. On the backend, the question bank and response schemas exist, but the service, endpoints and persistence are not built yet.
+**Status:** Implemented (backend, question bank, HR and employee screens). Not implemented yet: a retake cooldown (postponed).
 
 See also: [Frontend](frontend.md) | [AI Analysis](ai-analysis.md) | [Database](database.md) | design note `docs/assessment_pipeline.txt`
 
 ---
 
-## Target Flow
+## Flow
 
 ```
-Employee
-   │
-   ▼
-SkillComparisonService
-   │  unmatched + needs_improvement skills
-   ▼
-AssessmentService (to build)
-   │  for each skill, pick from the question bank:
-   │    1 Beginner, 2 Intermediate, 2 Advanced
-   ▼
-Create assessment session in the DB
-   │
-   ▼
-Frontend receives ONLY:
-   question id, question text, proficiency level,
-   option ids, option texts
-   (no correct answer, no option types, no explanations)
-   │
-   ▼
-Employee answers (timed, proctored)
-   │
-   ▼
-Backend receives question_id + selected_option_id
-   │
-   ▼
-Backend grades answers and calculates a level per skill
-   │
-   ▼
-Assessment result (stored, shown to HR)
+HR opens an employee                    Employee logs in (employee portal)
+  ├─ "Start Test"  → runs it now on        └─ starts the assigned test or a new one
+  │                  HR's screen (on behalf)
+  └─ "Assign Test" → the employee starts it from their account
+        │
+        ▼
+AssessmentTargetService: the position's required skills
+  order: matched → needs improvement → missing, essential first; max 8 skills;
+  skills without enough bank questions are skipped (with a reason)
+        │
+        ▼
+AssessmentGenerationService: per skill 1 Beginner, 2 Intermediate, 2 Advanced,
+  random, unseen questions first; options shuffled once and stored
+        │
+        ▼
+One open session (token, heartbeat every 20 s, takeover after 60 s idle)
+  answers saved one by one; violations counted (3 → terminated)
+        │
+        ▼
+Submit (or time runs out) → grading per skill (scoring table below)
+        │
+        ▼
+Profile update: level set / skill added (verified), or skill removed if None
 ```
 
-Grading stays on the server, so the correct answers never reach the browser.
+Grading stays on the server; the browser never receives correct answers, option types, explanations or bank ids. One test can be assigned or running per employee at a time.
+
+### Scoring (per skill, version `2026-10-08.v1`)
+
+| Correct answers | Level |
+|---|---|
+| 0–1 | None |
+| 4–5 | Advanced |
+| exactly 3, with the Beginner question and both Intermediate questions right | Intermediate |
+| any other 2–3 | Beginner |
+
+Unanswered and timed-out questions count as wrong. The full 18-case table is in `backend/app/services/assessment_scoring_service.py`.
+
+### Profile update
+
+| Result | Employee had the skill | Employee didn't have it |
+|---|---|---|
+| None | skill deleted (`removed`) | nothing (`no_change`) |
+| Beginner / Intermediate / Advanced | level set, `verified = true` (`upgraded` / `downgraded` / `confirmed`) | skill created, `verified = true` (`created`) |
+
+Submitted and expired tests are applied; terminated tests (too many violations) are graded but not applied. Editing a level by hand sets `verified = false`.
 
 ---
 
 ## Question Bank
 
-**File:** `backend/app/data/question_bank/output_question_bank.jsonl`
+**Files:** `backend/app/data/question_bank/output_question_bank.jsonl` (curated) and `backend/app/data/question_bank/generated/*.jsonl` (generated)
 **Schema:** `backend/app/schemas/question_bank.py` (`SkillQuestionBank`, `BankQuestion`, `BankOption`). Each question needs exactly six options, one of each type, with unique texts; the tests in `backend/tests/test_question_bank_schema.py` check every bank file against these rules.
 
 One JSON object per line, one line per skill:
@@ -76,7 +90,12 @@ One JSON object per line, one line per skill:
 | `options[].type` | `correct`, `near_miss`, `misconception`, `plausible_wrong_1`, `plausible_wrong_2`, `plausible_wrong_3` |
 | `options[].explanation` | Why the option is right or wrong. Useful for feedback after grading. |
 
-**Current contents:** 83 skills (Python, Django, JavaScript, PostgreSQL, Docker, Kubernetes, AWS CloudFormation, Kafka, …), 30 questions per skill (10 per level), 2,490 questions in total. Nearly all questions have 6 options; 8 have 7 and 1 has 5.
+**Current contents:** 150 skills, 3,495 questions, all valid:
+
+- curated: 83 skills × 30 questions (10 per level), 2,490 questions
+- generated: 67 position skills × 15 questions (5 per level): 19 skills by Gemini, 48 by Claude
+
+Known issue: in about 1,500 curated questions the correct option is noticeably longer than the other options, which makes it easier to guess. The importer reports these as warnings; the generated files have none.
 
 ### Matching skills to the bank
 
@@ -84,23 +103,9 @@ Bank entries are matched to skills by their lowercase name. Position skills are 
 
 ---
 
-## API Response Schemas
+## API
 
-**File:** `backend/app/schemas/assessment.py`
-
-```python
-class AssessmentOptionResponse(BaseModel):
-    id: int
-    text: str
-
-class AssessmentQuestionResponse(BaseModel):
-    id: int
-    question_text: str
-    proficiency_level: Literal["Beginner", "Intermediate", "Advanced"]
-    options: list[AssessmentOptionResponse]
-```
-
-These are the only question fields the frontend should receive.
+Endpoints, session header, error codes and response fields are documented in [api.md](api.md#skill-assessments). Schemas: `backend/app/schemas/assessment.py`. Responses are built field by field in `assessment_service.py`; option ids are positions 1–6 in the shuffled order.
 
 ---
 
@@ -120,17 +125,7 @@ These are the only question fields the frontend should receive.
 
 ## Database
 
-Existing tables (see `backend/app/models/assessment*.py`):
-
-| Table | Notes |
-|---|---|
-| `assessments` | title, description, difficulty, passing_score, duration_minutes, created_by |
-| `assessment_skills` | assessment ↔ skill (unique pair) |
-| `assessment_questions` | question_text, question_type, `option_a`–`option_d`, correct_answer, points |
-| `assessment_results` | employee, assessment, score, percentage, status, started/completed_at, attempt_number, feedback |
-| `assessment_answers` | result, question, employee_answer, is_correct, earned_points, answered_at |
-
-`assessment_questions` only has four option columns, but bank questions have 5–7 options. It also has no `proficiency_level`. The schema will need a change (for example a separate options table) before bank questions can be stored per session.
+Tables `skill_questions`, `skill_question_options`, `assessments`, `assessment_skills`, `assessment_questions` and the `employee_skills` verification columns are described in [database.md](database.md#question-bank-tables).
 
 ---
 
@@ -165,11 +160,22 @@ python -m app.scripts.generate_question_bank             # generate (resumable)
 
 ---
 
-## Remaining Work
+## Code Map
 
-1. `AssessmentService`: pick questions per weak skill (1 Beginner / 2 Intermediate / 2 Advanced), shuffle options, create a session.
-2. Persistence: decide how sessions, served questions and options are stored (schema/migration change).
-3. Endpoints: start an assessment, get questions, submit answers, get the result.
-4. Grading and level calculation per skill, optionally updating `employee_skills`.
-5. Frontend: an `assessmentService.ts`, align types with the backend schema, replace `mockAssessment`, show the real result, and send violations/termination to the backend.
-6. Enforce fullscreen and copy protection if they stay in the config.
+| Concern | File |
+|---|---|
+| Which skills to test | `backend/app/services/assessment_target_service.py` |
+| Picking questions, starting | `backend/app/services/assessment_generation_service.py` |
+| Scoring table | `backend/app/services/assessment_scoring_service.py` |
+| Grading and profile update | `backend/app/services/assessment_grading_service.py` |
+| Sessions, answers, violations, submit, HR assign | `backend/app/services/assessment_service.py` |
+| Endpoints | `backend/app/api/endpoints/assessments.py`, `employee_assessments.py`, `question_bank.py` |
+| Settings | `backend/app/core/config.py` (`ASSESSMENT_*`, see [setup.md](setup.md)) |
+| Tests | `backend/tests/test_assessment_*.py`, `test_question_bank_*.py` |
+
+## Limitations and Future Work
+
+- **Retake cooldown** (e.g. 30 days per skill) is postponed; employees can retake a test as soon as the previous one is finished. Unseen questions are preferred, so retakes get different questions until the pool runs out.
+- **Proctoring is a deterrent:** tab switches, fullscreen exits and copy attempts are reported by the browser, so a modified client can skip them.
+- **Answer-length bias** in the curated bank (see Question Bank).
+- Vague position skills (e.g. "troubleshooting", "team leadership") have no questions and are skipped.

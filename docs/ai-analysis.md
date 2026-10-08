@@ -44,7 +44,7 @@ Before AI analyzes a skill gap, the system performs a deterministic comparison t
 3. **No alias lookup:** The comparison does not consult the `skill_aliases` table. It relies on Gemini normalizing skill names when position skills and resumes are processed, plus the AI reconciliation step in section 3.
 4. **Comparison Rules:**
    - Skills are matched by **exact string match** (case-insensitive).
-   - Proficiency levels are mapped to integers: `Beginner (1)`, `Intermediate (2)`, `Advanced (3)`, `Expert (4)`.
+   - Proficiency levels are mapped to integers: `Beginner (1)`, `Intermediate (2)`, `Advanced (3)`.
 5. **Categorization:**
    - **Matched:** Employee has the skill at `employee_level >= required_level`.
    - **Needs Improvement:** Employee has the skill, but `employee_level < required_level`.

@@ -150,7 +150,7 @@ Gets a specific position.
 Updates a position. If the `title` changes, automatically deletes old required skills and generates new ones in the background.
 
 ### `DELETE /positions/{id}`
-Deletes a position and cleans up orphaned skills.
+Deletes a position and its `PositionSkill` rows. `Skill` rows are kept (they are shared with employees, the question bank and assessment history).
 
 ---
 
