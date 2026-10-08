@@ -69,8 +69,8 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 **Done when:** every non-skipped skill required by a position has at least 1 Beginner, 2 Intermediate and 2 Advanced active questions.
 
 ## Phase 6 — Scoring (pure)
-- [ ] `services/assessment_scoring_service.py`: 18-entry `(B, I, A) → level` table from §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`
-- [ ] Unit tests for all 18 combinations
+- [x] `services/assessment_scoring_service.py`: 18-entry `(B, I, A) → level` table from §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`
+- [x] Unit tests for all 18 combinations (`tests/test_assessment_scoring.py`); also `score_skill` (unanswered = wrong, 1 B / 2 I / 2 A layout check) and `profile_action_for` (§A.8)
 
 ## Phase 7 — Comparison integration and targeting
 - [ ] `skill_comparison_service.py`: add `skill_id` to every entry

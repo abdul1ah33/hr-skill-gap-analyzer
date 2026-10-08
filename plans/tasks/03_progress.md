@@ -56,14 +56,17 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `docs/setup.md` and `docs/assessment.md`: import step
 - [x] 73 tests passing
 
+### ✅ Phase 6 — Scoring (pure)
+- [x] `app/services/assessment_scoring_service.py`: explicit 18-entry `(B, I, A) → level` table from §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`
+- [x] `score_skill`: counts correct answers per level; unanswered = wrong; rejects anything other than 1 B / 2 I / 2 A
+- [x] `profile_action_for(claimed, assessed)`: CREATED / NO_CHANGE / REMOVED / UPGRADED / DOWNGRADED / CONFIRMED (§A.8), ready for grading in Phase 9
+- [x] `tests/test_assessment_scoring.py`: all 18 outcomes, the table checked against the short rule, layout errors, every profile action; 135 tests passing
+
 ---
 
 ## Next
 
-### 🔜 Phase 6 — Scoring (pure)
-- [ ] 18-entry table from plan §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`, unit tests for all 18 cases
-
-### ⬜ Phase 7 — Comparison integration and targeting
+### 🔜 Phase 7 — Comparison integration and targeting
 - [ ] `skill_id` in comparison results; target selection (matched → needs_improvement → unmatched, essential first, cap 8, 30-day cooldown)
 
 ### ⬜ Phase 8 — Generation and persistence
