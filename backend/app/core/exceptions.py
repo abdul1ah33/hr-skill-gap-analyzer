@@ -40,3 +40,17 @@ class PositionSkillAlreadyExistsError(Exception):
     """Raised when a position already requires the given skill."""
     def __init__(self):
         super().__init__("Position already requires this skill.")
+
+# ─── Skill assessments ───────────────────────────────────────────────────────
+
+class PositionHasNoSkillsError(Exception):
+    """Raised when the position's required skills haven't been generated yet."""
+    def __init__(self):
+        super().__init__("The employee's position has no required skills yet.")
+
+
+class NoAssessableSkillsError(Exception):
+    """Raised when none of the required skills can be tested."""
+    def __init__(self, not_assessable: list | None = None):
+        super().__init__("None of the required skills can be assessed.")
+        self.not_assessable = not_assessable or []

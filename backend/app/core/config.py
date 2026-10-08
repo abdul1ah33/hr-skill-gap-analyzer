@@ -14,3 +14,9 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 )
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# ==========================================
+# Skill assessments
+# ==========================================
+# Maximum number of skills tested in one assessment (5 questions each)
+ASSESSMENT_MAX_SKILLS = int(os.getenv("ASSESSMENT_MAX_SKILLS", "8"))

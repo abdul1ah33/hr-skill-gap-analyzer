@@ -85,6 +85,7 @@ GEMINI_API_KEY=<your-google-gemini-api-key>
 | `ALGORITHM` | Yes | JWT signing algorithm | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | No | JWT expiry in minutes. Defaults to 60. | `60` |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key for AI features | Get from [Google AI Studio](https://aistudio.google.com) |
+| `ASSESSMENT_MAX_SKILLS` | No | Maximum skills tested in one skill assessment (5 questions each). Defaults to 8. | `8` |
 
 ### Generate a SECRET_KEY
 
