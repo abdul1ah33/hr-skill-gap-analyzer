@@ -1,4 +1,4 @@
-I want to implement a new Skill Assessment System that integrates with the existing employee skill-gap analysis. You can tell me you suggestions too, think of it from the business view too.
+I want to implement a new Skill Assessment System that integrates with the existing employee skill-gap analysis. You provide your suggestions, think of it from all views like business and technical and other views too.
 
 IMPORTANT: For now, DO NOT modify any files or write implementation code. I only want you to analyze the existing codebase and give me a detailed implementation plan, including exactly which files need to be created, modified, or removed, what database relationships are needed, and how the whole feature should work.
 
