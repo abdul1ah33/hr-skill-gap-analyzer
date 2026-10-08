@@ -47,16 +47,20 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `tests/test_question_bank_schema.py`: every rule, the 21 original invalid questions as fixtures (`tests/fixtures/question_bank_cases.json`; Google Ads #19 as a must-stay-valid case), and every bank file in the repo validated (generated files also checked for length bias and 1 B / 2 I / 2 A coverage)
 - [x] 58 tests passing
 
+### ✅ Phase 5 — Importer
+- [x] `app/services/question_bank_import_service.py`: validate each question → match skill by lowercase name (create if missing; optional `skill_name_map.json`) → `content_hash` upsert → deactivate questions removed from a file (scoped to the imported sources) → report (rejections with file/line, not-assessable skills, small pools, length-bias warnings)
+- [x] `app/scripts/import_question_bank.py` (`--dry-run`, `--strict`, `--report`, optional paths); sources `curated` and `generated:<model>`
+- [x] `tests/test_question_bank_import.py`: 15 tests (fresh import, lowercase match, name map, idempotent re-run, changed → new row + old deactivated, removed → deactivated then reactivated, source scoping, invalid/strict, not assessable, dry run, the real bank)
+- [x] **Imported into the dev DB**: 3,495 questions (20,970 options), 64 skills created, 0 rejected, every skill assessable; second run 0 inserted. Backup in `.db_backups/ai_hr_assistant_before_question_import.sql`
+- [x] Every position skill has questions except the 12 skipped vague ones
+- [x] `docs/setup.md` and `docs/assessment.md`: import step
+- [x] 73 tests passing
+
 ---
 
 ## Next
 
-### 🔜 Phase 5 — Importer
-- [ ] `services/question_bank_import_service.py`: parse → validate → map skill by lowercase name (create if missing) → `content_hash` upsert → deactivate removed questions → report
-- [ ] `scripts/import_question_bank.py` (`--dry-run`, `--strict`), reading the curated file and everything under `generated/` (`source = curated` / `generated:<model>` / `claude`)
-- [ ] Integration tests; run on the dev DB; send the rejected-question report to the teammate
-
-### ⬜ Phase 6 — Scoring (pure)
+### 🔜 Phase 6 — Scoring (pure)
 - [ ] 18-entry table from plan §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`, unit tests for all 18 cases
 
 ### ⬜ Phase 7 — Comparison integration and targeting
@@ -80,5 +84,6 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - ✅ ~~`POST /skills` broken~~ fixed: create/update accept only `name` (normalised to lowercase); responses still include `category`/`description` as null. Tests added (16 passing).
 - ✅ ~~Leftover database `ai_hr_assistant_migration_test`~~ dropped.
 - ✅ ~~Teammate's bank: 22 invalid questions~~ fixed in `output_question_bank.jsonl`: duplicated option types retyped, duplicate 7th options dropped, and wrong answers corrected (Python descriptors, JavaScript generator, accounting retail method 59.5%, two-stage DDM $46.17, Gordon growth reworded, thermodynamics reworded to the computable initial liquid mass, PyTorch autograd, `git switch -c` replaced as it was also correct). Google Ads #19 was valid; option uniqueness is now case-sensitive. The whole bank passes validation.
+- ⚠️ **Length bias in the teammate's bank:** in 1,534 of the 2,490 curated questions the correct option is more than 15% longer than every other option. They import fine (warning only), but test-takers can often guess by picking the longest answer. Options: rewrite the near-miss/misconception options as was done for the generated files, or ask the teammate to.
 - ⚠️ **`backend/app/test_ai_service.py`** imports `ai.perfect_profile`, which doesn't exist (pre-existing).
 - ✅ Committed in 13 commits and pushed to `origin/main` (2026-10-08).

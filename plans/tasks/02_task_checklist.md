@@ -48,11 +48,11 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] Unit tests, including the real invalid questions as fixtures (`tests/test_question_bank_schema.py`)
 
 ## Phase 5 — Importer
-- [ ] `services/question_bank_import_service.py`: parse → validate → skill mapping (override map → case-insensitive name → create; never via aliases) → `content_hash` upsert → deactivate missing → report
-- [ ] `scripts/import_question_bank.py` with `--dry-run`, `--strict`, optional path
-- [ ] `data/question_bank/skill_name_map.json` only for real merges; casing is handled by lowercase normalization (§A.2)
-- [ ] Integration tests (§13 "Import")
-- [ ] Run on the dev DB; save the report; send the rejected-question list to the teammate
+- [x] `services/question_bank_import_service.py`: parse → validate → skill mapping (override map → case-insensitive name → create; never via aliases) → `content_hash` upsert → deactivate missing → report
+- [x] `scripts/import_question_bank.py` with `--dry-run`, `--strict`, optional paths, `--report`
+- [x] `data/question_bank/skill_name_map.json` supported (optional, only for real merges; none needed today)
+- [x] Integration tests (§13 "Import"): `tests/test_question_bank_import.py`, 15 tests
+- [x] Run on the dev DB (3,495 questions, 64 skills created, 0 rejected; second run 0 inserted). No rejected questions to send; report saved in `.db_backups/question_import_report.json`
 
 **Done when:** a second run reports 0 inserted, and all 83 skills are assessable.
 
@@ -64,7 +64,7 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] Gemini run stopped after 8 skills (kept in `generated/gemini_position_skills.jsonl`); Gemini parked for later
 - [x] Length bias: fixed in all generated questions (0 left); checked by `correct_is_obviously_longest` in `schemas/question_bank.py` and by the tests
 - [x] Spot-check; "correct option much longer than the rest" check added
-- [ ] Importer stores `source = generated:<model>` for files under `generated/`
+- [x] Importer stores `source = generated:<model>` for files under `generated/`
 
 **Done when:** every non-skipped skill required by a position has at least 1 Beginner, 2 Intermediate and 2 Advanced active questions.
 
