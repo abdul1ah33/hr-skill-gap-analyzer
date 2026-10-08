@@ -111,18 +111,22 @@ Notes: `get_assessment_actor` became an owner-or-HR check inside `assessment_ser
 - [x] 9 target positions created by `app/scripts/seed_assessment_demo.py` with fixed bank skills (not via Gemini, so every skill is testable and the data is reproducible), one mock employee each (DEMO001–DEMO009, mixed gap categories) and an Employee login each (password `Demo@1234`); run on the dev DB (backup `.db_backups/ai_hr_assistant_before_demo_seed.sql`); tests in `tests/test_seed_assessment_demo.py`
 
 ## Phase 11 — React integration (`my_frontend`)
-- [ ] `services/assessmentService.ts`; rewrite `types/assessment.ts`
-- [ ] New `pages/AssessmentsPage.tsx` (preview + start/resume + history)
-- [ ] Rewire `AssessmentInstructionsPage`, `AssessmentPage`, `AssessmentResultPage`
-- [ ] Server-backed `useAssessmentAttempt`; `useAssessmentSecurity` reports violations; timer capped by `expires_at`
-- [ ] Routes in `App.tsx`; fix the sidebar link in `AppLayout.tsx`
-- [ ] Verified badges + history in `EmployeeDetailsPage`; verified levels in `GapAnalysisResultPage`; `types/employeeSkills.ts`
-- [ ] Delete `data/mockAssessment.ts`
-- [ ] Employee portal (D1 = A+B+C): role-aware `ProtectedRoute` / login, employee layout
-- [ ] HR "Assign assessment" + "Run on behalf" on `EmployeeDetailsPage`; employee "Assigned to you" card
-- [ ] Heartbeat every 20 s; "open on another device" screen with retry
-- [ ] Remove Expert from level types, selects and badges; skill names shown lowercase (optional CSS capitalize)
-- [ ] `npm run lint` and `npm run build` pass; manual run-through: start → refresh (same questions) → answer → submit → result → profile updated
+- [x] `services/assessmentService.ts`; rewrite `types/assessment.ts`
+- [x] Employee page `pages/MyAssessmentsPage.tsx` (`/my/assessments`: assigned / in-progress card, preview, start/resume, history)
+- [x] Rewire `AssessmentInstructionsPage` (`/assessments/start[?employee=<id>]`), `AssessmentPage`, `AssessmentResultPage`
+- [x] Attempt state server-backed inside `AssessmentPage` (old `useAssessmentAttempt` deleted); `useAssessmentSecurity` reports violations (tab, blur, fullscreen exit, copy) and blocks copy/paste/context menu; `useAssessmentTimer` counts to a deadline capped by the server's remaining time
+- [x] Routes in `App.tsx` grouped by role; broken sidebar link removed from `AppLayout.tsx`
+- [x] Verified badges + assessment history in `EmployeeDetailsPage` (backend: `verified`, `last_assessed_at` on the employee response); `types/employeeSkills.ts`
+- [ ] Verified levels in `GapAnalysisResultPage`: not done (the gap analysis response doesn't carry the flag; small backend + UI change, can be added in Phase 12)
+- [x] Delete `data/mockAssessment.ts`
+- [x] Employee portal (D1 = A+B+C): role-aware `ProtectedRoute` / login (`lib/auth.ts`), `EmployeeLayout`
+- [x] HR "Start Test" (assign + start on behalf) and "Assign Test" / Cancel on `EmployeeDetailsPage` (`components/assessment/EmployeeAssessmentsCard.tsx`); employee "HR assigned you a skill test" card
+- [x] Heartbeat every 20 s; "open on another device" screen with retry countdown
+- [x] Remove Expert from level types, selects and badges; skill names shown with CSS capitalize
+- [x] `npm run build` passes; `tsc` clean; lint: no errors in new code (10 pre-existing errors in other pages remain, was 12)
+- [x] Browser run-through (Edge + Playwright, against a throwaway DB copy): HR start on behalf → employee blocked ("open by HR") → HR answers and submits → result → verified badges; HR assign → employee login → assigned card → start → refresh resumes at the next question → submit → result → history; employee sent away from HR pages
+- Backend additions for the UI: preview returns `seconds_per_question` / `max_violations`; HR preview `GET /employees/{id}/assessments/preview`; `employee_id` on assessment detail and result; `VITE_API_URL` for the frontend API base URL
+- Bug found by the browser run and fixed: demo employees used `@demo.local` emails, which the employee response rejects (500); now `@example.com` (seed + dev DB updated), with an API test
 
 ## Phase 12 — Docs and cleanup
 - [ ] Update `docs/assessment.md`, `docs/api.md`, `docs/database.md`, `docs/backend.md`, `docs/setup.md` (migration + import step), `README.md` status table

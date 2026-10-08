@@ -103,12 +103,23 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] **Demo data** (`app/scripts/seed_assessment_demo.py`, documented in `docs/setup.md`): 9 positions from the bank's skill families with fixed bank skills, one mock employee each (DEMO001–DEMO009) with matched / needs-improvement / unmatched skills, Employee logins `firstname.lastname` / `Demo@1234`. Seeded into the dev DB; checked end to end in a rolled-back transaction (employee login → preview → start 35 questions; HR assign → start on behalf 40 questions). 195 tests passing
 - Agreed HR flow for Phase 11: HR "Start test" on any employee = assign + start on behalf (two calls behind one button); HR "Assign test" = assign only, the employee starts it from their own account
 
+### ✅ Phase 11 — React integration (`my_frontend`)
+- [x] **HR:** employee page has a Skill Assessments card: **Start Test** (assigns if needed, then starts on the employee's behalf on HR's screen), **Assign Test** / Cancel, history with links to results, "Verified" badges on tested skills
+- [x] **Employee portal:** employee accounts log in to `/my/assessments` (own layout): assigned / in-progress test card, skills the next test covers, history. HR pages are off-limits to employees
+- [x] **Test flow:** instructions (skills, time, violation limit from the server, fullscreen) → test (one question at a time, per-question + overall timer, answers saved immediately, resume after refresh, heartbeat every 20 s, violations reported, copy blocked, "open on another device" screen with retry) → per-skill result page
+- [x] Mock data and the local-only attempt hook removed; Expert removed everywhere; API base URL configurable (`VITE_API_URL`)
+- [x] Verified in a real browser (Edge + Playwright) against a throwaway copy of the DB, both flows end to end; build and type check clean
+- [x] Fixed: demo employee emails (`@demo.local` → `@example.com`) broke the employee page; dev DB updated
+- [x] 197 backend tests passing
+- [ ] Verified levels on the gap analysis result page → moved to Phase 12
+
 ---
 
 ## Next
 
-### 🔜 Phase 11 — React integration (`my_frontend`)
-### ⬜ Phase 12 — Docs and cleanup
+### 🔜 Phase 12 — Docs and cleanup
+- [ ] Verified levels on the gap analysis result page (left over from Phase 11)
+- [ ] Final pass over `docs/` (database.md, README status table), delete root `testing_assessments.py`, optional removal of `services/old/` with its test script
 
 ---
 
