@@ -80,3 +80,20 @@ def get_current_employee(
         )
 
     return current_user
+
+
+def get_current_user_with_employee(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """
+    Any authenticated user linked to an employee record, whatever the role.
+    Taking an assessment is about being an employee, so an HR user linked
+    to an employee can take one too.
+    """
+    if current_user.employee_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is not linked to an employee record.",
+        )
+
+    return current_user

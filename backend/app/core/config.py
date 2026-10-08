@@ -28,3 +28,7 @@ ASSESSMENT_GRACE_SECONDS = int(os.getenv("ASSESSMENT_GRACE_SECONDS", "120"))
 
 # Tab switches / fullscreen exits allowed before the attempt is terminated
 ASSESSMENT_MAX_VIOLATIONS = int(os.getenv("ASSESSMENT_MAX_VIOLATIONS", "3"))
+
+# A session not seen for this long (no heartbeat or answer) can be taken over
+# by another device or user (plan §A.5)
+ASSESSMENT_SESSION_TIMEOUT_SECONDS = int(os.getenv("ASSESSMENT_SESSION_TIMEOUT_SECONDS", "60"))

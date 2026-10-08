@@ -10,6 +10,7 @@ from app.core.exceptions import (
     PositionNotFoundError,
     PositionSkillNotFoundError,
     PositionSkillAlreadyExistsError,
+    AssessmentError,
 )
 
 
@@ -78,4 +79,14 @@ def register_exception_handlers(app: FastAPI):
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={"detail": str(exc)},
+        )
+
+    @app.exception_handler(AssessmentError)
+    async def assessment_error_handler(
+        request: Request,
+        exc: AssessmentError,
+    ):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": str(exc), "code": exc.code, **exc.extra()},
         )
