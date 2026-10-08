@@ -84,14 +84,22 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `tests/test_assessment_generation.py` (14 tests); 160 tests passing
 - [x] Checked on the dev DB inside a rolled-back transaction: Machine Learning Engineer → 8 skills, 40 questions, 42 min deadline
 
+### ✅ Phase 9 — API, grading, profile application
+- [x] Endpoints (`api/endpoints/assessments.py`, `employee_assessments.py`, `question_bank.py`, registered in `main.py`):
+  - employee: preview, start/resume (opens the session), history, detail, session, heartbeat, answer, violations, submit, result
+  - HR: list, assign (`due_at` optional), cancel, start on behalf; question bank coverage
+- [x] `app/services/assessment_service.py`: owner-or-HR access (404 for others), single open session (token hash, 60 s takeover, `ASSESSMENT_OPEN_ELSEWHERE` with `held_by` / `retry_after_seconds`, same token resumes after refresh), row locks on every write, lazy expiry, responses built field by field (no answer data can leak)
+- [x] `app/services/assessment_grading_service.py`: grades every skill with the scoring table; submitted and expired → applied (None deletes the employee skill, otherwise level set or created with `verified = true`); terminated (3 violations) → graded, `not_applied`. Expired tests found by `start()` are now graded too
+- [x] `app/schemas/assessment.py` rewritten (the old unused file replaced); assessment errors share one handler returning `{"detail", "code", …}`; `get_current_user_with_employee`; `ASSESSMENT_SESSION_TIMEOUT_SECONDS`
+- [x] Docs: `docs/api.md` (Skill Assessments section), `docs/setup.md` (setting)
+- [x] `tests/test_assessment_api.py` (27 tests: no-leak, sessions and takeover, answers, ownership, grading and every profile action, violations, expiry, HR assign / cancel / on behalf, coverage, auth); 187 tests passing
+- ⚠️ Manual Swagger run not done: the HR user's employee (1) has a position without skills. Any employee with a generated position can be used once a user is linked to it
+
 ---
 
 ## Next
 
-### 🔜 Phase 9 — API, grading, profile application
-- [ ] Employee, HR-assign and HR-on-behalf endpoints; session lock + heartbeat; grading; None → delete employee skill
-
-### ⬜ Phase 10 — Gemini vocabulary alignment
+### 🔜 Phase 10 — Gemini vocabulary alignment
 ### ⬜ Phase 11 — React integration (`my_frontend`)
 ### ⬜ Phase 12 — Docs and cleanup
 

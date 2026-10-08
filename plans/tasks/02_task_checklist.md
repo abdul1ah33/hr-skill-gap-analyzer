@@ -88,18 +88,20 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] Tests (§13 "Random selection", "Persistence"): `tests/test_assessment_generation.py`
 
 ## Phase 9 — API, grading and profile application
-- [ ] `auth/dependencies.py`: `get_current_user_with_employee`
-- [ ] `core/config.py`: assessment settings
-- [ ] `core/exceptions.py` + `exception_handlers.py`: assessment exceptions (§10.6)
-- [ ] Rewrite `schemas/assessment.py` (§10.4–10.5)
-- [ ] `services/assessment_service.py` facade: preview, start, get, answer, violation, submit, result, list
-- [ ] Grading + profile application per §A.8 (None → delete row)
-- [ ] HR assign / cancel / start-on-behalf endpoints; `get_assessment_actor` (owner or HR) (§A.5)
-- [ ] Session lock: `POST /assessments/{id}/session`, `/heartbeat`, `X-Assessment-Session` check on every read/write, takeover after timeout, `ASSESSMENT_OPEN_ELSEWHERE` 409
-- [ ] Tests: second device rejected while fresh; takeover after stale; HR and employee can't both answer; `expires_at` doesn't move
-- [ ] `api/endpoints/assessments.py` (§10.3); register in `main.py` with prefix `/assessments`
-- [ ] HR: `GET /employees/{employee_id}/assessments` (explicit HR dependency); `api/endpoints/question_bank.py` coverage
-- [ ] Tests (§13 "Authorization", "Answer validation", "No-leak", "Scoring", "Profile application")
+- [x] `auth/dependencies.py`: `get_current_user_with_employee`
+- [x] `core/config.py`: assessment settings
+- [x] `core/exceptions.py` + `exception_handlers.py`: assessment exceptions (§10.6)
+- [x] Rewrite `schemas/assessment.py` (§10.4–10.5)
+- [x] `services/assessment_service.py` facade: preview, start, get, answer, violation, submit, result, list
+- [x] Grading + profile application per §A.8 (None → delete row)
+- [x] HR assign / cancel / start-on-behalf endpoints; `get_assessment_actor` (owner or HR) (§A.5)
+- [x] Session lock: `POST /assessments/{id}/session`, `/heartbeat`, `X-Assessment-Session` check on every read/write, takeover after timeout, `ASSESSMENT_OPEN_ELSEWHERE` 409
+- [x] Tests: second device rejected while fresh; takeover after stale; HR and employee can't both answer; `expires_at` doesn't move
+- [x] `api/endpoints/assessments.py` (§10.3); register in `main.py` with prefix `/assessments`
+- [x] HR: `GET /employees/{employee_id}/assessments` (explicit HR dependency); `api/endpoints/question_bank.py` coverage
+- [x] Tests (§13 "Authorization", "Answer validation", "No-leak", "Scoring", "Profile application")
+
+Notes: `get_assessment_actor` became an owner-or-HR check inside `assessment_service._load`; HR routes live in `api/endpoints/employee_assessments.py`; `held_by` is `employee` / `hr`; `POST /assessments` returns 200 for both new and resumed tests and also opens the session. The full lifecycle is covered by `tests/test_assessment_api.py`; a manual Swagger run needs a position with skills for the HR user's employee (employee 1's position has none yet).
 
 **Done when:** a full lifecycle via Swagger works for the HR user linked to employee 1, and the no-leak test passes.
 
