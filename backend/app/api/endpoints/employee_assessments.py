@@ -10,6 +10,7 @@ from app.auth.dependencies import get_current_hr
 from app.dependencies import get_db
 from app.models.user import User
 from app.schemas.assessment import (
+    AssessmentPreview,
     AssessmentSession,
     AssessmentSummary,
     AssignAssessmentRequest,
@@ -24,6 +25,11 @@ service = AssessmentService()
 @router.get("", response_model=list[AssessmentSummary], summary="Employee's assessments")
 def list_employee_assessments(employee_id: int, db: Session = Depends(get_db)):
     return service.list_for_employee(db, employee_id)
+
+
+@router.get("/preview", response_model=AssessmentPreview, summary="Skills a new test for this employee would cover")
+def preview_employee_assessment(employee_id: int, db: Session = Depends(get_db)):
+    return service.preview(db, employee_id)
 
 
 @router.post(

@@ -97,6 +97,18 @@ def test_preview_lists_assessable_and_skipped_skills(client, world):
         {"skill_id": world["vague"].id, "skill_name": "vague skill", "reason": "no_question_bank"}
     ]
     assert body["total_questions"] == 10
+    assert (body["seconds_per_question"], body["max_violations"]) == (60, 3)
+
+
+def test_hr_preview_for_an_employee(client, world):
+    response = client.get(f"/employees/{world['employee'].id}/assessments/preview", headers=world["hr_headers"])
+
+    assert response.status_code == 200
+    assert [s["skill_name"] for s in response.json()["assessable"]] == ["sql", "docker"]
+    assert client.get("/employees/999999/assessments/preview", headers=world["hr_headers"]).status_code == 404
+    assert client.get(
+        f"/employees/{world['employee'].id}/assessments/preview", headers=world["headers"]
+    ).status_code == 403
 
 
 def test_start_returns_session_and_safe_questions(client, world):
@@ -290,6 +302,7 @@ def test_submit_grades_and_updates_the_profile(client, db, world):
     assert response.status_code == 200
     result = response.json()
     assert result["status"] == "submitted"
+    assert result["employee_id"] == world["employee"].id
     assert result["applied_to_profile"] is True
     assert result["scoring_version"] == "2026-10-08.v1"
     by_skill = {s["skill_name"]: s for s in result["skills"]}

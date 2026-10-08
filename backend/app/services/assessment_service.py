@@ -26,6 +26,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.config import (
+    ASSESSMENT_MAX_VIOLATIONS,
     ASSESSMENT_SECONDS_PER_QUESTION,
     ASSESSMENT_SESSION_TIMEOUT_SECONDS,
 )
@@ -235,6 +236,7 @@ class AssessmentService:
 
         return AssessmentDetail(
             id=assessment.id,
+            employee_id=assessment.employee_id,
             status=assessment.status.value,
             administered_by=_value(assessment.administered_by),
             position_title=assessment.position_title,
@@ -255,6 +257,7 @@ class AssessmentService:
     def _result(self, assessment: Assessment) -> AssessmentResult:
         return AssessmentResult(
             id=assessment.id,
+            employee_id=assessment.employee_id,
             status=assessment.status.value,
             administered_by=_value(assessment.administered_by),
             position_title=assessment.position_title,
@@ -329,6 +332,8 @@ class AssessmentService:
             ],
             total_questions=total_questions,
             estimated_minutes=math.ceil(total_questions * ASSESSMENT_SECONDS_PER_QUESTION / 60),
+            seconds_per_question=ASSESSMENT_SECONDS_PER_QUESTION,
+            max_violations=ASSESSMENT_MAX_VIOLATIONS,
         )
 
     def start_self(

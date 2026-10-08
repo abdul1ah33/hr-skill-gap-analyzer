@@ -67,6 +67,7 @@ class AssessmentConfigPublic(BaseModel):
 
 class AssessmentDetail(BaseModel):
     id: int
+    employee_id: int
     status: AssessmentStatusValue
     administered_by: Literal["self", "hr_on_behalf"] | None
     position_title: str | None
@@ -127,6 +128,8 @@ class AssessmentPreview(BaseModel):
     not_assessable: list[NotAssessableSkill]
     total_questions: int
     estimated_minutes: int
+    seconds_per_question: int
+    max_violations: int
 
 
 # ==========================================
@@ -146,6 +149,7 @@ class SkillResultPublic(BaseModel):
 
 class AssessmentResult(BaseModel):
     id: int
+    employee_id: int
     status: AssessmentStatusValue
     administered_by: Literal["self", "hr_on_behalf"] | None
     position_title: str | None
