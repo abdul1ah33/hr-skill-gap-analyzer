@@ -176,7 +176,7 @@ def seed_demo(db: Session) -> list[tuple[str, str, str]]:
             )
 
         number, first, last, years, extra_skill = employee_data
-        email = f"{first.lower()}.{last.lower()}@demo.local"
+        email = f"{first.lower()}.{last.lower()}@example.com"
         employee, created = _get_or_create(
             db, Employee, employee_number=number,
             defaults={

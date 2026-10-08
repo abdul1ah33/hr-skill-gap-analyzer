@@ -54,3 +54,13 @@ def test_seed_is_idempotent(db, bank):
     seed_demo(db)
 
     assert (db.query(Position).count(), db.query(Employee).count(), db.query(User).count()) == counts
+
+
+def test_demo_employees_load_through_the_api(client, db, factory, bank):
+    seed_demo(db)
+    headers = factory.auth_headers(factory.user(role="HR"))
+
+    for *_, employee in DEMO_POSITIONS:
+        person = db.query(Employee).filter_by(employee_number=employee[0]).one()
+        response = client.get(f"/employees/{person.id}", headers=headers)
+        assert response.status_code == 200, response.text
