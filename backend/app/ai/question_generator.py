@@ -14,7 +14,11 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
-from app.schemas.question_bank import BankQuestion, normalize_text
+from app.schemas.question_bank import (
+    BankQuestion,
+    correct_is_obviously_longest,
+    normalize_text,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +27,6 @@ logging.getLogger("httpcore").setLevel(logging.WARNING)
 logging.getLogger("google_genai").setLevel(logging.ERROR)
 
 DEFAULT_MODEL = "gemini-3.5-flash-lite"
-
-# Reject questions whose correct option is clearly longer than every other
-# option; test-takers learn to pick the longest answer
-MAX_CORRECT_LENGTH_RATIO = 1.15
 
 
 # ==========================================
@@ -99,12 +99,6 @@ def _build_prompt(skill_name: str, level: str, count: int, avoid: list[str]) -> 
         listed = "\n".join(f"- {text}" for text in avoid)
         prompt += f"\n\nQuestions already used (do not repeat or paraphrase them):\n{listed}"
     return prompt
-
-
-def _correct_is_obviously_longest(question: BankQuestion) -> bool:
-    correct = next(len(o.text) for o in question.options if o.type == "correct")
-    longest_other = max(len(o.text) for o in question.options if o.type != "correct")
-    return correct > longest_other * MAX_CORRECT_LENGTH_RATIO
 
 
 def _is_quota_error(err: APIError) -> bool:
@@ -189,7 +183,7 @@ def generate_level_questions(
                 )
                 continue
 
-            if _correct_is_obviously_longest(question):
+            if correct_is_obviously_longest(question):
                 rejections.append(f"{item.question_text[:80]!r}: correct option is much longer than the others")
                 continue
 

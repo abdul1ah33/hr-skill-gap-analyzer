@@ -5,6 +5,8 @@ importer, so both apply exactly the same rules.
 
 Each question must have exactly six options, one of each OptionType, with
 unique non-empty texts and explanations.
+
+Replaces the old loose schemas/questions.py.
 """
 from typing import Literal
 
@@ -22,6 +24,10 @@ OptionType = Literal[
 QuestionLevel = Literal["Beginner", "Intermediate", "Advanced"]
 
 REQUIRED_OPTION_TYPES: frozenset[str] = frozenset(OptionType.__args__)
+
+# A correct option clearly longer than every other option gives the answer
+# away; test-takers learn to pick the longest one
+MAX_CORRECT_LENGTH_RATIO = 1.15
 
 
 def normalize_text(text: str) -> str:
@@ -97,3 +103,10 @@ class SkillQuestionBank(BaseModel):
         if len(set(texts)) != len(texts):
             raise ValueError("question texts must be unique within a skill")
         return self
+
+
+def correct_is_obviously_longest(question: BankQuestion) -> bool:
+    """True when the correct option is much longer than every other option."""
+    correct = next(len(o.text) for o in question.options if o.type == "correct")
+    longest_other = max(len(o.text) for o in question.options if o.type != "correct")
+    return correct > longest_other * MAX_CORRECT_LENGTH_RATIO

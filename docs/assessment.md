@@ -49,7 +49,7 @@ Grading stays on the server, so the correct answers never reach the browser.
 ## Question Bank
 
 **File:** `backend/app/data/question_bank/output_question_bank.jsonl`
-**Schema:** `backend/app/schemas/questions.py` (`SkillQuestionBank`, `Question`, `Option`)
+**Schema:** `backend/app/schemas/question_bank.py` (`SkillQuestionBank`, `BankQuestion`, `BankOption`). Each question needs exactly six options, one of each type, with unique texts; the tests in `backend/tests/test_question_bank_schema.py` check every bank file against these rules.
 
 One JSON object per line, one line per skill:
 

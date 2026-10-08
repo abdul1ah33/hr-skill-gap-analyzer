@@ -66,7 +66,7 @@ backend/
     │   ├── employee_skill.py
     │   ├── position_skill.py
     │   ├── assessment.py        # Assessment question/option responses (no answers)
-    │   └── questions.py         # Question bank format (SkillQuestionBank)
+    │   └── question_bank.py     # Question bank format and validation (SkillQuestionBank)
     ├── data/
     │   └── question_bank/
     │       └── output_question_bank.jsonl  # 83 skills × 30 questions (see assessment.md)
