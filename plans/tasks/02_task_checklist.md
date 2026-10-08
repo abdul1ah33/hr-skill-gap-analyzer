@@ -106,8 +106,9 @@ Notes: `get_assessment_actor` became an owner-or-HR check inside `assessment_ser
 **Done when:** a full lifecycle via Swagger works for the HR user linked to employee 1, and the no-leak test passes.
 
 ## Phase 10 — Vocabulary alignment (D17)
-- [ ] Pass active bank skill names to `generate_perfect_profile` as preferred names (`ai/perfect_profile.py`, `services/position_skill_service.py`)
-- [ ] Create or regenerate the 9 target positions; check coverage via `GET /question-bank/skills` / the position coverage endpoint
+- [x] Pass active bank skill names to `generate_perfect_profile` as preferred names (`ai/perfect_profile.py`, `services/position_skill_service.py`, `crud/question_bank.skill_names_with_questions`); tests in `tests/test_position_vocabulary.py`
+- [x] Checked coverage of existing positions (read-only): 6 of 10 fully assessable, the rest miss only skipped vague skills; HR Manager (employee 1) has no skills yet
+- [ ] Create the 9 target positions / generate HR Manager skills: **waiting for the user** (calls ESCO + Gemini and writes to the dev DB)
 
 ## Phase 11 — React integration (`my_frontend`)
 - [ ] `services/assessmentService.ts`; rewrite `types/assessment.ts`

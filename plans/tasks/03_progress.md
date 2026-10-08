@@ -95,12 +95,18 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 - [x] `tests/test_assessment_api.py` (27 tests: no-leak, sessions and takeover, answers, ownership, grading and every profile action, violations, expiry, HR assign / cancel / on behalf, coverage, auth); 187 tests passing
 - ⚠️ Manual Swagger run not done: the HR user's employee (1) has a position without skills. Any employee with a generated position can be used once a user is linked to it
 
+### ✅ Phase 10 — Gemini vocabulary alignment
+- [x] `generate_perfect_profile(..., preferred_skill_names)`: the prompt lists the bank's skill names; Gemini must reuse a name exactly when it means the same skill and must not add skills just because they're listed (`build_prompt` in `ai/perfect_profile.py`)
+- [x] `PositionSkillService` passes `skill_names_with_questions(db)` (skills with active questions)
+- [x] `tests/test_position_vocabulary.py` (5 tests); 192 tests passing; docs updated (`assessment.md`, `backend.md`)
+- [x] Coverage of existing positions (assessable / required skills): Computer Engineering Student 15/16, ML Engineer & Software Developer 16/18, Machine Learning Engineer 12/12, Senior Supply Chain Specialist 12/12, Software Engineer 15/16, Operation Engineer 12/17, Petrochemical Shift Supervisor 6/10, AI & ML Engineer 20/20, Electrical Power Engineer 10/10, HR Manager 0/0
+- ⏸️ Creating the 9 target positions and generating HR Manager skills: waiting for the user (uses ESCO + Gemini quota, writes to the dev DB)
+
 ---
 
 ## Next
 
-### 🔜 Phase 10 — Gemini vocabulary alignment
-### ⬜ Phase 11 — React integration (`my_frontend`)
+### 🔜 Phase 11 — React integration (`my_frontend`)
 ### ⬜ Phase 12 — Docs and cleanup
 
 ---
