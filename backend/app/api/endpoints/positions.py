@@ -6,7 +6,6 @@ from sqlalchemy.orm import Session
 from app.dependencies import get_db
 from app.models.department import Department
 from app.models.position_skill import PositionSkill
-from app.models.skill import Skill
 from app.schemas.position import (
     PositionCreate,
     PositionUpdate,
@@ -53,58 +52,20 @@ def _generate_skills_background(position_id: int, db: Session) -> None:
         )
 
 
-def _delete_position_skills_and_orphan_skills(
-    db: Session,
-    position_id: int,
-) -> None:
+def _delete_position_skills(db: Session, position_id: int) -> None:
     """
-    Delete all PositionSkill rows for *position_id*, then remove any Skill
-    that is no longer referenced by *any* PositionSkill row.
+    Delete all PositionSkill rows for *position_id*.
+
+    The Skill rows themselves are kept even if no position references them
+    any more, so they can be reused by other positions, employees and the
+    assessment question bank.
     """
-    # Collect skill IDs that are about to become unlinked
-    rows = (
+    (
         db.query(PositionSkill)
         .filter(PositionSkill.position_id == position_id)
-        .all()
+        .delete(synchronize_session=False)
     )
-    skill_ids = [r.skill_id for r in rows]
-
-    # Delete position-skill rows
-    for row in rows:
-        db.delete(row)
     db.flush()
-
-    # Delete skills that are no longer referenced by any position skill
-    for skill_id in skill_ids:
-        still_used = (
-            db.query(PositionSkill)
-            .filter(PositionSkill.skill_id == skill_id)
-            .first()
-        )
-        if not still_used:
-            skill = db.get(Skill, skill_id)
-            if skill:
-                db.delete(skill)
-
-    db.flush()
-
-
-def _cleanup_orphan_skills_for_ids(db: Session, skill_ids: list[int]) -> None:
-    """
-    After a position (and its CASCADE-deleted skills) is removed,
-    clean up any Skill records that are no longer referenced by any
-    PositionSkill row.
-    """
-    for skill_id in skill_ids:
-        still_used = (
-            db.query(PositionSkill)
-            .filter(PositionSkill.skill_id == skill_id)
-            .first()
-        )
-        if not still_used:
-            skill = db.get(Skill, skill_id)
-            if skill:
-                db.delete(skill)
 
 
 # ─── Routes ───────────────────────────────────────────────────────────────────
@@ -179,8 +140,8 @@ def update_position_route(
     title_changed = new_title.strip().lower() != old_title.strip().lower()
 
     if title_changed:
-        # Delete old position skills and clean up orphan skills
-        _delete_position_skills_and_orphan_skills(db, position_id)
+        # Delete old position skills (the skills themselves are kept)
+        _delete_position_skills(db, position_id)
         db.commit()
 
     updated = update_position(db, position_id, position)
@@ -205,13 +166,7 @@ def delete_position_route(position_id: int, db: Session = Depends(get_db)):
     if position.employees:
         raise HTTPException(status_code=400, detail="Position has employees.")
 
-    # Collect skill IDs before CASCADE wipes them
-    skill_ids = [ps.skill_id for ps in position.position_skills]
-
+    # PositionSkill rows are removed by CASCADE; Skill rows are kept
     delete_position(db, position_id)
-
-    # After CASCADE delete, clean up any orphan skills
-    _cleanup_orphan_skills_for_ids(db, skill_ids)
-    db.commit()
 
     return {"message": "Position deleted"}
