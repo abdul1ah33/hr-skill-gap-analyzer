@@ -86,6 +86,9 @@ GEMINI_API_KEY=<your-google-gemini-api-key>
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | No | JWT expiry in minutes. Defaults to 60. | `60` |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key for AI features | Get from [Google AI Studio](https://aistudio.google.com) |
 | `ASSESSMENT_MAX_SKILLS` | No | Maximum skills tested in one skill assessment (5 questions each). Defaults to 8. | `8` |
+| `ASSESSMENT_SECONDS_PER_QUESTION` | No | Time per assessment question. The server deadline is questions × seconds + grace. Defaults to 60. | `60` |
+| `ASSESSMENT_GRACE_SECONDS` | No | Extra seconds added to the assessment deadline. Defaults to 120. | `120` |
+| `ASSESSMENT_MAX_VIOLATIONS` | No | Tab switches / fullscreen exits allowed before an assessment is terminated. Defaults to 3. | `3` |
 
 ### Generate a SECRET_KEY
 

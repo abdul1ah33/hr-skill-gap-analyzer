@@ -4,7 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models.employee_skill import SkillLevel
-from app.models.skill_question import SkillQuestion
+from app.models.skill_question import SkillQuestion, SkillQuestionOption
 
 
 def count_active_questions(
@@ -33,3 +33,45 @@ def count_active_questions(
     for skill_id, level, count in rows:
         counts[skill_id][level] = count
     return dict(counts)
+
+
+def active_question_pools(
+    db: Session,
+    skill_ids: list[int],
+) -> dict[tuple[int, SkillLevel], list[int]]:
+    """Active bank question ids grouped by (skill_id, level), sorted by id."""
+    if not skill_ids:
+        return {}
+
+    rows = (
+        db.query(SkillQuestion.id, SkillQuestion.skill_id, SkillQuestion.proficiency_level)
+        .filter(
+            SkillQuestion.skill_id.in_(skill_ids),
+            SkillQuestion.is_active.is_(True),
+        )
+        .order_by(SkillQuestion.id)
+        .all()
+    )
+
+    pools: dict[tuple[int, SkillLevel], list[int]] = defaultdict(list)
+    for question_id, skill_id, level in rows:
+        pools[(skill_id, level)].append(question_id)
+    return dict(pools)
+
+
+def option_ids_by_question(db: Session, question_ids: list[int]) -> dict[int, list[int]]:
+    """Option ids of each bank question, sorted by id."""
+    if not question_ids:
+        return {}
+
+    rows = (
+        db.query(SkillQuestionOption.question_id, SkillQuestionOption.id)
+        .filter(SkillQuestionOption.question_id.in_(question_ids))
+        .order_by(SkillQuestionOption.id)
+        .all()
+    )
+
+    options: dict[int, list[int]] = defaultdict(list)
+    for question_id, option_id in rows:
+        options[question_id].append(option_id)
+    return dict(options)
