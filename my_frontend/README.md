@@ -34,12 +34,11 @@ src/
 ├── layouts/          # AppLayout: sidebar + header
 ├── components/       # ProtectedRoute, FormField, ui/ (shadcn)
 ├── services/         # Axios API wrappers per backend resource
-├── hooks/assessment/ # Assessment attempt, timer and tab-switch hooks
+├── hooks/assessment/ # Assessment timer and proctoring hooks
 ├── types/            # Types mirroring backend schemas (snake_case)
 ├── schemas/          # Zod form schemas
 ├── contexts/         # ThemeContext (light / dark / system)
-├── data/             # Mock assessment data
-└── lib/utils.ts      # cn() class helper
+└── lib/              # cn() helper, auth (role from JWT), assessment labels
 ```
 
 ## Features

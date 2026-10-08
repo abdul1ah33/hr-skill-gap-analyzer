@@ -1,6 +1,6 @@
 # AI-Based HR Assisting App — HR Skill Gap Analyzer
 
-An AI-powered HR system that works out what skills a position needs, compares them against what each employee actually has, and tells HR how to close the gap. It combines the **ESCO** European skills taxonomy with **Google Gemini** to generate position skill profiles, runs a deterministic skill comparison, produces AI gap-analysis reports, and (in progress) verifies employee skill levels through timed, proctored skill assessments.
+An AI-powered HR system that works out what skills a position needs, compares them against what each employee actually has, and tells HR how to close the gap. It combines the **ESCO** European skills taxonomy with **Google Gemini** to generate position skill profiles, runs a deterministic skill comparison, produces AI gap-analysis reports, and verifies employee skill levels through timed, proctored skill assessments.
 
 ---
 
@@ -12,9 +12,9 @@ HR teams spend a lot of manual effort deciding what a role requires and whether 
 2. **Capture employee skills** — HR enters skills manually, or uploads a PDF/DOCX resume that Gemini parses into a full employee record (skills, education, certifications).
 3. **Compare** — A deterministic service compares employee skills to position requirements and sorts them into *matched*, *needs improvement*, *unmatched* and *additional*.
 4. **Report** — Gemini turns the comparison into a readiness score, upskill pathways, timelines, resources, a managerial summary, and reconciles skills that match semantically under different names.
-5. **Verify (in progress)** — Employees take a timed multiple-choice assessment on their weak skills; the backend grades it and derives their real proficiency level.
+5. **Verify** — Employees take a timed multiple-choice test on the skills their position requires (5 questions per skill from a 3,495-question bank). The backend grades it, updates their skill levels and marks them verified. HR can run the test for an employee on the HR screen or assign it so the employee takes it from their own account.
 
-**Primary users:** HR managers and analysts. An Employee role exists in the backend for self-service, but the current frontend is HR-only.
+**Primary users:** HR managers and analysts, plus employees through a small self-service portal for their skill tests.
 
 ---
 
@@ -43,21 +43,22 @@ hr-skill-gap-analyzer/
 │       ├── schemas/                 # Pydantic schemas (incl. assessment + question bank)
 │       ├── crud/                    # Database access helpers
 │       ├── api/endpoints/           # Route handlers
-│       ├── services/                # Business logic (ESCO, comparison, gap analysis, resume)
-│       ├── ai/                      # Gemini modules (perfect profile, gap report, resume parser)
-│       ├── data/question_bank/      # Assessment question bank (JSONL)
-│       └── scripts/                 # Seed scripts
+│       ├── services/                # Business logic (ESCO, comparison, gap analysis, resume, assessments)
+│       ├── ai/                      # Gemini modules (perfect profile, gap report, resume parser, question generator)
+│       ├── data/question_bank/      # Assessment question bank (JSONL; generated/ for generated questions)
+│       └── scripts/                 # Seed, question import and generation scripts
+│   └── tests/                       # pytest suite (separate test database)
 ├── my_frontend/                     # Main frontend (see my_frontend/README.md)
 │   └── src/
 │       ├── pages/                   # Route pages
-│       ├── layouts/                 # AppLayout (sidebar + header)
+│       ├── layouts/                 # AppLayout (HR sidebar + header), EmployeeLayout (employee portal)
 │       ├── components/              # ProtectedRoute, FormField, shadcn ui/*
 │       ├── services/                # Axios API wrappers, one per resource
-│       ├── hooks/assessment/        # Attempt, timer and security hooks
+│       ├── hooks/assessment/        # Timer and proctoring hooks
+│       ├── lib/                     # Auth helpers (role from JWT), assessment labels
 │       ├── types/                   # TypeScript types matching backend schemas
 │       ├── schemas/                 # Zod form schemas
-│       ├── contexts/                # ThemeContext (light/dark/system)
-│       └── data/                    # Mock assessment data
+│       └── contexts/                # ThemeContext (light/dark/system)
 ├── frontend/                        # Legacy frontend (unused)
 ├── ai/                              # Ollama agents used by the CV skill test endpoint
 └── docs/
@@ -104,10 +105,10 @@ hr-skill-gap-analyzer/
 ## High-Level Architecture
 
 ```
-HR user
+HR user / employee
    │
    ▼
-my_frontend (React, Vite)  ── JWT in localStorage ("access_token")
+my_frontend (React, Vite)  ── JWT in localStorage ("access_token"), routes by role
    │  services/*.ts → axios (Bearer token)
    ▼
 FastAPI backend
@@ -121,7 +122,10 @@ FastAPI backend
    ├── /skills            CRUD
    ├── /skill-aliases     CRUD
    ├── /resume            resume upload → employee
-   └── /assessment        legacy endpoint (being replaced)
+   ├── /assessments       skill tests: preview, start, session, answers, submit, result
+   ├── /employees/{id}/assessments   HR: assign, cancel, start on behalf, history
+   ├── /question-bank     HR: question coverage per skill
+   └── /assessment        CV skill test (Ollama report; separate feature)
    │
    ├── PostgreSQL (SQLAlchemy)
    ├── ESCO API
@@ -168,7 +172,15 @@ npm run dev
 - Frontend: `http://localhost:5173`
 - API: `http://localhost:8000` — Swagger UI at `/docs`
 
-You also need to seed the `HR` and `Employee` roles and create a first HR user before you can log in. See [docs/setup.md](docs/setup.md).
+Before logging in, seed the roles, import the question bank and create a first HR user (all from `backend/`):
+
+```bash
+python -m app.scripts.seed_roles
+python -m app.scripts.import_question_bank
+python -m app.scripts.seed_assessment_demo   # optional demo employees with logins
+```
+
+Details in [docs/setup.md](docs/setup.md). Backend tests: `cd backend && pytest`.
 
 ---
 
@@ -180,7 +192,7 @@ You also need to seed the `HR` and `Employee` roles and create a first HR user b
 | [architecture.md](docs/architecture.md) | System architecture and request flows |
 | [backend.md](docs/backend.md) | Backend structure, routers, services, models |
 | [frontend.md](docs/frontend.md) | `my_frontend` pages, routing, services, hooks |
-| [assessment.md](docs/assessment.md) | Skill assessment feature: design, question bank, status |
+| [assessment.md](docs/assessment.md) | Skill assessment feature: flow, scoring, question bank, code map |
 | [api.md](docs/api.md) | API endpoint reference |
 | [database.md](docs/database.md) | Database schema |
 | [ai-analysis.md](docs/ai-analysis.md) | ESCO + Gemini pipelines |
@@ -204,10 +216,11 @@ Design notes (plain text / images) in `docs/`: `assessment_pipeline.txt`, `phase
 | Gemini gap-analysis report (incl. reconciled skills) | ✅ Complete |
 | JWT authentication | ✅ Complete |
 | Dashboard (live counts) and theme settings | ✅ Complete |
-| Assessment UI (instructions, timed questions, tab-switch detection, result) | 🟡 Built on mock data |
-| Assessment backend (question bank, sessions, grading, level calculation) | 🟡 In progress — question bank and response schemas exist |
+| Skill assessments: question bank (3,495 questions), selection, sessions, grading, profile update | ✅ Complete |
+| Assessment UI: HR start / assign, test screen with timers and proctoring, per-skill results, verified badges | ✅ Complete |
+| Employee self-service portal (skill tests) | ✅ Complete |
+| Retake cooldown for assessments | ⏸️ Postponed |
 | Skills management page | ⚠️ Placeholder |
-| Employee self-service portal in `my_frontend` | ❌ Not started (backend `/me` exists) |
 | Skill aliases used during comparison | ❌ Not wired in — aliases are stored but the comparison uses exact names; Gemini's `reconciled_skills` covers semantic matches |
 
 ---
@@ -217,5 +230,5 @@ Design notes (plain text / images) in `docs/`: `assessment_pipeline.txt`, `phase
 - **`GEMINI_API_KEY` is required** for position skill generation, gap analysis and resume import; those endpoints return 500 without it.
 - **ESCO is a live external dependency.** If it is unreachable, automatic position skill generation fails (you can still add position skills manually).
 - **Some routes are not protected:** `/employees` and `/skills` have their HR dependency commented out. Re-enable before deploying.
-- **`/assessment` imports `backend.app.services.old.assessment_service`.** It only works because `app/core/paths.py` adds the project root to `sys.path`; it will be replaced by the new assessment service.
+- **`/assessment` (CV skill test) imports `backend.app.services.old.assessment_service`.** It only works because `app/core/paths.py` adds the project root to `sys.path`, and it needs a local Ollama server. It is separate from the new `/assessments` skill tests.
 - **CORS allows all origins** (`["*"]`). Restrict it before deploying.
