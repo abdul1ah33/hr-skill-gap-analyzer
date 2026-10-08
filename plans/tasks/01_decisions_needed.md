@@ -4,6 +4,22 @@ Each item says what is undecided, the options, and a recommendation. The plan (`
 
 Legend: 🔴 blocks implementation · 🟡 needed before the related phase · 🟢 can default
 
+## ✅ Answers (2026-10-08)
+
+Details are in plan §A.
+
+| # | Answer |
+|---|---|
+| D1 | **A + B + C**: self-service, HR assignment, and HR running it on the employee's behalf. The same attempt can't be open in two places at once (session lock + heartbeat, §A.5) |
+| D2 | **Confirmed (defaults OK):** matched + needs_improvement + unmatched; not additional |
+| D3 | **Matched first**, then needs_improvement, then unmatched. Cap of 8 assumed |
+| D4 | **Proposal accepted** (table in §A.7) |
+| D5 | **A: delete the row** when the assessed level is None, so the skill becomes unmatched |
+| D6 | **Remove `EXPERT` from the enum** (0 rows use it) |
+| D9 | **Superseded: all skill names are stored in lowercase** |
+| D7, D8, D10, D12, D13, D15 | **Confirmed (defaults OK):** D7 upgrade + create verified rows; D8 skip and report invalid questions; D10 30-day cooldown per skill; D12 expired → graded and applied, terminated → graded, not applied; D13 apply automatically; D15 60 s per question + server deadline |
+| D11, D14, D16, D17 | Recommendations assumed (grouped question order; show level + x/5; enforce copy blocking and report fullscreen exits; pass bank skill names to Gemini) |
+
 ---
 
 ## 🔴 D1 — Who takes the assessment, and who starts it?

@@ -5,62 +5,77 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 ---
 
 ## Phase 0 — Decisions
-- [ ] Decide D1, D2, D4, D5 (blocking)
-- [ ] Decide D3, D6, D8, D10, D12, D13, D15
-- [ ] Record the answers in `01_decisions_needed.md`
+- [x] Decide D1, D3, D4, D5, D6 (2026-10-08; plan §A)
+- [x] Confirm the assumed defaults: D2, D7, D8, D10, D12, D13, D15 ("defaults OK", 2026-10-08)
+- [x] Record the answers in `01_decisions_needed.md`
 
 **Done when:** every 🔴 item has an answer.
 
 ## Phase 1 — Test infrastructure
-- [ ] Add `pytest` to `backend/requirements.txt`
-- [ ] `backend/pytest.ini` (testpaths, markers `unit` / `integration`)
-- [ ] `backend/tests/conftest.py`: `TEST_DATABASE_URL`, `alembic upgrade head` once, transactional session per test, `TestClient` with `get_db` override, user/employee/JWT factories
-- [ ] Create the `ai_hr_assistant_test` Postgres database (document in `docs/setup.md`)
+- [x] Add `pytest` to `backend/requirements.txt`
+- [x] `backend/pytest.ini` (testpaths, markers `unit` / `integration`)
+- [x] `backend/tests/conftest.py`: `TEST_DATABASE_URL` (default `<dev db>_test`, recreated each run), `alembic upgrade head` once, transactional session per test, `TestClient` with `get_db` override, user/employee/JWT factories; `tests/test_smoke.py` (3 passing)
+- [x] Test database `<dev db>_test` is created automatically by the test run; documented in `docs/setup.md` §9
+- [x] Seed the `Employee` role (`app/scripts/seed_roles.py`, idempotent); run on the dev DB
 
 **Done when:** an empty smoke test runs against the test DB.
 
 ## Phase 2 — Models, migration, legacy removal
-- [ ] `models/skill_question.py`, `models/skill_question_option.py` (§2.3–2.4)
-- [ ] Rewrite `models/assessment.py`, `assessment_skill.py`, `assessment_question.py` (§2.5–2.7)
-- [ ] Add `verified`, `last_assessed_at`, `last_assessment_id` to `models/employee_skill.py` (§2.8)
-- [ ] Update relationships in `skill.py`, `employee.py`, `user.py`; update `models/__init__.py`
-- [ ] Delete `models/assessment_result.py`, `models/assessment_answer.py`
-- [ ] Delete `api/endpoints/assessment.py`, `services/old/assessment_service.py`; remove the router from `main.py`
-- [ ] Hand-written Alembic revision (§14): guard against non-empty legacy tables, drop legacy, create enums, tables, indexes and the partial unique index, alter `employee_skills`, full downgrade
-- [ ] Fix `schemas/employee_skill.py` and `crud/employee_skill.py` (`last_assessed_at`, reset `verified` on manual edit)
+- [x] `models/skill_question.py` (both `SkillQuestion` and `SkillQuestionOption`), `models/assessment_enums.py`
+- [x] Rewrite `models/assessment.py`, `assessment_skill.py`, `assessment_question.py` (§2.5–2.7 + §A.5 columns)
+- [x] Add `verified`, `last_assessed_at`, `last_assessment_id` to `models/employee_skill.py` (§2.8)
+- [x] Update relationships in `skill.py`, `employee.py`, `user.py`; update `models/__init__.py`
+- [x] Delete `models/assessment_result.py`, `models/assessment_answer.py`
+- [x] Delete `old_Ollama/`; keep the CV skill test endpoint `/assessment`, its service and the root `ai/` folder (§A.4)
+- [x] `assessmentstatus` includes ASSIGNED / CANCELLED; assignment + session-lock columns (§A.5); partial unique index on ASSIGNED or IN_PROGRESS
+- [x] Remove `EXPERT` from `SkillLevel` (model, migration enum swap with a guard, `skill_comparison_service.py`) (§A.9)
+- [x] Lowercase skill names: `utils/skill_names.normalize_skill_name`, used everywhere skills are created or looked up; migration with collision guard + `CHECK (name = lower(name))` (§A.2)
+- [x] Hand-written Alembic revision `a7c3e91d4b20` (§14): guard against non-empty legacy tables, drop legacy, create enums, tables, indexes and the partial unique index, alter `employee_skills`, full downgrade
+- [x] Fix `schemas/employee_skill.py` and `crud/employee_skill.py` (`last_assessed_at`, reset `verified` on manual edit)
 
 **Done when:** `alembic upgrade head` and `alembic downgrade -1` both succeed on a copy of the dev DB, and the app starts.
 
 ## Phase 3 — Skill deletion safety
-- [ ] Shared helper `is_skill_referenced(db, skill_id)` (position_skills, employee_skills, skill_questions, assessment_skills)
-- [ ] Use it in `positions.py` orphan cleanup (both functions)
-- [ ] `DELETE /skills/{id}` → `SkillInUseError` (409) when referenced by bank/history
-- [ ] Tests (§13 "Skill deletion safety")
+- [x] `positions.py`: deleting a position or changing its title no longer deletes `Skill` rows (2026-10-08)
+- [x] `DELETE /skills/{id}` → 409 when the skill has bank questions or assessment history
+- [x] Tests: `tests/test_skill_deletion_safety.py` (5), `tests/test_skill_names.py` (6)
 
-**Done when:** changing a position title never deletes a skill that has questions or employee holders.
+**Done when:** no position operation deletes a skill, and deleting a referenced skill returns 409.
 
 ## Phase 4 — Question-bank schemas and validation
-- [ ] `schemas/question_bank.py`: `ImportOption`, `ImportQuestion` (exactly 6 options, exact type set, unique option texts, non-empty fields, level ∈ B/I/A), `ImportSkillBank` (unique question texts)
+- [x] `schemas/question_bank.py`: `BankOption`, `BankQuestion`, `SkillQuestionBank` (done early for the generator)
 - [ ] Merge `schemas/questions.py` into it; delete the old file (keep `QuestionChunk` only if the generator needs it)
-- [ ] Unit tests, including the 21 real invalid questions as fixtures
+- [ ] Unit tests, including the 22 real invalid questions as fixtures
 
 ## Phase 5 — Importer
 - [ ] `services/question_bank_import_service.py`: parse → validate → skill mapping (override map → case-insensitive name → create; never via aliases) → `content_hash` upsert → deactivate missing → report
 - [ ] `scripts/import_question_bank.py` with `--dry-run`, `--strict`, optional path
-- [ ] `data/question_bank/skill_name_map.json` (start with `{"risk management": "Risk Management"}` if D9 = keep names)
+- [ ] `data/question_bank/skill_name_map.json` only for real merges; casing is handled by lowercase normalization (§A.2)
 - [ ] Integration tests (§13 "Import")
 - [ ] Run on the dev DB; save the report; send the rejected-question list to the teammate
 
 **Done when:** a second run reports 0 inserted, and all 83 skills are assessable.
 
+## Phase 5b — Generate questions for uncovered skills (§A.3)
+- [x] `schemas/question_bank.py` strict validation (pulled forward from Phase 4)
+- [x] `ai/question_generator.py`: Gemini call per skill × level, `response_schema`, strict validation, retries, quota detection
+- [x] `scripts/generate_question_bank.py`: `--skills`, `--per-level`, `--limit`, `--dry-run`; resumable; skips 12 vague skills
+- [x] Test run with `sql` (15/15 valid)
+- [x] Gemini run stopped after 8 skills (kept in `generated/gemini_position_skills.jsonl`); Gemini parked for later
+- [ ] Length bias: in 183 of the 720 Claude-written questions the correct option is >15% longer than every other option; rewrite the near_miss option of those
+- [ ] Spot-check; consider a "correct option much longer than the rest" check
+- [ ] Importer stores `source = generated:<model>` for files under `generated/`
+
+**Done when:** every non-skipped skill required by a position has at least 1 Beginner, 2 Intermediate and 2 Advanced active questions.
+
 ## Phase 6 — Scoring (pure)
-- [ ] `services/assessment_scoring_service.py`: 18-entry `(B, I, A) → level` table from D4, `SCORING_RULES_VERSION`
+- [ ] `services/assessment_scoring_service.py`: 18-entry `(B, I, A) → level` table from §A.7, `SCORING_RULES_VERSION = "2026-10-08.v1"`
 - [ ] Unit tests for all 18 combinations
 
 ## Phase 7 — Comparison integration and targeting
 - [ ] `skill_comparison_service.py`: add `skill_id` to every entry
 - [ ] (Optional) strip `skill_id` in `gap_analysis_service.py` before calling Gemini
-- [ ] `services/assessment_target_service.py`: categories (D2), bank availability, ordering and cap (D3), cooldown (D10), not-assessable reasons
+- [ ] `services/assessment_target_service.py`: categories (D2), bank availability, order matched → needs_improvement → unmatched with essential first, cap 8 (§A.6), cooldown (D10), not-assessable reasons
 - [ ] `crud/question_bank.py`: availability counts, seen-question ids per employee
 - [ ] Tests: comparison still returns the same categories; target selection rules
 
@@ -77,7 +92,10 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [ ] `core/exceptions.py` + `exception_handlers.py`: assessment exceptions (§10.6)
 - [ ] Rewrite `schemas/assessment.py` (§10.4–10.5)
 - [ ] `services/assessment_service.py` facade: preview, start, get, answer, violation, submit, result, list
-- [ ] Grading + profile application per D5, D6, D7, D13 (§9.4–9.5)
+- [ ] Grading + profile application per §A.8 (None → delete row)
+- [ ] HR assign / cancel / start-on-behalf endpoints; `get_assessment_actor` (owner or HR) (§A.5)
+- [ ] Session lock: `POST /assessments/{id}/session`, `/heartbeat`, `X-Assessment-Session` check on every read/write, takeover after timeout, `ASSESSMENT_OPEN_ELSEWHERE` 409
+- [ ] Tests: second device rejected while fresh; takeover after stale; HR and employee can't both answer; `expires_at` doesn't move
 - [ ] `api/endpoints/assessments.py` (§10.3); register in `main.py` with prefix `/assessments`
 - [ ] HR: `GET /employees/{employee_id}/assessments` (explicit HR dependency); `api/endpoints/question_bank.py` coverage
 - [ ] Tests (§13 "Authorization", "Answer validation", "No-leak", "Scoring", "Profile application")
@@ -96,7 +114,10 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [ ] Routes in `App.tsx`; fix the sidebar link in `AppLayout.tsx`
 - [ ] Verified badges + history in `EmployeeDetailsPage`; verified levels in `GapAnalysisResultPage`; `types/employeeSkills.ts`
 - [ ] Delete `data/mockAssessment.ts`
-- [ ] If D1 = employee portal: role-aware `ProtectedRoute` / login, employee layout
+- [ ] Employee portal (D1 = A+B+C): role-aware `ProtectedRoute` / login, employee layout
+- [ ] HR "Assign assessment" + "Run on behalf" on `EmployeeDetailsPage`; employee "Assigned to you" card
+- [ ] Heartbeat every 20 s; "open on another device" screen with retry
+- [ ] Remove Expert from level types, selects and badges; skill names shown lowercase (optional CSS capitalize)
 - [ ] `npm run lint` and `npm run build` pass; manual run-through: start → refresh (same questions) → answer → submit → result → profile updated
 
 ## Phase 12 — Docs and cleanup

@@ -1,10 +1,194 @@
 # Skill Assessment System — Implementation Plan
 
 Source spec: `plans/skill_assessment_feature.md`
-Status: **plan only — nothing implemented yet**
+Status: **plan reviewed, decisions recorded (2026-10-08). Only the orphan-skill fix is implemented.**
 Companion files:
-- `plans/tasks/01_decisions_needed.md`: open decisions that block or shape implementation
+- `plans/tasks/01_decisions_needed.md`: decisions and their answers
 - `plans/tasks/02_task_checklist.md`: phase-by-phase checklist with acceptance criteria
+
+> **Where §A and the original sections disagree, §A wins.** The original sections are kept as written for traceability.
+
+---
+
+## A. Decisions applied after review (2026-10-08)
+
+### A.1 Summary
+
+| # | Decision | Effect on the plan |
+|---|---|---|
+| Skill names | **All skill names are stored in lowercase** (`Risk Management` and `risk management` → `risk management`) | §A.2. Replaces D9 and the `skill_name_map.json` casing entry |
+| Question generation | **Claude writes them for now** (5 per level, 67 position skills, 12 vague skills skipped). The Gemini generator is built but parked for later | §A.3 |
+| CV skill test endpoint | **Kept and used.** `/assessment/employee/{id}/assess` (`api/endpoints/assessment.py`) stays, with `services/old/assessment_service.py` and the root `ai/` folder it depends on. Only `old_Ollama/` is deleted | §A.4 |
+| Orphan skills | Deleting a position (or changing its title) **never deletes `Skill` rows** | **Done** in `positions.py`. Replaces Phase 3's "only delete if unreferenced" helper |
+| D1 | **A + B + C**: employees can start their own test, HR can assign one, and HR can run it on the employee's behalf. **The same attempt can never be open in two places at once** | §A.5 |
+| D2 | Not answered, so the recommendation is assumed: test matched + needs_improvement + unmatched, not additional | — |
+| D3 | **Matched skills first.** Order: matched → needs_improvement → unmatched; essential before optional inside each group; cap 8 (assumed) | §A.6 |
+| D4 | **Proposal accepted**: precedence R4 > R1 > R3 > R2, and B=0 with 2–3 correct → Beginner | §A.7 |
+| D5 | Assessed **None** → **delete the `employee_skills` row**, so the skill becomes unmatched | §A.8 |
+| D6 | **Remove `EXPERT` from `SkillLevel`.** The DB has 0 rows using it (`employee_skills`: 16 B / 61 I / 61 A; `position_skills`: 23 B / 60 I / 48 A) | §A.9. D6 as asked is gone |
+
+### A.2 Lowercase skill names
+
+The DB has 235 skills. **All 235 contain capitals, and none collide after lowercasing**, so no merging is needed today.
+
+- **One helper**, `normalize_skill_name(name)` in `app/utils/skill_names.py`: trim, collapse inner whitespace, `lower()`. Every place that creates or looks up a `Skill` calls it:
+  - `crud/skill.py` (create, get-by-name), `schemas/skill.py` (validator)
+  - `services/position_skill_service.py` (ESCO + Gemini output), `services/resume_import_service.py`
+  - `services/skill_comparison_service.py` (already compares lowercase, so this keeps it consistent)
+  - `scripts/seed_skill_aliases.py` (canonical names and aliases)
+  - the question-bank importer and generator
+- **Migration** (inside the Phase 2 revision):
+  - Abort if `SELECT lower(trim(name)) … HAVING count(*) > 1` returns rows, rather than silently merging.
+  - `UPDATE skills SET name = lower(trim(name))`
+  - `UPDATE skill_aliases SET alias = lower(trim(alias))`
+  - `CHECK (name = lower(name))` on `skills`
+  - The downgrade can't restore the original casing; that is accepted.
+- **Display:** acronyms will show as `aws`, `sql`. The frontend can show names as stored, or apply CSS `text-transform: capitalize` on skill chips. Leave the data lowercase either way.
+- **Importer mapping** simplifies to `normalize(bank name) == skills.name`, then create. `skill_name_map.json` remains only for real merges (two different names for the same skill), not casing.
+
+### A.3 Generating questions for the remaining skills
+
+**Scope** (read-only query, 2026-10-08): **216 of the 235 DB skills have no questions.**
+
+| Group | Skills | Priority |
+|---|---|---|
+| Required by at least one position | 79 | 1st, since these are the ones assessments test |
+| Held by employees, not required by any position | 91 | 2nd |
+| Not referenced at all (e.g. `SQLAlchemy`, `Redis`, `COBOL`, `Adaptability`) | 46 | Optional |
+
+At 10 questions × 3 levels per skill, that's **6,480 questions (~2,370 for priority 1)**.
+
+**Decision (updated):** **Claude writes the questions for now**, at **5 per level** (15 per skill), for the **67 position skills** left after skipping 12 vague ones. The Gemini generator below is kept for later use. Gemini had already finished 8 skills before it was stopped; those are kept in `generated/gemini_position_skills.jsonl`.
+
+Skipped as too vague or duplicated (`SKIPPED_SKILLS` in the script; edit it there):
+computer programming, troubleshooting, debugging (→ software debugging), engineering principles, team leadership, production processes, process optimization, technical reporting, prototyping (→ software prototyping), configuration management (→ software configuration management), product testing, quality assurance.
+
+**Implemented (2026-10-08):**
+- `app/schemas/question_bank.py`: strict rules (exactly 6 options, one of each type, unique non-empty texts and explanations, unique questions per skill). Run against the teammate's bank, it rejects **22** questions: the 21 found earlier plus **Google Ads #19, which has two options with the same text**.
+- `app/ai/question_generator.py`: one Gemini call per skill × level, with `response_schema`. Each answer is strictly validated; rejected or duplicate questions are requested again (up to 3 attempts). Per-minute rate limits are waited out (60 s, twice). After that it raises `QuotaExhaustedError`.
+- `app/scripts/generate_question_bank.py`:
+  - Run with `python -m app.scripts.generate_question_bank [--dry-run] [--skills a,b] [--per-level 5] [--limit N] [--delay 6]`.
+  - It picks position skills that no `*.jsonl` under `data/question_bank/` covers, minus the skip list, and writes lowercase skill names.
+  - Output: `data/question_bank/generated/position_skills.jsonl`.
+  - Progress per level goes to `position_skills.progress.json`, so a run stopped by the quota resumes where it left off. Rejected questions are logged to `position_skills.rejections.log`.
+- Test run (`sql`): 15/15 valid on the first try, and the questions look sound.
+  - **One weakness:** the correct option was the longest in 6 of 15 questions (chance would be ~2.5).
+  - Options are shuffled per attempt, but a test-taker can still guess by length.
+  - The prompt already asks for similar lengths. If the full run shows the same bias, add a check that rejects questions where the correct option is much longer than the others.
+- **Provenance:** the importer should record `source = 'generated:<model>'` for files under `generated/`, and `'curated'` otherwise. Generated questions go live straight away (default; flip to `is_active = false` if you want review first).
+
+### A.4 Legacy code, revised (final, 2026-10-08)
+
+`POST /assessment/employee/{id}/assess` (`api/endpoints/assessment.py`) is the **CV skill test** and is **in use**. It stays registered under `/assessment` and is unrelated to the new question-based `/assessments`.
+
+| Item | Action |
+|---|---|
+| `api/endpoints/assessment.py` | **Keep** (optional rename later, e.g. `cv_skill_test.py`, keeping the URL) |
+| `services/old/assessment_service.py`, `services/old/skill_gap_service.py`, `services/old/skill_alias_service.py` | **Keep**; used by the endpoint |
+| Root `ai/` folder | **Keep**. The service imports `ai.agents.ollama_model` and `ai.agents.assessment` from it; deleting it would stop the backend from starting |
+| `api/endpoints/old_Ollama/` | **Deleted** (unused) |
+| `services/old/resume_import_service.py`, root `testing_assessments.py` | Unused; can be deleted in cleanup |
+| Legacy `assessment_results` / `assessment_answers` models + tables | Removed in Phase 2 as planned; the CV endpoint doesn't use them |
+| Route naming | `/assessment` (CV test) and `/assessments` (new) coexist; the tags make the difference clear in Swagger ("Assessment" vs "Skill Assessments") |
+
+### A.5 D1: self-service, HR assignment, HR on behalf, one open session
+
+**Status enum** `assessmentstatus`: `ASSIGNED`, `IN_PROGRESS`, `SUBMITTED`, `EXPIRED`, `TERMINATED`, `CANCELLED`.
+
+**New `assessments` columns** (on top of §2.5):
+
+| Column | Type | Purpose |
+|---|---|---|
+| assigned_by_user_id | FK users, SET NULL, nullable | HR user who assigned it (null = self-started) |
+| assigned_at | timestamptz, nullable | |
+| due_at | timestamptz, nullable | optional deadline set by HR |
+| started_by_user_id | (already in §2.5) | the user who pressed Start |
+| administered_by | enum `assessmentadministration` (`SELF`, `HR_ON_BEHALF`), nullable until started | shown in the result, so a proxy-taken test is visible |
+| session_token_hash | String(64), nullable | SHA-256 of the current session token |
+| session_user_id | FK users, SET NULL, nullable | who holds the session |
+| session_last_seen_at | timestamptz, nullable | heartbeat |
+
+**Active-attempt rule:** the partial unique index covers `status IN ('ASSIGNED','IN_PROGRESS')`. An employee has at most one pending or running assessment.
+
+**Flows**
+
+1. **Self-service (A):** employee calls `POST /assessments`.
+   - If an ASSIGNED one exists, it's started.
+   - If an IN_PROGRESS one exists, it's returned.
+   - Otherwise a new one is created and started.
+2. **HR assigns (B):** `POST /employees/{employee_id}/assessments` with `{position_id?, due_at?}` creates an ASSIGNED row with no questions. Questions are generated **when the test starts**, so they reflect the employee's profile at that moment. HR can cancel it with `DELETE` → CANCELLED while it's still ASSIGNED.
+3. **HR on behalf (C):** HR calls `POST /employees/{employee_id}/assessments/{id}/start`. The answer, violation and submit endpoints under `/assessments/{id}/…` then accept **the owning employee or any HR user**. Every other caller gets 404.
+
+**One open session at a time**
+
+- Starting or resuming goes through `POST /assessments/{id}/session`. It returns a random `session_token` (32 bytes, URL-safe); only its hash is stored.
+- Every read of questions, every answer, violation and submit call must send `X-Assessment-Session: <token>`. A missing or mismatched token returns **409 `ASSESSMENT_OPEN_ELSEWHERE`**.
+- The client sends `POST /assessments/{id}/heartbeat` every 20 s. Answer calls also refresh `session_last_seen_at`.
+- If someone else (the employee on their PC while HR has it open, or a second tab) calls `/session` while the lock is fresh (last seen < `ASSESSMENT_SESSION_TIMEOUT_SECONDS`, default 60), they get 409 with `{held_by: "self" | "hr", retry_after_seconds}`.
+  - Once it's stale, the new caller **takes over**, and the old client's next call gets 409.
+  - The **clock doesn't pause**: `expires_at` is fixed at start, so switching devices costs time and can't be used to buy time.
+- Taking over is the only way to move a running test between the employee's PC and HR's PC. Answers already saved stay saved.
+- All of this happens in the `SELECT … FOR UPDATE` row lock already planned for writes, so two simultaneous `/session` calls can't both win.
+
+**Who can see results:** the employee sees their own; HR sees all. `administered_by` and `started_by` appear in both views.
+
+**Auth:** `get_current_user_with_employee` is still used for self-service. The shared `/assessments/{id}/…` endpoints use a new `get_assessment_actor` dependency (owner employee or HR). This still requires the **`Employee` role and employee accounts** (only `HR` exists in the DB today); Phase 1 adds a role seed.
+
+**Frontend additions:**
+- HR: an "Assign assessment" button and a "Run on behalf" button on `EmployeeDetailsPage`.
+- Employee: an "Assigned to you" card on `AssessmentsPage`.
+- Both: a blocking "This assessment is open on another device" screen with a retry countdown.
+
+### A.6 D3: ordering
+
+Target skills are sorted **matched → needs_improvement → unmatched**, essential before optional inside each group, then by name. The first `ASSESSMENT_MAX_SKILLS` (8) are tested. The rest are reported as `over_limit` and get priority in the next attempt. Questions are shown in that same order (D11 default: grouped by skill, Beginner → Intermediate → Advanced).
+
+### A.7 D4: final scoring table (`SCORING_RULES_VERSION = "2026-10-08.v1"`)
+
+| B | I | A | Total | Level | Why |
+|---|---|---|---|---|---|
+| 0 | 0 | 0 | 0 | None | R1 |
+| 0 | 0 | 1 | 1 | None | R1 |
+| 0 | 1 | 0 | 1 | None | R1 |
+| 0 | 0 | 2 | 2 | Beginner | B=0, 2–3 correct |
+| 0 | 1 | 1 | 2 | Beginner | B=0, 2–3 correct |
+| 0 | 2 | 0 | 2 | Beginner | B=0, 2–3 correct |
+| 0 | 1 | 2 | 3 | Beginner | B=0, 2–3 correct |
+| 0 | 2 | 1 | 3 | Beginner | B=0, 2–3 correct |
+| 0 | 2 | 2 | 4 | Advanced | R4 |
+| 1 | 0 | 0 | 1 | None | R1 beats R2 |
+| 1 | 0 | 1 | 2 | Beginner | R2 |
+| 1 | 0 | 2 | 3 | Beginner | R2 |
+| 1 | 1 | 0 | 2 | Beginner | R2 |
+| 1 | 1 | 1 | 3 | Beginner | R2 |
+| 1 | 1 | 2 | 4 | Advanced | R4 beats R2 |
+| 1 | 2 | 0 | 3 | Intermediate | R3 |
+| 1 | 2 | 1 | 4 | Advanced | R4 beats R3 |
+| 1 | 2 | 2 | 5 | Advanced | R4 beats R3 |
+
+In short: **0–1 correct → None; 4–5 correct → Advanced; 3 correct with the Beginner question and both Intermediate questions right → Intermediate; every other 2–3 → Beginner.** Unanswered and timed-out questions count as wrong.
+
+### A.8 D5: profile application
+
+| Assessed | Employee had the skill (matched / needs_improvement) | Employee didn't have it (unmatched) |
+|---|---|---|
+| None | **Delete** the `employee_skills` row → `profile_action = REMOVED`. The skill shows as unmatched in the next gap analysis; the old level stays in `assessment_skills.claimed_level` | No row → `NO_CHANGE` |
+| Beginner / Intermediate / Advanced | Set level (up or down), `verified = true` → `UPGRADED` / `DOWNGRADED` / `CONFIRMED` | Create the row, `verified = true` → `CREATED` (D7 default) |
+
+"None" means **0–1 correct out of 5**, per the scoring table; that includes answering none of the questions. Applied automatically (D13 default). Terminated attempts are graded but not applied (D12 default).
+
+### A.9 D6: removing `EXPERT`
+
+- **Migration:**
+  - Abort if any `employee_skills.level` or `position_skills.required_skill_level` is `EXPERT`. There are none today.
+  - Postgres can't drop an enum value, so the migration renames the type to `skilllevel_old`, creates `skilllevel` with `BEGINNER, INTERMEDIATE, ADVANCED`, `ALTER COLUMN … TYPE skilllevel USING level::text::skilllevel` on both tables, then drops `skilllevel_old`.
+  - The downgrade re-adds `EXPERT`.
+- **Code:**
+  - `models/employee_skill.py` (`SkillLevel.EXPERT` removed)
+  - `services/skill_comparison_service.py` (`"Expert": 4` removed)
+  - The `CHECK level ≠ EXPERT` on `skill_questions` is no longer needed.
+- **Frontend:** `types/employeeSkills.ts`, `types/positionSkill.ts`, plus the level lists and badge colours in `EmployeeDetailsPage.tsx`, `PositionDetailsPage.tsx` and `GapAnalysisResultPage.tsx`.
+- Gemini schemas already use only Beginner/Intermediate/Advanced (`ai/perfect_profile.py`), so nothing changes there.
 
 ---
 
@@ -61,9 +245,9 @@ Bank names mix styles: ESCO-style lowercase (`accounting`, `recruit personnel`, 
 | Finding | Where | Impact |
 |---|---|---|
 | Legacy assessment tables exist but have **0 rows** | `assessments`, `assessment_questions`, `assessment_results`, `assessment_answers`, `assessment_skills` | Safe to drop and recreate; no data migration needed |
-| Legacy `/assessment` endpoint is an AI text report, not a test, and imports Ollama code via `backend.app.services.old…` | `backend/app/api/endpoints/assessment.py`, `backend/app/services/old/assessment_service.py` | Remove |
+| Legacy `/assessment` endpoint is an AI text report, not a test, and imports Ollama code via `backend.app.services.old…` | `backend/app/api/endpoints/assessment.py`, `backend/app/services/old/assessment_service.py` | ~~Remove~~ Keep, rename (§A.4) |
 | `SkillComparisonService` returns skill **names only**, no `skill_id` | `backend/app/services/skill_comparison_service.py` | Small additive change needed |
-| **Orphan-skill cleanup deletes any `Skill` no position references** (and cascades to `employee_skills`) | `backend/app/api/endpoints/positions.py` (`_delete_position_skills_and_orphan_skills`, `_cleanup_orphan_skills_for_ids`) | Would destroy question-bank skills, or fail once they're protected by a foreign key. **Must be fixed.** |
+| **Orphan-skill cleanup deletes any `Skill` no position references** (and cascades to `employee_skills`) | `backend/app/api/endpoints/positions.py` (`_delete_position_skills_and_orphan_skills`, `_cleanup_orphan_skills_for_ids`) | Would destroy question-bank skills, or fail once they're protected by a foreign key. **Fixed 2026-10-08: skills are never deleted with a position.** |
 | `EmployeeSkillResponse` exposes `verified`, `last_assessed`, `years_experience`, but `employee_skills` has **none of these columns**. `crud.update_employee_skill` sets `last_assessed` on a non-existent column. | `backend/app/schemas/employee_skill.py`, `backend/app/crud/employee_skill.py` | Add real columns for assessment tracking |
 | `skilllevel` Postgres enum stores names: `BEGINNER, INTERMEDIATE, ADVANCED, EXPERT` | migration `b6b4472c0459` | Reuse it for question levels |
 | DB has **only the `HR` role** and one user (`abdullah`, HR, linked to employee 1). No `Employee` role or employee users exist. | `roles`, `users` | Who takes the test is a real product decision (see D1) |
@@ -333,7 +517,7 @@ Cascade summary: deleting an **employee** deletes their assessments (consistent 
 | `backend/app/schemas/assessment.py` | Rewrite: all safe request/response schemas (§10) |
 | `backend/app/services/skill_comparison_service.py` | Add `skill_id` to every entry it returns (additive; existing consumers ignore it) |
 | `backend/app/services/gap_analysis_service.py` | Optional: strip `skill_id` before sending `skill_diff` to Gemini (keeps the prompt unchanged) |
-| `backend/app/api/endpoints/positions.py` | Fix orphan cleanup: only delete a skill when **no** `position_skills`, `employee_skills`, `skill_questions` or `assessment_skills` reference it. Extract a shared helper. |
+| `backend/app/api/endpoints/positions.py` | **Done:** orphan cleanup removed; deleting a position or changing its title only removes `position_skills` rows. |
 | `backend/app/api/endpoints/skills.py` | `DELETE /skills/{id}`: return 409 when the skill has bank questions or assessment history, instead of a 500 IntegrityError |
 | `backend/app/auth/dependencies.py` | Add `get_current_user_with_employee` (any role, `employee_id` required) |
 | `backend/app/core/exceptions.py` / `exception_handlers.py` | Assessment exceptions + handlers (§10.6) |
@@ -392,8 +576,8 @@ Cascade summary: deleting an **employee** deletes their assessments (consistent 
 
 | Item | Action | Reason |
 |---|---|---|
-| `backend/app/api/endpoints/assessment.py` | **Delete** | AI text report, not a test; imports via `backend.app…`; replaced by `assessments.py` |
-| `backend/app/services/old/assessment_service.py` | **Delete** | Only used by the legacy endpoint; depends on Ollama (`ai/agents`) |
+| `backend/app/api/endpoints/assessment.py` | ~~Delete~~ **Rename to `cv_gap_assessment.py`, keep** (§A.4) | CV-based gap report, still wanted |
+| `backend/app/services/old/assessment_service.py` | ~~Delete~~ **Keep** (§A.4) | Used by the CV endpoint; depends on Ollama (`ai/agents`) |
 | `backend/app/services/old/skill_gap_service.py`, `skill_alias_service.py` | Keep for now (still imported by `backend/test_skill_alias_system.py`); delete together with that script in a later cleanup |
 | `backend/app/models/assessment_result.py` | **Delete** | Folded into new models |
 | `backend/app/models/assessment_answer.py` | **Delete** | Folded into `assessment_questions` |
@@ -549,7 +733,7 @@ The response is built only from these fields: `AssessmentQuestion.id`, `SkillQue
 | 17 | **1** | **2** | **1** | 4 | **R3 + R4** | ❗ **Conflict**: Intermediate vs Advanced |
 | 18 | **1** | **2** | **2** | 5 | **R3 + R4** | ❗ **Conflict**: Intermediate vs Advanced |
 
-**5 undefined cases (#4–#8) and 5 conflicting cases (#10, #15, #17, #18)** need a decision (**D4**). Cases #9 and #12 are defined but questionable.
+**5 undefined cases (#4–#8) and 4 conflicting cases (#10, #15, #17, #18)** need a decision (**D4**, resolved in §A.7). Cases #9 and #12 are defined but questionable.
 
 A *proposal only* for you to accept or change: rule precedence **R4 > R1 > R3 > R2**, and for B=0 with 2–3 correct use **Beginner**. That gives #4–#8 → Beginner, #10 → None, #15/#17/#18 → Advanced.
 
