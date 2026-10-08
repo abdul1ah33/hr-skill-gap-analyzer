@@ -44,8 +44,8 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 
 ## Phase 4 — Question-bank schemas and validation
 - [x] `schemas/question_bank.py`: `BankOption`, `BankQuestion`, `SkillQuestionBank` (done early for the generator)
-- [ ] Merge `schemas/questions.py` into it; delete the old file (keep `QuestionChunk` only if the generator needs it)
-- [ ] Unit tests, including the 22 real invalid questions as fixtures
+- [x] Merge `schemas/questions.py` into it; old file deleted (nothing imported it)
+- [x] Unit tests, including the real invalid questions as fixtures (`tests/test_question_bank_schema.py`)
 
 ## Phase 5 — Importer
 - [ ] `services/question_bank_import_service.py`: parse → validate → skill mapping (override map → case-insensitive name → create; never via aliases) → `content_hash` upsert → deactivate missing → report
@@ -62,8 +62,8 @@ Phases follow plan §12. Section references (§) point to `00_skill_assessment_i
 - [x] `scripts/generate_question_bank.py`: `--skills`, `--per-level`, `--limit`, `--dry-run`; resumable; skips 12 vague skills
 - [x] Test run with `sql` (15/15 valid)
 - [x] Gemini run stopped after 8 skills (kept in `generated/gemini_position_skills.jsonl`); Gemini parked for later
-- [ ] Length bias: in 183 of the 720 Claude-written questions the correct option is >15% longer than every other option; rewrite the near_miss option of those
-- [ ] Spot-check; consider a "correct option much longer than the rest" check
+- [x] Length bias: fixed in all generated questions (0 left); checked by `correct_is_obviously_longest` in `schemas/question_bank.py` and by the tests
+- [x] Spot-check; "correct option much longer than the rest" check added
 - [ ] Importer stores `source = generated:<model>` for files under `generated/`
 
 **Done when:** every non-skipped skill required by a position has at least 1 Beginner, 2 Intermediate and 2 Advanced active questions.

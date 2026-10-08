@@ -31,7 +31,7 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
 ### ✅ Phase 3 — Skill deletion safety
 - [x] Deleting a position or changing its title never deletes `Skill` rows
 - [x] `DELETE /skills/{id}` returns 409 when the skill has bank questions or assessment history
-- [x] Tests: 16 passing (`test_smoke.py`, `test_skill_deletion_safety.py`, `test_skill_names.py`)
+- [x] Tests: 16 passing at the end of Phase 3 (`test_smoke.py`, `test_skill_deletion_safety.py`, `test_skill_names.py`)
 
 ### ✅ Question generation (Phase 5b, done early)
 - [x] Strict bank validation: `app/schemas/question_bank.py` (finds 22 invalid questions in the teammate's bank)
@@ -41,15 +41,17 @@ Legend: ✅ done · 🔜 next · ⬜ not started · ⚠️ open issue
   - 48 skills by Claude → `app/data/question_bank/generated/claude_position_skills.jsonl`
 - [x] 12 vague skills skipped (`SKIPPED_SKILLS` in the generator script)
 
+### ✅ Phase 4 — Question-bank schemas and validation
+- [x] Old `schemas/questions.py` deleted (nothing imported it); `schemas/question_bank.py` is the only bank format
+- [x] Length-bias check moved into `schemas/question_bank.py` (`correct_is_obviously_longest`) so the generator and the importer share it
+- [x] `tests/test_question_bank_schema.py`: every rule, the 21 original invalid questions as fixtures (`tests/fixtures/question_bank_cases.json`; Google Ads #19 as a must-stay-valid case), and every bank file in the repo validated (generated files also checked for length bias and 1 B / 2 I / 2 A coverage)
+- [x] 58 tests passing
+
 ---
 
 ## Next
 
-### 🔜 Phase 4 — Question-bank schemas and validation
-- [ ] Merge the old `schemas/questions.py` into `schemas/question_bank.py`
-- [ ] Unit tests for the validation rules, with the 22 real invalid questions as fixtures
-
-### ⬜ Phase 5 — Importer
+### 🔜 Phase 5 — Importer
 - [ ] `services/question_bank_import_service.py`: parse → validate → map skill by lowercase name (create if missing) → `content_hash` upsert → deactivate removed questions → report
 - [ ] `scripts/import_question_bank.py` (`--dry-run`, `--strict`), reading the curated file and everything under `generated/` (`source = curated` / `generated:<model>` / `claude`)
 - [ ] Integration tests; run on the dev DB; send the rejected-question report to the teammate
