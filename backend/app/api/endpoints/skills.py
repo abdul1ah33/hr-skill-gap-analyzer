@@ -68,5 +68,10 @@ def delete_skill_route(skill_id: int, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400, detail="Skill is assigned to employees or positions. Remove those assignments first."
         )
+    # Bank questions and assessment history must keep their skill
+    if skill.questions or skill.assessment_skills:
+        raise HTTPException(
+            status_code=409, detail="Skill has assessment questions or assessment history and cannot be deleted."
+        )
     delete_skill(db, skill_id)
     return {"message": "Skill deleted"}
