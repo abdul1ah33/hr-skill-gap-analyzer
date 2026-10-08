@@ -163,6 +163,18 @@ python -m app.scripts.seed_roles
 
 > **Note:** Without role records, all signup attempts will raise a `ValueError: Employee role not found.`
 
+### Import the question bank (required for skill assessments)
+
+Loads the assessment questions from `app/data/question_bank/` (the curated bank and everything under `generated/`) into the database. Missing skills are created. Safe to run repeatedly: unchanged questions are skipped, and questions removed from a file are deactivated, not deleted.
+
+```bash
+# From inside backend/
+python -m app.scripts.import_question_bank --dry-run   # validate and report only
+python -m app.scripts.import_question_bank
+```
+
+Options: `--strict` aborts on the first invalid question; `--report file.json` writes the full report (rejected questions with file, line and reason).
+
 ### Create the first HR user
 
 The signup endpoint (`POST /auth/signup`) is for employees (people who already exist as `Employee` records) to create their own account. To bootstrap the first HR user, insert directly:

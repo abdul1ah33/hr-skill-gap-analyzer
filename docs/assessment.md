@@ -169,6 +169,16 @@ python -m app.scripts.generate_question_bank             # generate (resumable)
 - Every question is validated by `app/schemas/question_bank.py` (exactly 6 options, one of each type, unique texts). Invalid ones are regenerated; rejections are logged to `position_skills.rejections.log`.
 - If the Gemini quota is reached the script stops with exit code 2. Run it again later to continue from `position_skills.progress.json`.
 
+## Importing the Question Bank
+
+`python -m app.scripts.import_question_bank` (`app/services/question_bank_import_service.py`) loads every bank file into `skill_questions` and `skill_question_options`:
+
+- Each question is validated with `app/schemas/question_bank.py`; invalid ones are skipped and reported (`--strict` aborts instead).
+- Skills are matched by their lowercase name and created when missing. `app/data/question_bank/skill_name_map.json` (optional, `{"bank name": "existing skill"}`) merges two names for the same skill.
+- `source` is `curated` for files in `app/data/question_bank/` and `generated:<model>` for `generated/<model>_*.jsonl`.
+- Questions are immutable and identified by `content_hash` (skill, level, question, options and explanations). Editing a question creates a new row and deactivates the old one; a question removed from a file is deactivated. Deactivation only looks at the sources of the files being imported.
+- The report lists skills that are not assessable (fewer than 1 Beginner / 2 Intermediate / 2 Advanced questions) and questions whose correct option is much longer than the rest (a warning only).
+
 ## CV Skill Test Endpoint
 
 `POST /assessment/employee/{employee_id}/assess` (`backend/app/api/endpoints/assessment.py`) is a separate, still-used feature: it compares the employee's current (CV) skills with a position and returns an Ollama-generated report. It is kept as is and is unrelated to the new `/assessments` endpoints.
