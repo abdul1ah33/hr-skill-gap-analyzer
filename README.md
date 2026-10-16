@@ -229,6 +229,5 @@ Design notes (plain text / images) in `docs/`: `assessment_pipeline.txt`, `phase
 
 - **`GEMINI_API_KEY` is required** for position skill generation, gap analysis and resume import; those endpoints return 500 without it.
 - **ESCO is a live external dependency.** If it is unreachable, automatic position skill generation fails (you can still add position skills manually).
-- **Some routes are not protected:** `/employees` and `/skills` have their HR dependency commented out. Re-enable before deploying.
 - **`/assessment` (CV skill test) imports `backend.app.services.old.assessment_service`.** It only works because `app/core/paths.py` adds the project root to `sys.path`, and it needs a local Ollama server. It is separate from the new `/assessments` skill tests.
-- **CORS allows all origins** (`["*"]`). Restrict it before deploying.
+- **CORS allows only `CORS_ORIGINS`** (default: the local Vite dev server). Set it to the client's frontend URL when deploying.

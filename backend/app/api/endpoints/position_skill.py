@@ -192,6 +192,9 @@ def update_position_skill(
     for key, value in update_data.items():
         setattr(position_skill, key, value)
 
+    # Edited by HR, so it no longer matches its template or AI origin
+    position_skill.source = "manual"
+
     db.commit()
     db.refresh(position_skill)
 

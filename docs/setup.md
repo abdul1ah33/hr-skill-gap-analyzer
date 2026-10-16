@@ -85,6 +85,10 @@ GEMINI_API_KEY=<your-google-gemini-api-key>
 | `ALGORITHM` | Yes | JWT signing algorithm | `HS256` |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | No | JWT expiry in minutes. Defaults to 60. | `60` |
 | `GEMINI_API_KEY` | Yes | Google Gemini API key for AI features | Get from [Google AI Studio](https://aistudio.google.com) |
+| `CORS_ORIGINS` | No | Comma-separated frontend origins allowed to call the API. Defaults to the Vite dev server (`http://localhost:5173,http://127.0.0.1:5173`). In production, set it to the client's frontend URL. | `https://client-a.ourapp.com` |
+| `DB_ECHO` | No | `true` logs every SQL query. Defaults to `false`. | `false` |
+| `DB_POOL_SIZE` | No | Database connections kept open by this backend. Defaults to 2 (kept small so several client backends fit within PostgreSQL's `max_connections`). | `2` |
+| `DB_MAX_OVERFLOW` | No | Extra connections allowed under load on top of the pool. Defaults to 3. | `3` |
 | `ASSESSMENT_MAX_SKILLS` | No | Maximum skills tested in one skill assessment (5 questions each). Defaults to 8. | `8` |
 | `ASSESSMENT_SECONDS_PER_QUESTION` | No | Time per assessment question. The server deadline is questions × seconds + grace. Defaults to 60. | `60` |
 | `ASSESSMENT_GRACE_SECONDS` | No | Extra seconds added to the assessment deadline. Defaults to 120. | `120` |
@@ -231,7 +235,7 @@ cd my_frontend
 npm install
 ```
 
-The frontend has no `.env` file requirement. The backend URL is hard-coded in `src/services/api.ts` as `http://localhost:8000`. If you need to change it, edit that file.
+The frontend has no `.env` file requirement. The backend URL comes from `VITE_API_URL` and defaults to `http://localhost:8000` (see `src/services/api.ts`). If you run the frontend on a port other than 5173, add its origin to `CORS_ORIGINS` in `backend/.env`.
 
 ```bash
 npm run dev

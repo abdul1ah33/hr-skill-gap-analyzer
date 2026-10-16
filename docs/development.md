@@ -102,13 +102,9 @@ npm run build   # also type-checks
 
 ## Known Tech Debt
 
-1. **Unprotected routes:** `get_current_hr` is commented out on the `/employees` and `/skills` routers.
-2. **CORS:** `allow_origins=["*"]`; restrict it to the frontend URL.
-3. **`backend.`-prefixed imports:** `assessment.py` and `resume.py` import via `backend.app…`, which only works because `app/core/paths.py` edits `sys.path` (and prints on startup).
-4. **CV skill test endpoint:** `/assessment/employee/{id}/assess` is in use. It depends on `services/old/assessment_service` and the root `ai/` Ollama agents, and needs a local Ollama server. Not to be confused with the new `/assessments` (question-based test).
-5. **Frontend auth:** `ProtectedRoute` only checks that a token exists; no expiry check, no role check, no 401 handling.
-6. **Hard-coded API URL** in `my_frontend/src/services/api.ts`; move it to a Vite env variable (`VITE_API_URL`).
-7. **Skill aliases are unused in comparison:** `SkillComparisonService` does exact name matching and ignores `skill_aliases`.
-8. **Inconsistent URL naming:** `/positionSkills` (camelCase) vs `/skill-aliases` (kebab-case).
-9. **SQL echo:** `echo=True` on the engine logs every query.
-10. **Bloated `requirements.txt`:** includes many ML packages the web app doesn't use.
+1. **`backend.`-prefixed imports:** `assessment.py` and `resume.py` import via `backend.app…`, which only works because `app/core/paths.py` edits `sys.path` (and prints on startup).
+2. **CV skill test endpoint:** `/assessment/employee/{id}/assess` is in use. It depends on `services/old/assessment_service` and the root `ai/` Ollama agents, and needs a local Ollama server. Not to be confused with the new `/assessments` (question-based test).
+3. **Frontend auth:** `ProtectedRoute` only checks that a token exists; no expiry check, no role check, no 401 handling.
+4. **Skill aliases are unused in comparison:** `SkillComparisonService` does exact name matching and ignores `skill_aliases`.
+5. **Inconsistent URL naming:** `/positionSkills` (camelCase) vs `/skill-aliases` (kebab-case).
+6. **Bloated `requirements.txt`:** includes many ML packages the web app doesn't use.

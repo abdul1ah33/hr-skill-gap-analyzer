@@ -27,6 +27,21 @@ Authenticates a user and returns a JWT.
 
 ---
 
+## Organization
+
+The company this deployment belongs to (one row per database).
+
+### `GET /organization`
+Any logged-in user.
+- **Response:** `{ "name", "industry", "template_key", "template_version", "template_applied_at", "updated_at" }`
+- **Errors:** 404 (not configured yet).
+
+### `PUT /organization`
+HR only. Creates the settings or updates them. `industry` is stored lowercase; the `template_*` fields are read-only (set by the template applier).
+- **Body:** `{ "name": "Client A Port", "industry": "port" }`
+
+---
+
 ## Current User (Me)
 
 ### `GET /me/profile`
@@ -44,7 +59,7 @@ Gets the logged-in employee's skills.
 
 ## Employees
 
-> **Note:** The current backend code has `# dependencies=[Depends(get_current_hr)]` commented out for employee endpoints, meaning they are temporarily public.
+All `/employees` endpoints require the HR role.
 
 ### `GET /employees/count`
 Returns `{ "count": <int> }`. Used by the dashboard.
@@ -141,13 +156,13 @@ Lists all positions.
 ### `POST /positions`
 Creates a new position and triggers background skill generation.
 - **Body:** `PositionCreate` schema
-- **Response:** `PositionResponse`
+- **Response:** `PositionResponse` (includes the read-only `source`: `manual`, `ai` or `template:<key>@<version>`)
 
 ### `GET /positions/{id}`
 Gets a specific position.
 
 ### `PUT /positions/{id}`
-Updates a position. If the `title` changes, automatically deletes old required skills and generates new ones in the background.
+Updates a position and sets its `source` to `manual`. If the `title` changes, automatically deletes old required skills and generates new ones in the background.
 
 ### `DELETE /positions/{id}`
 Deletes a position and its `PositionSkill` rows. `Skill` rows are kept (they are shared with employees, the question bank and assessment history).
@@ -160,7 +175,7 @@ Deletes a position and its `PositionSkill` rows. `Skill` rows are kept (they are
 
 ### `GET /positionSkills/{position_id}/skills`
 Lists all required skills for a position.
-- **Response:** `[PositionSkillResponse, ...]`
+- **Response:** `[PositionSkillResponse, ...]` (each includes the read-only `source`)
 
 ### `POST /positionSkills/{position_id}/skills`
 Manually adds a required skill to a position.
@@ -169,6 +184,7 @@ Manually adds a required skill to a position.
 ### `PUT /positionSkills/{position_id}/skills/{ps_id}`
 Updates a required skill. `ps_id` is the **position-skill row id**, not the skill id.
 - **Body:** any of `required_skill_level`, `is_essential`, `short_description`
+- Sets the row's `source` to `manual`.
 
 ### `DELETE /positionSkills/{position_id}/skills/{ps_id}`
 Removes a required skill from a position (`ps_id` = position-skill row id).
@@ -194,13 +210,13 @@ Manually triggers AI skill generation for a position.
 
 ## Skills & Aliases
 
-`/skills` routes are currently **public** (HR dependency commented out). `/skill-aliases` requires HR.
+`/skills` and `/skill-aliases` require the HR role.
 
 - `GET /skills/count` → `{ "count": <int> }`
 - `GET /skills`
-- `POST /skills`
+- `POST /skills`: `{ "name", "description"?, "esco_uri"? }`. 400 if the name or ESCO URI is already used.
 - `GET /skills/{id}`
-- `PUT /skills/{id}`
+- `PUT /skills/{id}`: any of `name`, `description`, `esco_uri`
 - `DELETE /skills/{id}`
 
 ### `GET /skill-aliases`

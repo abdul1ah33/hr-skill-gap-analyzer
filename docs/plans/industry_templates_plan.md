@@ -165,7 +165,7 @@ A `TemplateService.apply(db, template_key, dry_run)` plus a CLI `python -m app.s
 
 ### 5.6 Use skill aliases in the comparison
 
-**What:** `SkillComparisonService` currently matches employee and position skills by exact name (known tech debt #7). Resolve both sides through `skill_aliases` to a canonical skill before comparing.
+**What:** `SkillComparisonService` currently matches employee and position skills by exact name (listed under Known Tech Debt in `docs/development.md`). Resolve both sides through `skill_aliases` to a canonical skill before comparing.
 
 **Why:** industry vocabulary varies much more than tech vocabulary ("RTG" / "rubber-tyred gantry crane", "ER triage" / "emergency triage"). Resumes will use client wording and templates will use canonical wording. Today the only safety net is Gemini's `reconciled_skills`, which isn't deterministic and doesn't affect assessment target selection at all.
 

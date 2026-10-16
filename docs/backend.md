@@ -58,7 +58,8 @@ backend/
     │   ├── assessment_question.py  # Served question + answer
     │   ├── course.py
     │   ├── course_skill.py
-    │   └── recommendation.py
+    │   ├── recommendation.py
+    │   └── organization_settings.py  # Single row: company name, industry, applied template
     ├── schemas/                 # Pydantic request/response schemas
     │   ├── employee.py
     │   ├── department.py
@@ -68,7 +69,8 @@ backend/
     │   ├── employee_skill.py
     │   ├── position_skill.py
     │   ├── assessment.py        # Assessment requests/responses (never contain answers)
-    │   └── question_bank.py     # Question bank format and validation (SkillQuestionBank)
+    │   ├── question_bank.py     # Question bank format and validation (SkillQuestionBank)
+    │   └── organization.py
     ├── utils/
     │   └── skill_names.py       # normalize_skill_name (lowercase, single spaces)
     ├── data/
@@ -85,6 +87,7 @@ backend/
     │   ├── position_skill.py
     │   ├── assessment.py        # Assessment loaders (owner-scoped, FOR UPDATE), served questions
     │   ├── question_bank.py     # Question counts and pools per skill / level
+    │   ├── organization.py      # Get / save the single settings row
     │   └── helpers.py
     ├── api/
     │   └── endpoints/
@@ -100,7 +103,8 @@ backend/
     │       ├── assessment.py    # CV skill test (Ollama, uses root ai/)
     │       ├── assessments.py   # Skill tests (employee / owner or HR)
     │       ├── employee_assessments.py  # HR: assign, cancel, start on behalf, history
-    │       └── question_bank.py # HR: question coverage
+    │       ├── question_bank.py # HR: question coverage
+    │       └── organization.py  # Company settings (read: any user, update: HR)
     ├── services/                # Business logic
     │   ├── esco_skills_extractor.py
     │   ├── position_skill_service.py
@@ -144,13 +148,14 @@ app = FastAPI(
 ```
 
 **Middleware:**
-- CORS is configured with `allow_origins=["*"]`, allowing requests from any origin. In production this should be restricted.
+- CORS allows only the origins listed in `CORS_ORIGINS` (`core/config.py`); the default is the local Vite dev server.
 
 **Router registration:**
 
 | Router | Prefix | Tag |
 |---|---|---|
 | `auth_router` | `/auth` | Authentication |
+| `organization_router` | `/organization` | Organization |
 | `me_router` | `/me` | Me |
 | `employee_router` | `/employees` | Employees |
 | `department_router` | `/departments` | Departments |
@@ -570,8 +575,6 @@ EmployeeSkillResponse serialized
 ## Important Notes
 
 - `assessment.py` imports `backend.app.services.old.assessment_service` and `resume.py` imports `backend.app.auth.dependencies`. These `backend.`-prefixed imports only work because `app/core/paths.py` adds the project root to `sys.path` (it also prints that path on startup). Prefer `app.` imports.
-- The `/employees` and `/skills` routers have their `get_current_hr` dependency commented out, so they are currently public.
 - The assessment feature (question bank → sessions → grading) is being built; see [assessment.md](assessment.md).
 - The `requirements.txt` is a complete lock file from a conda/venv environment that includes many scientific/ML packages (pandas, scikit-learn, h2o, etc.) that are not directly used by the web application. A slimmer install is possible for pure backend use.
-- `echo=True` is set on the SQLAlchemy engine in `database.py`, which logs all SQL queries to stdout. Disable in production.
-- CORS is currently configured as `allow_origins=["*"]` which allows any origin. Restrict to the frontend URL in production.
+- The SQLAlchemy engine in `database.py` reads `DB_ECHO`, `DB_POOL_SIZE` and `DB_MAX_OVERFLOW` from the environment; SQL logging is off by default.

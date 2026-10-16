@@ -17,8 +17,16 @@ from app.auth.dependencies import get_current_hr
 
 
 router = APIRouter(
-    # dependencies=[Depends(get_current_hr)]
+    dependencies=[Depends(get_current_hr)]
 )
+
+
+def _check_esco_uri_free(db: Session, esco_uri: str | None, skill_id: int | None = None) -> None:
+    if esco_uri is None:
+        return
+    owner = db.query(Skill).filter(Skill.esco_uri == esco_uri).first()
+    if owner and owner.id != skill_id:
+        raise HTTPException(status_code=400, detail="Another skill already has this ESCO URI.")
 
 
 @router.post("/", response_model=SkillResponse, status_code=201)
@@ -27,6 +35,7 @@ def create_skill_route(skill: SkillCreate, db: Session = Depends(get_db)):
     db_skill = db.query(Skill).filter(Skill.name == skill.name).first()
     if db_skill:
         raise HTTPException(status_code=400, detail="Skill name already exists.")
+    _check_esco_uri_free(db, skill.esco_uri)
     return create_skill(db, skill)
 
 
@@ -55,6 +64,7 @@ def update_skill_route(
     db_skill = get_skill(db, skill_id)
     if not db_skill:
         raise HTTPException(status_code=404, detail="Skill not found")
+    _check_esco_uri_free(db, skill.esco_uri, skill_id)
     return update_skill(db, skill_id, skill)
 
 

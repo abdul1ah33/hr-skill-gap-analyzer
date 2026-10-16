@@ -7,6 +7,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     ForeignKey,
+    String,
     Text,
     UniqueConstraint,
     Enum as SQLAlchemyEnum,
@@ -104,6 +105,14 @@ class PositionSkill(Base):
     short_description: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+    )
+
+    # Where the row came from: "manual", "ai" or "template:<key>@<version>"
+    source: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        default="manual",
+        server_default="manual",
     )
 
     # ------------------------------------------

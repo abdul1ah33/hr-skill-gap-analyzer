@@ -40,6 +40,14 @@ class Position(Base):
         String(50)
     )
 
+    # Where the row came from: "manual", "ai" or "template:<key>@<version>"
+    source: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        default="manual",
+        server_default="manual",
+    )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow

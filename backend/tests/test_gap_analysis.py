@@ -8,12 +8,12 @@ from app.api.endpoints import employees as employees_endpoint
 from app.services import gap_analysis_service
 
 
-def test_skill_gap_returns_503_when_the_ai_call_fails(client, factory, monkeypatch):
+def test_skill_gap_returns_503_when_the_ai_call_fails(client, factory, hr_headers, monkeypatch):
     employee = factory.employee(factory.position())
     monkeypatch.setattr(employees_endpoint, "GEMINI_API_KEY", "test")
     monkeypatch.setattr(gap_analysis_service, "generate_gap_report", lambda **kwargs: None)
 
-    response = client.get(f"/employees/{employee.id}/skill-gap")
+    response = client.get(f"/employees/{employee.id}/skill-gap", headers=hr_headers)
 
     assert response.status_code == 503
     assert "try again" in response.json()["detail"]

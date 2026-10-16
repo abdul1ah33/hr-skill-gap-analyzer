@@ -65,6 +65,7 @@ See also: [Backend Documentation](backend.md) | [Architecture](architecture.md)
 | description | Text | | Optional |
 | level | String(50) | | e.g., Junior, Senior |
 | salary_grade | String(50) | | |
+| source | String(100) | | Where the row came from: `manual` (default, and set whenever HR edits it), `ai` (ESCO + Gemini generation) or `template:<key>@<version>` (industry template) |
 | created_at | DateTime | | |
 | updated_at | DateTime | | |
 
@@ -92,6 +93,8 @@ See also: [Backend Documentation](backend.md) | [Architecture](architecture.md)
 |---|---|---|---|
 | id | Integer | PK | |
 | name | String(100) | Unique | Canonical skill name, always lowercase (`CHECK (name = lower(name))`) |
+| esco_uri | String(255) | Unique, Nullable | Link to the ESCO skill concept; used to de-duplicate skills across templates |
+| description | Text | Nullable | What the skill means in practice |
 | created_at | DateTime | | |
 | updated_at | DateTime | | |
 
@@ -135,6 +138,7 @@ Unique constraint: `(employee_id, skill_id)` — one record per skill per employ
 | required_skill_level | Enum(SkillLevel) | | Minimum required proficiency |
 | is_essential | Boolean | | True = essential, False = optional |
 | short_description | Text | | Optional |
+| source | String(100) | | Where the row came from: `manual` (default, and set whenever HR edits it), `ai` (ESCO + Gemini generation) or `template:<key>@<version>` (industry template) |
 | created_at | DateTime | | |
 | updated_at | DateTime | | |
 
@@ -206,6 +210,21 @@ Partial unique index `uq_assessments_one_active_per_employee` on `(employee_id) 
 **`assessment_skills`**: one row per tested skill. `assessment_id` (CASCADE), `skill_id` (RESTRICT), `display_order`, snapshot of the gap analysis (`category` matched / needs_improvement / unmatched, `is_essential`, `claimed_level`, `required_level`), and after grading `beginner_correct`, `intermediate_correct`, `advanced_correct`, `total_correct`, `assessed_level` (null = no proficiency), `graded_at`, `profile_action` (`confirmed`, `upgraded`, `downgraded`, `created`, `removed`, `no_change`, `not_applied`). Unique `(assessment_id, skill_id)` and `(assessment_id, display_order)`.
 
 **`assessment_questions`**: one row per served question. `assessment_id` (CASCADE), `assessment_skill_id` (CASCADE), `skill_question_id` (RESTRICT), `display_order`, `proficiency_level`, `option_order` (JSONB list of bank option ids in the shown order), `selected_option_id` (RESTRICT), `selected_option_type`, `is_correct`, `answered_at`. Unique `(assessment_id, display_order)` and `(assessment_id, skill_question_id)`.
+
+### `organization_settings`
+
+Who this deployment belongs to. Each client has its own database (see [plans/industry_templates_plan.md](plans/industry_templates_plan.md)), so the table holds exactly one row (`CHECK (id = 1)`).
+
+| Column | Type | Key | Description |
+|---|---|---|---|
+| id | Integer | PK | Always 1 |
+| name | String(150) | | Company name |
+| industry | String(50) | Nullable | Lowercase, e.g. `port`, `hospital` |
+| template_key | String(50) | Nullable | Industry template applied to this database (set by the template applier) |
+| template_version | Integer | Nullable | Version of that template |
+| template_applied_at | DateTime(tz) | Nullable | When it was applied |
+| created_at | DateTime(tz) | | |
+| updated_at | DateTime(tz) | | |
 
 ### Learning tables (defined, not yet used by the app)
 

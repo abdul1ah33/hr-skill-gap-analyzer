@@ -2,41 +2,41 @@
 
 Phases follow the build order in `industry_templates_plan.md` §5. Section references (§) point to that plan. Every phase ends with `pytest` passing; each phase is its own commit (or a few small ones).
 
-Legend: 🧑 needs you (a decision or content work, not code)
+Legend: ✅ done · ⏸️ deferred · 🧑 needs you (a decision or content work, not code)
 
 ---
 
 ## Phase 0 — Decisions 🧑
 - [ ] Q1: we host clients, or some on-prem? (recommended: we host by default)
-- [x] Q2: who reviews the port template content? **Deferred (2026-10-16)**, to be handled later
+- ⏸️ Q2: who reviews the port template content? **Deferred (2026-10-16)**, to be handled later
 - [ ] Q3: should templates create departments? (recommended: yes)
 - [ ] Q4: templates in the main repo? (recommended: yes)
 
 **Done when:** answers are recorded in plan §7.
 
 ## Phase 1 — Production fixes (§5.9)
-- [ ] `backend/app/api/endpoints/employees.py`: re-enable `dependencies=[Depends(get_current_hr)]`
-- [ ] `backend/app/api/endpoints/skills.py`: re-enable `dependencies=[Depends(get_current_hr)]`
-- [ ] Check that the employee portal (`/me`, `/my/assessments`) doesn't call the `/employees` or `/skills` routers; leave `me.py` open to any logged-in user
-- [ ] `backend/app/core/config.py`: add `CORS_ORIGINS` (comma-separated), `DB_ECHO` (default `false`), `DB_POOL_SIZE` (default 2), `DB_MAX_OVERFLOW` (default 3)
-- [ ] `backend/app/main.py`: use `CORS_ORIGINS` instead of `["*"]`
-- [ ] `backend/app/db/database.py`: pass `echo`, `pool_size`, `max_overflow` from config
-- [ ] Tests: HR-only access on `/employees` and `/skills` (401 without a token, 403 for the Employee role); CORS header only for the allowed origin
-- [ ] Docs: new env variables in `docs/setup.md`; tech debt items 1, 2, 9 removed and item 6 (API URL, already fixed) removed from `docs/development.md`; README "Important Notes" updated
+- ✅ `backend/app/api/endpoints/employees.py`: re-enable `dependencies=[Depends(get_current_hr)]`
+- ✅ `backend/app/api/endpoints/skills.py`: re-enable `dependencies=[Depends(get_current_hr)]`
+- ✅ Check that the employee portal (`/me`, `/my/assessments`) doesn't call the `/employees` or `/skills` routers; leave `me.py` open to any logged-in user
+- ✅ `backend/app/core/config.py`: add `CORS_ORIGINS` (comma-separated), `DB_ECHO` (default `false`), `DB_POOL_SIZE` (default 2), `DB_MAX_OVERFLOW` (default 3)
+- ✅ `backend/app/main.py`: use `CORS_ORIGINS` instead of `["*"]`
+- ✅ `backend/app/db/database.py`: pass `echo`, `pool_size`, `max_overflow` from config
+- ✅ Tests: HR-only access on `/employees` and `/skills` (401 without a token, 403 for the Employee role); CORS header only for the allowed origin
+- ✅ Docs: new env variables in `docs/setup.md`; tech debt items for routes, CORS, SQL echo and the API URL (already fixed) removed from `docs/development.md`; README "Important Notes" updated
 
 **Done when:** tests pass and the HR app and employee portal both still work locally.
 
 ## Phase 2 — Schema changes (§5.1–5.3)
-- [ ] `models/organization_settings.py`: `OrganizationSettings` (`id` with `CHECK (id = 1)`, `name`, `industry`, `template_key`, `template_version`, `template_applied_at`, timestamps); register it in `models/__init__.py`
-- [ ] `models/skill.py`: add `esco_uri` (nullable, unique) and `description` (nullable `Text`)
-- [ ] `models/position.py` and `models/position_skill.py`: add `source` (`String(100)`, not null, server default `'manual'`)
-- [ ] One Alembic revision for all of the above, reviewed by hand; check that `upgrade` and `downgrade -1` both work
-- [ ] Schemas: expose `description`/`esco_uri` on skills and `source` on positions / position skills (read-only for `source`)
-- [ ] `crud/position.py` and `crud/position_skill.py`: HR create/update sets `source = 'manual'`
-- [ ] `services/position_skill_service.py`: AI-generated position skills set `source = 'ai'`
-- [ ] `api/endpoints/organization.py`: `GET /organization` (any logged-in user), `PUT /organization` (HR only); register it in `main.py`
-- [ ] Tests: the migration runs; the singleton can't hold a second row; `source` is set correctly by manual edits and by AI generation; organization endpoints
-- [ ] Docs: `docs/database.md`, `docs/api.md`
+- ✅ `models/organization_settings.py`: `OrganizationSettings` (`id` with `CHECK (id = 1)`, `name`, `industry`, `template_key`, `template_version`, `template_applied_at`, timestamps); register it in `models/__init__.py`
+- ✅ `models/skill.py`: add `esco_uri` (nullable, unique) and `description` (nullable `Text`)
+- ✅ `models/position.py` and `models/position_skill.py`: add `source` (`String(100)`, not null, server default `'manual'`)
+- ✅ One Alembic revision for all of the above, reviewed by hand; check that `upgrade` and `downgrade -1` both work
+- ✅ Schemas: expose `description`/`esco_uri` on skills and `source` on positions / position skills (read-only for `source`)
+- ✅ `crud/position.py` and `api/endpoints/position_skill.py` (the `/positionSkills` routes don't use `crud/position_skill.py`, which is unused): HR create/update sets `source = 'manual'`
+- ✅ `services/position_skill_service.py`: AI-generated position skills set `source = 'ai'`
+- ✅ `api/endpoints/organization.py`: `GET /organization` (any logged-in user), `PUT /organization` (HR only); register it in `main.py`
+- ✅ Tests: the migration runs; the singleton can't hold a second row; `source` is set correctly by manual edits and by AI generation; organization endpoints
+- ✅ Docs: `docs/database.md`, `docs/api.md`
 
 **Done when:** `alembic upgrade head` works on a copy of the dev DB, existing data is unchanged, and tests pass.
 
@@ -58,7 +58,7 @@ Legend: 🧑 needs you (a decision or content work, not code)
 - [ ] `ai/gap_analysis_ai.py`: `generate_gap_report` takes optional `industry` / `company_name` and uses them in the prompt
 - [ ] `services/gap_analysis_service.py`: read `OrganizationSettings` and pass them in
 - [ ] Tests: a skill stored under an alias counts as matched; no change when no aliases exist; gap analysis passes the industry (Gemini mocked)
-- [ ] Docs: remove tech debt item 7; update `docs/skill_alias_system.md`, `docs/ai-analysis.md`, and the README status row
+- [ ] Docs: remove the "aliases unused in comparison" tech debt item; update `docs/skill_alias_system.md`, `docs/ai-analysis.md`, and the README status row
 
 **Done when:** existing gap-analysis and assessment tests still pass, plus the new alias tests.
 

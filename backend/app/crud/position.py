@@ -34,6 +34,9 @@ def update_position(
     for key, value in update_data.items():
         setattr(db_position, key, value)
 
+    # Edited by HR, so it no longer matches its template or AI origin
+    db_position.source = "manual"
+
     db.commit()
     db.refresh(db_position)
     return _base_query(db).filter(Position.id == db_position.id).first()

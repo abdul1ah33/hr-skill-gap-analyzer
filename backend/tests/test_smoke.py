@@ -6,7 +6,7 @@ pytestmark = pytest.mark.integration
 
 def test_database_is_migrated_to_head(db):
     version = db.execute(text("SELECT version_num FROM alembic_version")).scalar()
-    assert version == "a7c3e91d4b20"
+    assert version == "c4d81f2a9e57"
 
 
 def test_health_endpoint(client):

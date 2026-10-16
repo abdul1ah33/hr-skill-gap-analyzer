@@ -19,7 +19,9 @@ from app.api.endpoints.assessment import router as assessment_router
 from app.api.endpoints.assessments import router as assessments_router
 from app.api.endpoints.employee_assessments import router as employee_assessments_router
 from app.api.endpoints.question_bank import router as question_bank_router
+from app.api.endpoints.organization import router as organization_router
 
+from app.core.config import CORS_ORIGINS
 from app.core.exception_handlers import register_exception_handlers
 
 app = FastAPI(
@@ -32,7 +34,7 @@ register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,6 +47,12 @@ app.include_router(
     auth_router,
     prefix="/auth",
     tags=["Authentication"],
+)
+
+app.include_router(
+    organization_router,
+    prefix="/organization",
+    tags=["Organization"],
 )
 
 app.include_router(

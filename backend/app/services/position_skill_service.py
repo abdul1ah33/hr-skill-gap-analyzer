@@ -327,6 +327,7 @@ class PositionSkillService:
                 skill_id=skill.id,
                 required_skill_level=required_level,
                 is_essential=is_essential,
+                source="ai",
             )
 
             db.add(position_skill)

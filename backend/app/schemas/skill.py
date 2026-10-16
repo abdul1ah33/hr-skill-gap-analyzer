@@ -7,6 +7,8 @@ from app.utils.skill_names import normalize_skill_name
 
 class SkillBase(BaseModel):
     name: str
+    description: Optional[str] = None
+    esco_uri: Optional[str] = None
 
     @field_validator("name")
     @classmethod
@@ -20,6 +22,8 @@ class SkillCreate(SkillBase):
 
 class SkillUpdate(BaseModel):
     name: Optional[str] = None
+    description: Optional[str] = None
+    esco_uri: Optional[str] = None
 
     @field_validator("name")
     @classmethod
@@ -29,10 +33,9 @@ class SkillUpdate(BaseModel):
 
 class SkillResponse(SkillBase):
     id: int
-    # The skills table has no category/description columns; kept (always
-    # null) so existing API consumers don't break
+    # The skills table has no category column; kept (always null) so
+    # existing API consumers don't break
     category: Optional[str] = None
-    description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

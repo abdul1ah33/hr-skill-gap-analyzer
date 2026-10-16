@@ -39,6 +39,8 @@ class PositionSkillResponse(BaseModel):
     required_skill_level: SkillLevel
     is_essential: bool
     short_description: Optional[str] = None
+    # "manual", "ai" or "template:<key>@<version>"; set by the server
+    source: str
 
     created_at: datetime
     updated_at: datetime

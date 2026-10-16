@@ -13,11 +13,6 @@ from app.models.employee_skill import SkillLevel
 pytestmark = pytest.mark.integration
 
 
-@pytest.fixture
-def hr_headers(factory):
-    return factory.auth_headers(factory.user("HR"))
-
-
 @pytest.fixture(autouse=True)
 def no_skill_generation(monkeypatch):
     """Title changes trigger ESCO + Gemini generation; keep tests offline."""
@@ -66,30 +61,30 @@ def test_changing_position_title_removes_links_but_keeps_skills(client, db, fact
     assert db.get(Skill, skill.id) is not None
 
 
-def test_skill_with_bank_questions_cannot_be_deleted(client, db, factory):
+def test_skill_with_bank_questions_cannot_be_deleted(client, db, factory, hr_headers):
     skill = factory.skill()
     _bank_question(db, skill)
 
-    response = client.delete(f"/skills/{skill.id}")
+    response = client.delete(f"/skills/{skill.id}", headers=hr_headers)
 
     assert response.status_code == 409
     assert db.get(Skill, skill.id) is not None
 
 
-def test_skill_held_by_an_employee_cannot_be_deleted(client, db, factory):
+def test_skill_held_by_an_employee_cannot_be_deleted(client, db, factory, hr_headers):
     skill = factory.skill()
     factory.employee_skill(factory.employee(), skill)
 
-    response = client.delete(f"/skills/{skill.id}")
+    response = client.delete(f"/skills/{skill.id}", headers=hr_headers)
 
     assert response.status_code == 400
     assert db.get(Skill, skill.id) is not None
 
 
-def test_unreferenced_skill_can_be_deleted(client, db, factory):
+def test_unreferenced_skill_can_be_deleted(client, db, factory, hr_headers):
     skill = factory.skill()
 
-    response = client.delete(f"/skills/{skill.id}")
+    response = client.delete(f"/skills/{skill.id}", headers=hr_headers)
 
     assert response.status_code == 200
     assert db.get(Skill, skill.id) is None

@@ -225,3 +225,8 @@ class Factory:
 @pytest.fixture
 def factory(db) -> Factory:
     return Factory(db)
+
+
+@pytest.fixture
+def hr_headers(factory) -> dict[str, str]:
+    return factory.auth_headers(factory.user("HR"))

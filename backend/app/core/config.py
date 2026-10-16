@@ -16,6 +16,27 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # ==========================================
+# Deployment (one backend per client)
+# ==========================================
+# Frontend origins allowed to call the API, comma-separated
+CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
+
+# Log every SQL query (development only)
+DB_ECHO = os.getenv("DB_ECHO", "false").lower() == "true"
+
+# Kept small so many client backends fit within PostgreSQL's
+# max_connections (plan §3.4)
+DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "2"))
+DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "3"))
+
+# ==========================================
 # Skill assessments
 # ==========================================
 # Maximum number of skills tested in one assessment (5 questions each)

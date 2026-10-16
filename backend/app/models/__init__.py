@@ -16,3 +16,4 @@ from .assessment_question import AssessmentQuestion
 from .recommendation import Recommendation
 from .education import Education
 from .certification import Certification
+from .organization_settings import OrganizationSettings

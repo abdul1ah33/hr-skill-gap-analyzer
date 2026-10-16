@@ -38,21 +38,21 @@ def test_database_rejects_uppercase_skill_names(db):
 
 
 @pytest.mark.integration
-def test_create_skill_endpoint_stores_lowercase_name(client):
-    response = client.post("/skills/", json={"name": "  Risk   Management "})
+def test_create_skill_endpoint_stores_lowercase_name(client, hr_headers):
+    response = client.post("/skills/", json={"name": "  Risk   Management "}, headers=hr_headers)
 
     assert response.status_code == 201
     assert response.json()["name"] == "risk management"
 
-    duplicate = client.post("/skills/", json={"name": "RISK MANAGEMENT"})
+    duplicate = client.post("/skills/", json={"name": "RISK MANAGEMENT"}, headers=hr_headers)
     assert duplicate.status_code == 400
 
 
 @pytest.mark.integration
-def test_update_skill_endpoint_normalizes_name(client, factory):
+def test_update_skill_endpoint_normalizes_name(client, factory, hr_headers):
     skill = factory.skill("old name")
 
-    response = client.put(f"/skills/{skill.id}", json={"name": "New Name"})
+    response = client.put(f"/skills/{skill.id}", json={"name": "New Name"}, headers=hr_headers)
 
     assert response.status_code == 200
     assert response.json()["name"] == "new name"

@@ -32,6 +32,8 @@ class PositionUpdate(BaseModel):
 
 class PositionResponse(PositionBase):
     id: int
+    # "manual", "ai" or "template:<key>@<version>"; set by the server
+    source: str
     created_at: datetime
     updated_at: datetime
     department: Optional[DepartmentSimple] = None
