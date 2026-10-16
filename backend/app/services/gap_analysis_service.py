@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from app.crud.organization import get_organization
 from app.models.employee import Employee
 from app.services.skill_comparison_service import SkillComparisonService
 
@@ -101,9 +102,6 @@ class SkillGapService:
         # 4. PHASE D
         # ---------------------------------------------------------
         # Send the Phase C result (without skill ids) to the AI.
-        #
-        # We do NOT modify the AI file.
-        # We simply call its existing function.
 
         # skill_id and verified are only for our own code and the UI;
         # keep them out of the prompt
@@ -115,10 +113,15 @@ class SkillGapService:
             for category, entries in skill_diff.items()
         }
 
+        # Who the client is, when organization settings exist
+        organization = get_organization(db)
+
         gap_analysis = generate_gap_report(
             job_title=job_title,
             skill_diff=prompt_skill_diff,
             api_key=api_key,
+            industry=organization.industry if organization else None,
+            company_name=organization.name if organization else None,
         )
 
         # ---------------------------------------------------------

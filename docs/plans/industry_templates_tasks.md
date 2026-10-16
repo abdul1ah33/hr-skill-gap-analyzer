@@ -54,12 +54,12 @@ Legend: ✅ done · ⏸️ deferred · 🧑 needs you (a decision or content wor
 **Done when:** the mini template applies to an empty DB, and gap analysis and assessment preview work for an employee in a templated position.
 
 ## Phase 4 — Aliases in comparison and industry context (§5.6, §5.7)
-- [ ] `services/skill_comparison_service.py`: resolve employee and position skills to canonical skills through `skill_aliases` before comparing
-- [ ] Check that `AssessmentTargetService` and gap analysis automatically benefit (they both use the comparison)
-- [ ] `ai/gap_analysis_ai.py`: `generate_gap_report` takes optional `industry` / `company_name` and uses them in the prompt
-- [ ] `services/gap_analysis_service.py`: read `OrganizationSettings` and pass them in
-- [ ] Tests: a skill stored under an alias counts as matched; no change when no aliases exist; gap analysis passes the industry (Gemini mocked)
-- [ ] Docs: remove the "aliases unused in comparison" tech debt item; update `docs/skill_alias_system.md`, `docs/ai-analysis.md`, and the README status row
+- ✅ `services/skill_comparison_service.py`: an employee skill also matches a required skill when one name is a **direct** alias of the other (both directions); the entry gets `matched_via`. Skills that are only aliases of the same third skill are not matched, because the seeded aliases are categories (`python` and `java` → `computer programming`), not synonyms
+- ✅ Checked that `AssessmentTargetService` and gap analysis automatically benefit (they both use the comparison); an alias-held skill is no longer listed as an additional skill
+- ✅ `ai/gap_analysis_ai.py`: `generate_gap_report` takes optional `industry` / `company_name` and adds them to the prompt (`build_context_lines`)
+- ✅ `services/gap_analysis_service.py`: reads `OrganizationSettings` and passes them in
+- ✅ Tests (`tests/test_aliases_and_industry_context.py`): a skill stored under an alias counts as matched (both directions); own skill wins over an alias; siblings don't match; unrelated aliases change nothing; assessment targets use the alias match; gap analysis passes the industry, or `None` without settings (Gemini mocked)
+- ✅ Docs: removed the "aliases unused in comparison" tech debt item; rewrote `docs/skill_alias_system.md`; updated `docs/ai-analysis.md` and the README status row
 
 **Done when:** existing gap-analysis and assessment tests still pass, plus the new alias tests.
 

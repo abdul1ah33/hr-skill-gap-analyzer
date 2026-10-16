@@ -202,7 +202,7 @@ def test_gap_analysis_keeps_skill_id_out_of_the_prompt(db, factory, monkeypatch)
     skill = _required(factory, position, "sql")
     sent = {}
 
-    def fake_report(job_title, skill_diff, api_key):
+    def fake_report(job_title, skill_diff, api_key, **context):
         sent.update(skill_diff)
         return None
 

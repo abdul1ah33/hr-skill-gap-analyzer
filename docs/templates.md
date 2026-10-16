@@ -60,7 +60,7 @@ The version lives in `template.json`; older versions are in git history.
 ]
 ```
 
-Names and aliases are normalized like everywhere else (trimmed, single spaces, lowercase), so `"RTG Crane Operation"` is stored as `rtg crane operation`. `description`, `esco_uri` and `aliases` are optional.
+Names and aliases are normalized like everywhere else (trimmed, single spaces, lowercase), so `"RTG Crane Operation"` is stored as `rtg crane operation`. `description`, `esco_uri` and `aliases` are optional. Aliases should be true synonyms: the skill comparison treats an employee skill named like an alias as the same skill (see [skill_alias_system.md](skill_alias_system.md)).
 
 ### `departments.json`
 

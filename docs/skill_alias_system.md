@@ -2,69 +2,49 @@
 
 ## Overview
 
-The Skill Alias System enhances skill matching between employees and position requirements across the HR Management application. It solves the exact-string matching limitation by mapping equivalent skills, technologies, and terms to a canonical skill definition before resorting to AI or marking skills as missing.
+A skill alias is another name for a skill: `rtg operation` for `rtg crane operation`, `lashing` for `container lashing`. Aliases are stored in `skill_aliases` and used by the deterministic comparison (`SkillComparisonService`), so an employee whose resume says "RTG operation" matches a position that requires "RTG crane operation". The comparison feeds both gap analysis and assessment target selection, so both benefit.
+
+Aliases come from industry templates (`skills.json`, see [templates.md](templates.md)), the seed script below, or the `/skill-aliases` endpoints.
 
 ---
 
-## System Architecture & Matching Pipeline
+## Matching Pipeline
 
-When comparing employee skills against required position skills, the system uses a modular 4-step pipeline:
+For each skill the position requires:
 
 ```
-                  +-----------------------------------+
-                  |  Required Position Skill Input    |
-                  +-----------------------------------+
-                                    |
-                                    v
-                        +-----------------------+
-                        |  Step 1: Exact Match  |
-                        +-----------------------+
-                                    |
-                            (Match Found?) 
-                             /         \
-                           Yes          No
-                           /              \
-                          v                v
-                  +---------------+   +-----------------------------+
-                  | Return Level  |   | Step 2: Alias Lookup        |
-                  +---------------+   | (Bidirectional Canonical)   |
-                                      +-----------------------------+
-                                                     |
-                                             (Match Found?)
-                                              /         \
-                                            Yes          No
-                                            /              \
-                                           v                v
-                                   +---------------+   +-----------------------------+
-                                   | Return Level  |   | Step 3: AI Semantic Match   |
-                                   +---------------+   | (Future Extension Hook)     |
-                                                       +-----------------------------+
-                                                                     |
-                                                             (Match Found?)
-                                                              /         \
-                                                            Yes          No
-                                                            /              \
-                                                           v                v
-                                                   +---------------+   +---------------+
-                                                   | Return Level  |   | Mark Missing  |
-                                                   +---------------+   +---------------+
+Required position skill
+        |
+        v
+Step 1: the employee has the same skill?            -- yes --> compare levels
+        | no
+        v
+Step 2: the employee has a skill whose name is an   -- yes --> compare levels,
+        alias of the required skill, or the other            entry gets "matched_via"
+        way round?
+        | no
+        v
+Step 3: unmatched in the comparison. Gemini's gap analysis may still reconcile it
+        (reconciled_skills, see ai-analysis.md section 3)
 ```
 
----
+- Skill names are normalized (trimmed, single spaces, lowercase), so step 1 is an exact match on the skill.
+- In step 2, when several of the employee's skills are aliases of the required skill, the highest level counts.
+- `matched_via` holds the employee's own skill name, e.g. `{"skill": "rtg crane operation", "matched_via": "rtg operation", ...}`. The entry's `skill_id` is the required skill, so an assessment tests the required skill.
+- An employee skill linked to a required skill by an alias is never listed under `additional_skills`.
 
-## Bidirectional Canonical Skill Resolution
+### Only direct aliases
 
-The alias resolution normalizes both required position skills and employee skills to their parent canonical `Skill`.
-
-### Supported Match Scenarios:
-
-| Required Skill | Employee Skill | Resolved Canonical Skill | Outcome |
+| Required Skill | Employee Skill | Aliases | Outcome |
 | :--- | :--- | :--- | :--- |
-| `Computer Programming` | `Python` | `Computer Programming` | **Matched** |
-| `Python` | `Computer Programming` | `Computer Programming` | **Matched** |
-| `Java` | `Python` | `Computer Programming` | **Matched** |
-| `Container Management` | `Docker` | `Containerization` | **Matched** |
-| `Patient Care` | `CPR` | `Patient Care` | **Matched** |
+| `rtg crane operation` | `rtg operation` | `rtg operation` → `rtg crane operation` | **Matched** (via alias) |
+| `lashing` | `container lashing` | `lashing` → `container lashing` | **Matched** (via alias, other direction) |
+| `computer programming` | `python` | `python` → `computer programming` | **Matched** (via alias) |
+| `python` | `java` | both → `computer programming` | **Unmatched** |
+
+Two skills that are only aliases of the same third skill are not treated as the same skill. The seeded aliases are often a broader category rather than a synonym (`python`, `java`, `go` are all aliases of `computer programming`), and someone who knows Java doesn't meet a Python requirement.
+
+Implementation: `SkillComparisonService._alias_links` in `backend/app/services/skill_comparison_service.py`. Tests: `backend/tests/test_aliases_and_industry_context.py`.
 
 ---
 
@@ -78,6 +58,8 @@ The alias resolution normalizes both required position skills and employee skill
 
 ### `Skill` (`app/models/skill.py`)
 - `aliases`: `relationship("SkillAlias", back_populates="skill", cascade="all, delete-orphan")`
+
+An alias only affects the comparison when a skill with that name exists and one of the two skills is on the employee's profile while the other is required by the position.
 
 ---
 
@@ -97,29 +79,9 @@ The script `app/scripts/seed_skill_aliases.py` is idempotent and seeds canonical
 - **Hospitality**: Guest Relations, Front Desk, HACCP, Culinary Arts.
 - **Education**: Instructional Design, E-Learning, LMS, Curriculum Development.
 
+Many of these are categories rather than synonyms. With them seeded, an employee with `python` meets a `computer programming` requirement (and the other way round). Review the list before seeding a client database; industry templates should list true synonyms only.
+
 ### Running the Seed Script:
 ```bash
 python app/scripts/seed_skill_aliases.py
-```
-
----
-
-## Future-Proofing for AI Semantic Matching
-
-`SkillAliasService.find_matching_employee_skill` returns `None` when neither exact match nor canonical alias resolution succeeds. 
-
-To introduce AI semantic matching in the future:
-```python
-# In app/services/skill_alias_service.py or skill_gap_service.py:
-employee_level = SkillAliasService.find_matching_employee_skill(
-    db=db,
-    required_skill_name=skill_name,
-    employee_skills=employee_skills,
-    alias_map=alias_map,
-)
-
-if employee_level is None:
-    # Insert AI Semantic Matching here before marking as missing:
-    # employee_level = AISemanticService.match_skill(skill_name, employee_skills)
-    pass
 ```

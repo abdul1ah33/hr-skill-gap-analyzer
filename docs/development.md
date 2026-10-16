@@ -105,6 +105,5 @@ npm run build   # also type-checks
 1. **`backend.`-prefixed imports:** `assessment.py` and `resume.py` import via `backend.app…`, which only works because `app/core/paths.py` edits `sys.path` (and prints on startup).
 2. **CV skill test endpoint:** `/assessment/employee/{id}/assess` is in use. It depends on `services/old/assessment_service` and the root `ai/` Ollama agents, and needs a local Ollama server. Not to be confused with the new `/assessments` (question-based test).
 3. **Frontend auth:** `ProtectedRoute` only checks that a token exists; no expiry check, no role check, no 401 handling.
-4. **Skill aliases are unused in comparison:** `SkillComparisonService` does exact name matching and ignores `skill_aliases`.
-5. **Inconsistent URL naming:** `/positionSkills` (camelCase) vs `/skill-aliases` (kebab-case).
-6. **Bloated `requirements.txt`:** includes many ML packages the web app doesn't use.
+4. **Inconsistent URL naming:** `/positionSkills` (camelCase) vs `/skill-aliases` (kebab-case).
+5. **Bloated `requirements.txt`:** includes many ML packages the web app doesn't use.

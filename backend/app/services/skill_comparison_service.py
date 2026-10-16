@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.models.employee import Employee
 from app.models.employee_skill import EmployeeSkill
 from app.models.position_skill import PositionSkill
+from app.models.skill import Skill
+from app.models.skill_alias import SkillAlias
 
 
 class SkillComparisonService:
@@ -23,6 +25,11 @@ class SkillComparisonService:
         2. needs_improvement
         3. unmatched
         4. additional_skills
+
+    An employee skill also covers a required skill
+    when one of the two names is an alias of the
+    other (skill_aliases); such entries carry
+    "matched_via" with the employee's skill name.
 
     No AI or external API is used here.
     The comparison is completely deterministic.
@@ -125,29 +132,23 @@ class SkillComparisonService:
         # 5. Build employee skill lookup
         # ==========================================
         #
-        # Example:
-        #
-        # {
-        #     "python": EmployeeSkill(...),
-        #     "machine learning": EmployeeSkill(...),
-        #     "react": EmployeeSkill(...)
-        # }
-        #
-        # Lowercase keys make the comparison
-        # case-insensitive.
+        # Skill names are unique and normalized, so
+        # the skill_id identifies a skill exactly.
         #
 
-        employee_skill_map = {}
+        employee_skill_map = {
+            employee_skill.skill_id: employee_skill
+            for employee_skill in employee_skills
+        }
 
-        for employee_skill in employee_skills:
-
-            skill_name = (
-                employee_skill.skill.name
-                .strip()
-                .lower()
-            )
-
-            employee_skill_map[skill_name] = employee_skill
+        alias_links = self._alias_links(
+            db,
+            set(employee_skill_map)
+            | {
+                position_skill.skill_id
+                for position_skill in position_skills
+            },
+        )
 
         # ==========================================
         # 6. Prepare result
@@ -160,11 +161,11 @@ class SkillComparisonService:
             "additional_skills": [],
         }
 
-        # Keep track of required skills so we can
-        # later find employee skills that aren't
-        # required by the position.
+        # Employee skills that cover a required skill,
+        # exactly or through an alias. The rest are
+        # additional skills.
 
-        required_skill_names = set()
+        covered_skill_ids = set()
 
         # ==========================================
         # 7. Compare required skills
@@ -172,14 +173,7 @@ class SkillComparisonService:
 
         for position_skill in position_skills:
 
-            skill_name = (
-                position_skill.skill.name
-                .strip()
-            )
-
-            skill_key = skill_name.lower()
-
-            required_skill_names.add(skill_key)
+            skill_name = position_skill.skill.name
 
             required_level = (
                 position_skill
@@ -196,10 +190,43 @@ class SkillComparisonService:
             # --------------------------------------
             # Does employee have this skill?
             # --------------------------------------
+            #
+            # First under the same skill, otherwise
+            # under a direct alias of it (e.g. the
+            # employee has "rtg operation", an alias
+            # of "rtg crane operation"). With several
+            # aliases, the highest level counts.
+            #
+
+            alias_skills = [
+                employee_skill_map[skill_id]
+                for skill_id in alias_links.get(position_skill.skill_id, ())
+                if skill_id in employee_skill_map
+            ]
+
+            covered_skill_ids.add(position_skill.skill_id)
+            covered_skill_ids.update(
+                employee_skill.skill_id
+                for employee_skill in alias_skills
+            )
 
             employee_skill = employee_skill_map.get(
-                skill_key
+                position_skill.skill_id
             )
+
+            matched_via = None
+
+            if employee_skill is None and alias_skills:
+
+                employee_skill = max(
+                    alias_skills,
+                    key=lambda row: (
+                        self.LEVEL_RANK[row.level.value],
+                        row.skill.name,
+                    ),
+                )
+
+                matched_via = employee_skill.skill.name
 
             # --------------------------------------
             # Employee does NOT have the skill
@@ -235,22 +262,27 @@ class SkillComparisonService:
                 required_level
             ]
 
+            entry = {
+                "skill_id": position_skill.skill_id,
+                "skill": skill_name,
+                "employee_level": employee_level,
+                "required_level": required_level,
+                "priority": priority,
+                "verified": employee_skill.verified,
+            }
+
+            # The employee's own skill name, when it
+            # was found through an alias
+            if matched_via:
+                entry["matched_via"] = matched_via
+
             # --------------------------------------
             # Employee meets or exceeds requirement
             # --------------------------------------
 
             if employee_rank >= required_rank:
 
-                result["matched"].append(
-                    {
-                        "skill_id": position_skill.skill_id,
-                        "skill": skill_name,
-                        "employee_level": employee_level,
-                        "required_level": required_level,
-                        "priority": priority,
-                        "verified": employee_skill.verified,
-                    }
-                )
+                result["matched"].append(entry)
 
             # --------------------------------------
             # Employee has skill but level is too low
@@ -258,40 +290,25 @@ class SkillComparisonService:
 
             else:
 
-                result["needs_improvement"].append(
-                    {
-                        "skill_id": position_skill.skill_id,
-                        "skill": skill_name,
-                        "employee_level": employee_level,
-                        "required_level": required_level,
-                        "priority": priority,
-                        "verified": employee_skill.verified,
-                    }
-                )
+                result["needs_improvement"].append(entry)
 
         # ==========================================
         # 8. Find additional employee skills
         # ==========================================
         #
         # These are skills the employee has but
-        # the position doesn't require.
+        # the position doesn't require, not even
+        # under an alias.
         #
 
         for employee_skill in employee_skills:
 
-            skill_name = (
-                employee_skill.skill.name
-                .strip()
-            )
-
-            skill_key = skill_name.lower()
-
-            if skill_key not in required_skill_names:
+            if employee_skill.skill_id not in covered_skill_ids:
 
                 result["additional_skills"].append(
                     {
                         "skill_id": employee_skill.skill_id,
-                        "skill": skill_name,
+                        "skill": employee_skill.skill.name,
                         "employee_level": (
                             employee_skill.level.value
                         ),
@@ -304,3 +321,51 @@ class SkillComparisonService:
         # ==========================================
 
         return result
+
+    # ------------------------------------------
+    # Alias lookup
+    # ------------------------------------------
+
+    @staticmethod
+    def _alias_links(
+        db: Session,
+        skill_ids: set[int],
+    ) -> dict[int, set[int]]:
+        """
+        Pairs of the given skills where one skill's
+        name is an alias of the other, in both
+        directions: {skill_id: {linked skill_ids}}.
+
+        Only direct aliases count. Two skills that
+        are both aliases of a third one are NOT
+        linked: the seeded aliases are often broader
+        categories ("python" and "java" are both
+        aliases of "computer programming"), and
+        those two are not the same skill.
+        """
+
+        if not skill_ids:
+            return {}
+
+        aliased_skill = aliased(Skill)
+
+        rows = (
+            db.query(SkillAlias.skill_id, aliased_skill.id)
+            .join(
+                aliased_skill,
+                aliased_skill.name == SkillAlias.alias,
+            )
+            .filter(
+                SkillAlias.skill_id.in_(skill_ids),
+                aliased_skill.id.in_(skill_ids),
+            )
+            .all()
+        )
+
+        links: dict[int, set[int]] = {}
+
+        for owner_id, alias_skill_id in rows:
+            links.setdefault(owner_id, set()).add(alias_skill_id)
+            links.setdefault(alias_skill_id, set()).add(owner_id)
+
+        return links

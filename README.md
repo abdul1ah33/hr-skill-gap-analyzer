@@ -222,7 +222,7 @@ Design notes (plain text / images) in `docs/`: `assessment_pipeline.txt`, `phase
 | Employee self-service portal (skill tests) | ✅ Complete |
 | Retake cooldown for assessments | ⏸️ Postponed |
 | Skills management page | ⚠️ Placeholder |
-| Skill aliases used during comparison | ❌ Not wired in — aliases are stored but the comparison uses exact names; Gemini's `reconciled_skills` covers semantic matches |
+| Skill aliases used during comparison | ✅ Complete — direct aliases count as a match; Gemini's `reconciled_skills` covers the remaining semantic matches |
 
 ---
 

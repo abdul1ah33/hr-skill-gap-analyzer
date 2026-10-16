@@ -161,7 +161,31 @@ RETRY_DELAY_SECONDS = 2
 # -----------------------------------------------------------------------------
 # Core Microservice Function
 # -----------------------------------------------------------------------------
-def generate_gap_report(job_title: str, skill_diff: dict, api_key: str) -> Optional[dict]:
+def build_context_lines(industry: Optional[str], company_name: Optional[str]) -> str:
+    """
+    Prompt lines describing the client, so steps, timelines and resources fit
+    its industry (e.g. port certifications instead of software courses).
+    Empty when nothing is known.
+    """
+    lines = []
+    if company_name:
+        lines.append(f"Company: {company_name}")
+    if industry:
+        lines.append(f"Industry: {industry}")
+        lines.append(
+            "Tailor tactical steps, timelines and suggested resources to this industry "
+            "(its certifications, regulations, training bodies and on-the-job practice)."
+        )
+    return "\n".join(lines) + "\n\n" if lines else ""
+
+
+def generate_gap_report(
+    job_title: str,
+    skill_diff: dict,
+    api_key: str,
+    industry: Optional[str] = None,
+    company_name: Optional[str] = None,
+) -> Optional[dict]:
     """
     Generates a structured, actionable gap analysis report using Gemini.
 
@@ -169,6 +193,8 @@ def generate_gap_report(job_title: str, skill_diff: dict, api_key: str) -> Optio
         job_title (str): The target job title being analyzed.
         skill_diff (dict): A pre-computed JSON dictionary of skill differences.
         api_key (str): The Google Generative AI API Key.
+        industry (str, optional): The client's industry (e.g. "port"), from organization settings.
+        company_name (str, optional): The client's company name, from organization settings.
 
     Returns:
         Optional[dict]: A validated dictionary conforming to the GapAnalysisReport 
@@ -181,7 +207,8 @@ def generate_gap_report(job_title: str, skill_diff: dict, api_key: str) -> Optio
 
     # Format the Prompt payload
     prompt = (
-        f"Target Job Title: {job_title}\n\n"
+        build_context_lines(industry, company_name)
+        + f"Target Job Title: {job_title}\n\n"
         f"Pre-computed Skill Diff Data:\n{json.dumps(skill_diff, indent=2)}\n\n"
         "Please generate the Gap Analysis Report based strictly on the provided schema."
     )

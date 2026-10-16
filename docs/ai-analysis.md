@@ -41,16 +41,17 @@ Before AI analyzes a skill gap, the system performs a deterministic comparison t
 
 1. **Trigger:** `GET /employees/{id}/skill-gap` (Phase C).
 2. **Data Loading:** Loads employee skills and position required skills.
-3. **No alias lookup:** The comparison does not consult the `skill_aliases` table. It relies on Gemini normalizing skill names when position skills and resumes are processed, plus the AI reconciliation step in section 3.
-4. **Comparison Rules:**
-   - Skills are matched by **exact string match** (case-insensitive).
+3. **Comparison Rules:**
+   - A required skill is matched by the **same skill** (names are normalized, so this is an exact match).
+   - Otherwise by a **direct alias**: an employee skill whose name is an alias of the required skill, or the other way round (`skill_aliases`). The entry then carries `matched_via` with the employee's skill name; with several aliases the highest level counts. Skills that are only aliases of the same third skill (e.g. `python` and `java`, both aliases of `computer programming`) are **not** matched. Details: [skill_alias_system.md](skill_alias_system.md).
+   - Anything still unmatched is left to the AI reconciliation step in section 3.
    - Proficiency levels are mapped to integers: `Beginner (1)`, `Intermediate (2)`, `Advanced (3)`.
-5. **Categorization:**
+4. **Categorization:**
    - **Matched:** Employee has the skill at `employee_level >= required_level`.
    - **Needs Improvement:** Employee has the skill, but `employee_level < required_level`.
    - **Unmatched:** Employee lacks the skill entirely.
-   - **Additional Skills:** Employee has a skill not required by the position.
-6. **Output:** A JSON dictionary (`skill_diff`) containing these four lists.
+   - **Additional Skills:** Employee has a skill not required by the position (not even under an alias).
+5. **Output:** A JSON dictionary (`skill_diff`) containing these four lists.
 
 ---
 
@@ -61,7 +62,7 @@ Once the deterministic comparison is complete, Gemini generates a human-readable
 ### Pipeline Flow
 
 1. **Trigger:** `GET /employees/{id}/skill-gap` (Phase D).
-2. **Input Preparation:** The job title and the `skill_diff` dictionary are serialized to JSON.
+2. **Input Preparation:** The job title and the `skill_diff` dictionary are serialized to JSON. When organization settings exist (`GET /organization`), the company name and industry are added to the prompt, with an instruction to tailor steps, timelines and resources to that industry (`build_context_lines`).
 3. **Gemini Analysis (`gap_analysis_ai.py`):**
    - The data is sent to Gemini 3.5 Flash-Lite.
    - **System Prompt Instructions:**
