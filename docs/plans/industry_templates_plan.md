@@ -181,8 +181,8 @@ A `TemplateService.apply(db, template_key, dry_run)` plus a CLI `python -m app.s
 1. List the port's departments and positions (from the first client's org chart if possible).
 2. Draft skills per position with `PositionSkillService`-style ESCO + Gemini runs, then trim and normalize by hand.
 3. Generate questions with the existing `generate_question_bank` pipeline.
-4. **Have a domain expert review** the skills, levels and questions, especially safety-related ones.
-5. `apply_template --dry-run` must pass the coverage gate.
+4. `apply_template --dry-run` must pass the coverage gate.
+5. Domain-expert review of skills, levels and questions is **deferred** (decided 2026-10-16). Until it's done, the template is marked unreviewed.
 
 **Why:** the value is in the content, not the code. Rough size: ~30 positions × ~10 skills ≈ 300 skills, so at least ~1,500 questions. Build one industry fully before generalizing. The second industry will show what actually needs to be generic.
 
@@ -219,6 +219,7 @@ A `TemplateService.apply(db, template_key, dry_run)` plus a CLI `python -m app.s
 | Template variants / inheritance | Copy-then-customize covers differences between clients; inheritance would push complexity into every service |
 | Configurable proficiency levels | `SkillLevel` (3 levels) is tied into scoring, the question bank and the UI; map client frameworks onto it |
 | UI for applying templates / onboarding | We onboard clients ourselves at first; the CLI is enough |
+| Domain-expert review of template content | Decided 2026-10-16; the template can be built and demoed without it, but it should be done before a real client relies on the assessments |
 | One backend serving all clients (per-request DB routing) | Only past ~30–50 clients (§3.4) |
 | PgBouncer | Only if small pools + `max_connections` aren't enough |
 | O*NET | US-centric, and a second taxonomy brings mapping work; ESCO is already integrated |
@@ -229,6 +230,6 @@ A `TemplateService.apply(db, template_key, dry_run)` plus a CLI `python -m app.s
 | # | Question | Recommendation |
 |---|---|---|
 | Q1 | Do we host clients, or do some want on-prem? | We host by default; Option A also supports on-prem with the same scripts |
-| Q2 | Who reviews template content (domain expert)? | Required before a template goes to a client; get the first port client to name a reviewer |
+| Q2 | Who reviews template content (domain expert)? | **Deferred (2026-10-16).** Not needed to build or demo the template; should be done before a real client relies on its assessments |
 | Q3 | Should the template create departments, or only positions? | Create them; HR can rename or delete. `Position.department_id` is optional anyway |
 | Q4 | Templates in the main repo or a separate content repo? | Main repo for now; split only if non-developers start editing them |
