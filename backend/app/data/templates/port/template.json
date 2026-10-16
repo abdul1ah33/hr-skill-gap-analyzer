@@ -1,0 +1,8 @@
+{
+  "key": "port",
+  "name": "Port & Container Terminal (mock data)",
+  "industry": "port",
+  "version": 1,
+  "reviewed": false,
+  "description": "MOCK DATA for demos and testing, not reviewed by a port expert. Port-specific skills have their own questions in question_bank/; general skills (hazard identification, customer service, ...) use the main question bank, so import that first (provision_client does)."
+}

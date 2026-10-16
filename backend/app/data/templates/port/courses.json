@@ -1,0 +1,68 @@
+[
+  {
+    "title": "STS Crane Operator Certification (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Intermediate",
+    "estimated_hours": 80,
+    "skills": [
+      "sts crane operation"
+    ]
+  },
+  {
+    "title": "RTG Operator Training (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Beginner",
+    "estimated_hours": 40,
+    "skills": [
+      "rtg crane operation"
+    ]
+  },
+  {
+    "title": "IMDG Code Awareness (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Beginner",
+    "estimated_hours": 16,
+    "skills": [
+      "dangerous goods handling"
+    ]
+  },
+  {
+    "title": "Container Lashing Safety (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Beginner",
+    "estimated_hours": 8,
+    "skills": [
+      "container lashing",
+      "terminal safety procedures"
+    ]
+  },
+  {
+    "title": "Rigging and Signalling Basics (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Beginner",
+    "estimated_hours": 12,
+    "skills": [
+      "crane signalling and rigging"
+    ]
+  },
+  {
+    "title": "Port Facility Security Officer (ISPS) (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Advanced",
+    "estimated_hours": 24,
+    "skills": [
+      "port facility security"
+    ]
+  },
+  {
+    "title": "Stowage and Berth Planning (mock)",
+    "provider": "Mock Port Academy",
+    "difficulty": "Advanced",
+    "estimated_hours": 40,
+    "skills": [
+      "vessel stowage planning",
+      "berth planning",
+      "yard planning"
+    ]
+  }
+]

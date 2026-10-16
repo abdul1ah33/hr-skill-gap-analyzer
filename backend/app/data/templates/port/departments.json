@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Quay Operations",
+    "description": "Vessel loading and discharge at the berth."
+  },
+  {
+    "name": "Yard Operations",
+    "description": "Container storage, stacking and yard equipment."
+  },
+  {
+    "name": "Vessel & Berth Planning",
+    "description": "Stowage, berth and yard planning."
+  },
+  {
+    "name": "Gate & Documentation",
+    "description": "Truck gate, customs and cargo documents."
+  },
+  {
+    "name": "Engineering & Maintenance",
+    "description": "Crane, equipment and reefer maintenance."
+  },
+  {
+    "name": "Marine Services",
+    "description": "Mooring and vessel services."
+  },
+  {
+    "name": "Health, Safety, Security & Environment",
+    "description": "HSE and ISPS security."
+  }
+]

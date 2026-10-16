@@ -2,6 +2,7 @@
 import json
 import shutil
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,16 @@ from app.models.skill import Skill
 from app.models.skill_alias import SkillAlias
 from app.models.skill_question import SkillQuestion
 from app.scripts import apply_template as apply_template_script
-from app.services.template_service import TemplateError, TemplateService, load_template
+from app.services.assessment_scoring_service import QUESTIONS_PER_LEVEL
+from app.services.question_bank_import_service import default_bank_files
+from app.services.template_service import (
+    TemplateError,
+    TemplateService,
+    load_template,
+    question_files,
+    resolve_template_dir,
+)
+from app.utils.skill_names import normalize_skill_name
 
 pytestmark = pytest.mark.integration
 
@@ -247,6 +257,33 @@ def test_a_database_uses_one_industry_template(db, mini):
 
     with pytest.raises(TemplateError, match="already uses the 'mini' template"):
         _apply(db, mini)
+
+
+# ─── Shipped templates ───────────────────────────────────────────────────────
+
+def test_port_template_is_valid_and_every_skill_is_assessable():
+    """
+    Checked on the files, without a database: every skill has enough questions
+    in the template or in the main bank (which provisioning imports first).
+    """
+    directory = resolve_template_dir("port")
+    template = load_template(directory)
+    assert template.info.key == "port"
+    assert template.info.reviewed is False   # mock data until an expert reviews it
+
+    counts: dict[str, Counter] = {}
+    for path in question_files(directory) + default_bank_files():
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                entry = json.loads(line)
+                levels = counts.setdefault(normalize_skill_name(entry["skill_name"]), Counter())
+                levels.update(q["proficiency_level"] for q in entry["questions"])
+
+    short = [
+        skill.name for skill in template.skills
+        if any(counts.get(skill.name, Counter())[level] < quota for level, quota in QUESTIONS_PER_LEVEL.items())
+    ]
+    assert short == []
 
 
 # ─── Script ──────────────────────────────────────────────────────────────────

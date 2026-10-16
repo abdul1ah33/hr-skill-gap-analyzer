@@ -198,6 +198,14 @@ Exit code is `0` on success and `1` when the template is invalid or can't be app
 4. Run `apply_template <key> --dry-run` against a scratch database until it passes.
 5. Have a domain expert review it, then set `"reviewed": true`.
 
+## Shipped templates
+
+| Key | Content | Status |
+|---|---|---|
+| `port` | Container terminal: 7 departments, 15 positions (STS/RTG/reach stacker operators, lashing, planners, gate, documentation, maintenance, mooring, HSE, security), 29 skills with 17 aliases, 7 courses, 95 questions | **Mock data**, `reviewed: false`. Hand-written for demos and testing; replace with real client and expert data before a real port client goes live |
+
+The `port` template's 19 port-specific skills have their own questions (`question_bank/port.jsonl`). Its 10 general skills (hazard identification, heavy machinery operation, customer service, Microsoft Excel and others) use the main question bank, so the main bank must be imported first. `provision_client` does that, and `tests/test_templates.py` checks that every skill is covered.
+
 ## Not supported yet
 
 Upgrading a client from one template version to the next (beyond adding what's missing), templates inheriting from each other, and certification requirements. See plan §6.

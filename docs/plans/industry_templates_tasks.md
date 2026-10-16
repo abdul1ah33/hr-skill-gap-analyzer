@@ -64,24 +64,32 @@ Legend: ✅ done · ⏸️ deferred · 🧑 needs you (a decision or content wor
 **Done when:** existing gap-analysis and assessment tests still pass, plus the new alias tests.
 
 ## Phase 5 — Containers, provisioning and upgrade (§5.5, §3)
-- [ ] `backend/Dockerfile` (one image, runs `uvicorn`); `.dockerignore`
-- [ ] `my_frontend/Dockerfile` or a build step with `VITE_API_URL` as a build argument
-- [ ] `docker-compose.yml`: proxy (Caddy), one `postgres` service, `api-client-a` / `api-client-b` demo services, each with `env_file: clients/<name>.env`
-- [ ] `clients/README.md` + `clients/example.env`; add `clients/*.env` to `.gitignore`
-- [ ] `scripts/provision_client.py`: create the database and its database user (grants only on that database) → `alembic upgrade head` → `seed_roles` → organization settings → `apply_template` → first HR user → summary
-- [ ] `scripts/upgrade_clients.py`: for each `clients/*.env`, run migrations + `import_question_bank`; stop and report on the first failure
-- [ ] Manual check: two demo clients running side by side; client A's login token is rejected by client B; client A's database user can't connect to client B's database
-- [ ] Docs: `docs/deployment.md` (layout, provisioning, upgrades, backups, scaling limits from plan §3.4)
+- ✅ `backend/Dockerfile` (one image, runs `uvicorn --root-path /api`, non-root user; build context is the repo root because of the `ai/` imports); `.dockerignore`. `requirements.txt` replaced with the packages the app actually uses (the old one had no FastAPI/uvicorn/alembic/psycopg)
+- ✅ `my_frontend/Dockerfile`: builds the frontend with `VITE_API_URL=/api` into a Caddy image. **One build for all clients** instead of one per client: the proxy sends `/api` on each client's domain to that client's backend
+- ✅ `docker-compose.yml`: proxy (Caddy, `deploy/Caddyfile`), one `postgres` service, `api-client-a` / `api-client-b` demo services with `env_file: clients/<name>.env`, and a `tools` service for the scripts
+- ✅ `clients/README.md` + `clients/example.env`; `clients/*.env` added to `.gitignore`; `deploy/compose.env.example` for the root `.env`
+- ✅ `app/scripts/provision_client.py`: env file (new password + `SECRET_KEY`) → database user + database (only that user may connect) → `alembic upgrade head` → `init_client` (roles, organization settings, first HR user) → main question bank → `apply_template` → summary with the compose/Caddy snippets. Every step can be re-run
+- ✅ `app/scripts/upgrade_clients.py`: for each `clients/*.env`, migrations + `import_question_bank`; stops and reports on the first failure
+- ✅ Tests (`tests/test_provisioning.py`): provisions two real client databases, checks the data, cross-database login refused, tokens rejected across clients, re-running changes nothing, upgrade of every client, upgrade stops at the first failure
+- ✅ Manual check in Docker: two demo clients running side by side through the proxy; client A's token gets 401 on client B; client B's database user gets "permission denied for database client_a"; redirects keep `/api`; `upgrade_clients` ran on both
+- ✅ Docs: `docs/deployment.md` (layout, provisioning, real domains, upgrades, backups, scaling limits from plan §3.4); README, `setup.md`, `backend.md`, `development.md`
 
 **Done when:** a new client can be provisioned and running with one command, and an upgrade migrates every client.
 
 ## Phase 6 — Port template v1 (§5.8) 🧑 + code support
-- [ ] 🧑 Collect the port's departments and positions (ideally from the first client's org chart)
-- [ ] Draft skills per position using ESCO + Gemini (`PositionSkillService` logic run offline), then trim and normalize by hand → `backend/app/data/templates/port/*.json`
-- [ ] Generate questions for every skill with `scripts/generate_question_bank.py` → `backend/app/data/templates/port/question_bank/*.jsonl`
-- [ ] Run the generated questions through the existing importer validation (`import_question_bank --dry-run --strict`) and fix rejected ones
-- [ ] `apply_template port --dry-run` passes the coverage gate
-- [ ] Apply to a demo client; check gap analysis and assessments end to end with a few sample employees
+Built with **mock data** for now (decided 2026-10-17): the real data will come from another institution, and the template is replaced when it does.
+
+- ✅ Departments and positions: 7 mock departments and 15 positions of a typical container terminal (🧑 replace with a real org chart later)
+- ✅ Skills per position, written by hand instead of ESCO + Gemini (mock): 19 port-specific skills with 17 aliases, plus 10 general skills from the main bank; 71 position skills → `backend/app/data/templates/port/*.json`
+- ✅ Questions: 95 hand-written questions (5 per port skill: 1 Beginner / 2 Intermediate / 2 Advanced) → `backend/app/data/templates/port/question_bank/port.jsonl`
+- ✅ All questions pass the importer's validation, with no "correct option much longer" warnings
+- ✅ The coverage gate passes: provisioned a scratch client (`provision_client ... --template port`) on the local server; every skill is assessable. Test: `test_port_template_is_valid_and_every_skill_is_assessable`
+- ✅ End to end on the scratch client with sample employees:
+  - assessment previews with nothing untestable, and an assessment started;
+  - "quay crane operation" matched "sts crane operation" through its alias;
+  - real Gemini gap analysis with port-specific resources and the company name.
+
+  Afterwards the scratch database was dropped.
 
 **Done when:** the port template applies cleanly and a demo port client works end to end. The template is marked **unreviewed** in `template.json` until the expert review is done (deferred, see below).
 

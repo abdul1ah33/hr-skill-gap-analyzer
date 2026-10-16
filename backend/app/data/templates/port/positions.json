@@ -1,0 +1,408 @@
+[
+  {
+    "title": "STS Crane Operator",
+    "department": "Quay Operations",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "sts crane operation",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "crane signalling and rigging",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Beginner",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Lashing Supervisor",
+    "department": "Quay Operations",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "container lashing",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "crane signalling and rigging",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Quay Superintendent",
+    "department": "Quay Operations",
+    "level": "Senior",
+    "skills": [
+      {
+        "skill": "sts crane operation",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "container lashing",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "incident investigation",
+        "required_level": "Intermediate",
+        "is_essential": false
+      },
+      {
+        "skill": "risk management",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "RTG Operator",
+    "department": "Yard Operations",
+    "level": "Junior",
+    "skills": [
+      {
+        "skill": "rtg crane operation",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Beginner"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Intermediate"
+      }
+    ]
+  },
+  {
+    "title": "Reach Stacker Operator",
+    "department": "Yard Operations",
+    "level": "Junior",
+    "skills": [
+      {
+        "skill": "reach stacker operation",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "heavy machinery operation",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "container inspection",
+        "required_level": "Beginner",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Yard Planner",
+    "department": "Vessel & Berth Planning",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "yard planning",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "reefer container monitoring",
+        "required_level": "Intermediate",
+        "is_essential": false
+      },
+      {
+        "skill": "microsoft excel",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Vessel Planner",
+    "department": "Vessel & Berth Planning",
+    "level": "Senior",
+    "skills": [
+      {
+        "skill": "vessel stowage planning",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "berth planning",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Berth Planner",
+    "department": "Vessel & Berth Planning",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "berth planning",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "vessel stowage planning",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Gate Clerk",
+    "department": "Gate & Documentation",
+    "level": "Junior",
+    "skills": [
+      {
+        "skill": "gate transaction processing",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "container inspection",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "shipping documentation",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal operating system",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "customer service",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Documentation Officer",
+    "department": "Gate & Documentation",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "shipping documentation",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "microsoft excel",
+        "required_level": "Intermediate",
+        "is_essential": false
+      },
+      {
+        "skill": "customer service",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Crane Maintenance Technician",
+    "department": "Engineering & Maintenance",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "port crane maintenance",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "electrical equipment maintenance",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "electrical safety regulations",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "hazard identification",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "crane signalling and rigging",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Reefer Technician",
+    "department": "Engineering & Maintenance",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "reefer container monitoring",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "electrical equipment maintenance",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "electrical safety regulations",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Intermediate"
+      }
+    ]
+  },
+  {
+    "title": "Mooring Supervisor",
+    "department": "Marine Services",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "mooring operations",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "port radio communication",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "emergency response management",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "HSE Officer",
+    "department": "Health, Safety, Security & Environment",
+    "level": "Mid",
+    "skills": [
+      {
+        "skill": "terminal safety procedures",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "hazard identification",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "incident investigation",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "emergency response management",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "dangerous goods handling",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "port facility security",
+        "required_level": "Intermediate",
+        "is_essential": false
+      },
+      {
+        "skill": "environmental compliance",
+        "required_level": "Intermediate",
+        "is_essential": false
+      }
+    ]
+  },
+  {
+    "title": "Port Facility Security Officer",
+    "department": "Health, Safety, Security & Environment",
+    "level": "Senior",
+    "skills": [
+      {
+        "skill": "port facility security",
+        "required_level": "Advanced"
+      },
+      {
+        "skill": "emergency response management",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "incident investigation",
+        "required_level": "Intermediate"
+      },
+      {
+        "skill": "gate transaction processing",
+        "required_level": "Beginner",
+        "is_essential": false
+      }
+    ]
+  }
+]

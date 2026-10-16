@@ -1,0 +1,149 @@
+[
+  {
+    "name": "sts crane operation",
+    "description": "Operating ship-to-shore (quay) cranes to load and discharge vessels.",
+    "aliases": [
+      "ship to shore crane operation",
+      "quay crane operation"
+    ]
+  },
+  {
+    "name": "rtg crane operation",
+    "description": "Operating rubber-tyred gantry cranes to stack containers in the yard.",
+    "aliases": [
+      "rubber tyred gantry operation"
+    ]
+  },
+  {
+    "name": "reach stacker operation",
+    "description": "Operating reach stackers within their load charts."
+  },
+  {
+    "name": "container lashing",
+    "description": "Securing deck containers with lashing rods, turnbuckles and twistlocks.",
+    "aliases": [
+      "lashing and securing"
+    ]
+  },
+  {
+    "name": "crane signalling and rigging",
+    "description": "Signalling crane operators and rigging loads safely.",
+    "aliases": [
+      "banksman signalling",
+      "rigging and slinging"
+    ]
+  },
+  {
+    "name": "dangerous goods handling",
+    "description": "Handling, segregating and responding to dangerous goods under the IMDG Code.",
+    "aliases": [
+      "imdg code compliance",
+      "hazardous cargo handling"
+    ]
+  },
+  {
+    "name": "vessel stowage planning",
+    "description": "Planning container positions on board (bay plans) for stability and port sequence.",
+    "aliases": [
+      "stowage planning",
+      "bay planning"
+    ]
+  },
+  {
+    "name": "berth planning",
+    "description": "Allocating berths and time windows to vessels."
+  },
+  {
+    "name": "yard planning",
+    "description": "Planning container positions in the yard to minimize rehandles."
+  },
+  {
+    "name": "terminal operating system",
+    "description": "Using the TOS to plan, dispatch and track container moves.",
+    "aliases": [
+      "tos operation"
+    ]
+  },
+  {
+    "name": "container inspection",
+    "description": "Checking container condition, damage and seals at handover."
+  },
+  {
+    "name": "gate transaction processing",
+    "description": "Processing truck arrivals, pickups and drop-offs at the terminal gate."
+  },
+  {
+    "name": "shipping documentation",
+    "description": "Bills of lading, manifests, VGM and customs holds.",
+    "aliases": [
+      "cargo documentation"
+    ]
+  },
+  {
+    "name": "reefer container monitoring",
+    "description": "Monitoring refrigerated containers and responding to alarms.",
+    "aliases": [
+      "reefer monitoring"
+    ]
+  },
+  {
+    "name": "port crane maintenance",
+    "description": "Preventive and corrective maintenance of port cranes."
+  },
+  {
+    "name": "mooring operations",
+    "description": "Securing and releasing vessels at the berth.",
+    "aliases": [
+      "line handling"
+    ]
+  },
+  {
+    "name": "port radio communication",
+    "description": "Clear radio communication, including VHF marine procedures.",
+    "aliases": [
+      "vhf radio communication",
+      "marine radio communication"
+    ]
+  },
+  {
+    "name": "port facility security",
+    "description": "Security measures under the ISPS Code.",
+    "aliases": [
+      "isps code compliance"
+    ]
+  },
+  {
+    "name": "terminal safety procedures",
+    "description": "Terminal HSE rules: traffic separation, PPE, stop work, near misses."
+  },
+  {
+    "name": "heavy machinery operation"
+  },
+  {
+    "name": "electrical equipment maintenance"
+  },
+  {
+    "name": "electrical safety regulations"
+  },
+  {
+    "name": "hazard identification"
+  },
+  {
+    "name": "incident investigation"
+  },
+  {
+    "name": "emergency response management"
+  },
+  {
+    "name": "environmental compliance"
+  },
+  {
+    "name": "risk management"
+  },
+  {
+    "name": "customer service"
+  },
+  {
+    "name": "microsoft excel"
+  }
+]
