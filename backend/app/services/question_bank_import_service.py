@@ -180,8 +180,7 @@ class QuestionBankImportService:
             )
         report.rejections.append(rejection)
 
-    def _parse_file(self, path: Path, report: ImportReport) -> list[_ParsedQuestion]:
-        source = source_for(path)
+    def _parse_file(self, path: Path, report: ImportReport, source: str) -> list[_ParsedQuestion]:
         parsed: list[_ParsedQuestion] = []
         skills_in_file: set[str] = set()
 
@@ -279,7 +278,8 @@ class QuestionBankImportService:
             ],
         )
 
-    def _check_coverage(self, skills: dict[str, Skill], report: ImportReport) -> None:
+    def check_coverage(self, skills: dict[str, Skill], report: ImportReport) -> None:
+        """Record skills below the assessable minimum (or with small pools) in the report."""
         rows = (
             self.db.query(SkillQuestion.skill_id, SkillQuestion.proficiency_level)
             .filter(
@@ -300,10 +300,13 @@ class QuestionBankImportService:
     # ==========================================
     # Main entry point
     # ==========================================
-    def import_files(self, paths: list[Path]) -> ImportReport:
+    def import_files(self, paths: list[Path], source: str | None = None) -> ImportReport:
         """
         Import the given files. Questions from these files' sources that are
         no longer present are deactivated. Does not commit.
+
+        source overrides source_for() for every file; industry templates pass
+        "template:<key>" so their import never deactivates the main bank.
         """
         if not paths:
             raise QuestionBankImportError("no question-bank files given")
@@ -312,7 +315,7 @@ class QuestionBankImportService:
 
         parsed: list[_ParsedQuestion] = []
         for path in paths:
-            parsed.extend(self._parse_file(path, report))
+            parsed.extend(self._parse_file(path, report, source or source_for(path)))
 
         # A question can appear in two files only if it is identical; keep the first
         unique: dict[str, _ParsedQuestion] = {}
@@ -340,7 +343,7 @@ class QuestionBankImportService:
                 report.reactivated += 1
 
         # Deactivate questions that came from these sources but are gone now
-        sources = {source_for(path) for path in paths}
+        sources = {source} if source else {source_for(path) for path in paths}
         stale = (
             self.db.query(SkillQuestion)
             .filter(
@@ -355,5 +358,5 @@ class QuestionBankImportService:
         report.deactivated = len(stale)
 
         self.db.flush()
-        self._check_coverage(skills, report)
+        self.check_coverage(skills, report)
         return report

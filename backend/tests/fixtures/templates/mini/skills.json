@@ -1,0 +1,28 @@
+[
+  {
+    "name": "RTG Crane Operation",
+    "description": "Operating rubber-tyred gantry cranes in the container yard.",
+    "esco_uri": "http://example.org/test-esco/rtg-crane-operation",
+    "aliases": ["Rubber Tyred Gantry Operation", "RTG Operation"]
+  },
+  {
+    "name": "Container Lashing",
+    "description": "Securing containers on deck with lashing rods and twistlocks.",
+    "aliases": ["Lashing"]
+  },
+  {
+    "name": "Dangerous Goods Handling",
+    "description": "Handling cargo classified under the IMDG Code.",
+    "aliases": ["IMDG Handling"]
+  },
+  {
+    "name": "Vessel Stowage Planning",
+    "description": "Planning where containers go on a vessel."
+  },
+  {
+    "name": "Terminal Safety Procedures"
+  },
+  {
+    "name": "Radio Communication"
+  }
+]

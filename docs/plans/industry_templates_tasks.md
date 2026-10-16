@@ -41,14 +41,15 @@ Legend: ✅ done · ⏸️ deferred · 🧑 needs you (a decision or content wor
 **Done when:** `alembic upgrade head` works on a copy of the dev DB, existing data is unchanged, and tests pass.
 
 ## Phase 3 — Template format and applier (§5.4)
-- [ ] `schemas/template.py`: Pydantic models for `template.json` (including a `reviewed: bool` flag; the applier prints a warning when it's `false`), `skills.json`, `departments.json`, `positions.json`, `courses.json`
-- [ ] Cross-file validation: every skill a position or course references exists in `skills.json`; levels are valid `SkillLevel` values; no duplicate names after `normalize_skill_name`; no alias pointing at two skills
-- [ ] `services/template_service.py` `TemplateService.apply(db, key, dry_run)`: upserts skills + aliases → departments → positions (by title + department) → position skills → courses + course skills → question bank through `QuestionBankImportService`; creates missing rows only and never overwrites; `source = 'template:<key>@<version>'`; one transaction; updates `organization_settings`
-- [ ] Coverage gate: fail (roll back) if any template skill is not assessable, using the importer's `not_assessable` report
-- [ ] `scripts/apply_template.py`: `python -m app.scripts.apply_template <key> [--dry-run] [--report file.json]`
-- [ ] Test template `tests/fixtures/templates/mini/` (2 departments, 3 positions, about 6 skills with aliases, 1 course, enough questions)
-- [ ] Tests: applies cleanly; re-applying creates nothing; a manual change survives re-applying; dry-run writes nothing; a skill without questions fails the gate; bad references are rejected with a clear message
-- [ ] Docs: `docs/templates.md` (format, rules, how to author and apply a template)
+- ✅ `schemas/template.py`: Pydantic models for `template.json` (including a `reviewed: bool` flag; the applier prints a warning when it's `false`), `skills.json`, `departments.json`, `positions.json`, `courses.json`
+- ✅ Cross-file validation: every skill a position or course references exists in `skills.json`; levels are valid `SkillLevel` values; no duplicate names after `normalize_skill_name`; no alias pointing at two skills
+- ✅ `services/template_service.py` `TemplateService(db).apply(directory, organization_name)` (doesn't commit; the script commits or rolls back for `--dry-run`): upserts skills + aliases → departments → positions (by title + department) → position skills → courses + course skills → question bank through `QuestionBankImportService`; creates missing rows only and never overwrites; `source = 'template:<key>@<version>'`; one transaction; updates `organization_settings`; required skills only added to positions created in the run, so HR changes survive
+- ✅ `QuestionBankImportService.import_files(..., source=...)`: template questions are stored as `template:<key>` so applying a template never deactivates the main bank; template skills that resolve to an existing alias get their questions mapped to that skill
+- ✅ Coverage gate: fail (roll back) if any template skill is not assessable, using the importer's `not_assessable` report
+- ✅ `scripts/apply_template.py`: `python -m app.scripts.apply_template <key> [--dry-run] [--report file.json]`
+- ✅ Test template `tests/fixtures/templates/mini/` (2 departments, 3 positions, about 6 skills with aliases, 1 course, enough questions)
+- ✅ Tests: applies cleanly; re-applying creates nothing; a manual change survives re-applying; dry-run writes nothing; a skill without questions fails the gate; bad references are rejected with a clear message
+- ✅ Docs: `docs/templates.md` (format, rules, how to author and apply a template)
 
 **Done when:** the mini template applies to an empty DB, and gap analysis and assessment preview work for an employee in a templated position.
 
@@ -76,8 +77,8 @@ Legend: ✅ done · ⏸️ deferred · 🧑 needs you (a decision or content wor
 
 ## Phase 6 — Port template v1 (§5.8) 🧑 + code support
 - [ ] 🧑 Collect the port's departments and positions (ideally from the first client's org chart)
-- [ ] Draft skills per position using ESCO + Gemini (`PositionSkillService` logic run offline), then trim and normalize by hand → `templates/port/v1/*.json`
-- [ ] Generate questions for every skill with `scripts/generate_question_bank.py` → `templates/port/v1/question_bank/*.jsonl`
+- [ ] Draft skills per position using ESCO + Gemini (`PositionSkillService` logic run offline), then trim and normalize by hand → `backend/app/data/templates/port/*.json`
+- [ ] Generate questions for every skill with `scripts/generate_question_bank.py` → `backend/app/data/templates/port/question_bank/*.jsonl`
 - [ ] Run the generated questions through the existing importer validation (`import_question_bank --dry-run --strict`) and fix rejected ones
 - [ ] `apply_template port --dry-run` passes the coverage gate
 - [ ] Apply to a demo client; check gap analysis and assessments end to end with a few sample employees

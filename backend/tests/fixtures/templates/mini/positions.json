@@ -1,0 +1,30 @@
+[
+  {
+    "title": "RTG Operator",
+    "department": "Yard Operations",
+    "level": "Junior",
+    "skills": [
+      { "skill": "RTG Crane Operation", "required_level": "Advanced" },
+      { "skill": "Terminal Safety Procedures", "required_level": "Intermediate" },
+      { "skill": "Radio Communication", "required_level": "Beginner", "is_essential": false }
+    ]
+  },
+  {
+    "title": "Lashing Supervisor",
+    "department": "Quay Operations",
+    "skills": [
+      { "skill": "Container Lashing", "required_level": "Advanced" },
+      { "skill": "Dangerous Goods Handling", "required_level": "Intermediate" },
+      { "skill": "Terminal Safety Procedures", "required_level": "Advanced" }
+    ]
+  },
+  {
+    "title": "Vessel Planner",
+    "department": "Quay Operations",
+    "level": "Senior",
+    "skills": [
+      { "skill": "Vessel Stowage Planning", "required_level": "Advanced", "short_description": "Plans bays and weight distribution." },
+      { "skill": "Dangerous Goods Handling", "required_level": "Intermediate" }
+    ]
+  }
+]

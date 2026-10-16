@@ -197,6 +197,7 @@ Details in [docs/setup.md](docs/setup.md). Backend tests: `cd backend && pytest`
 | [database.md](docs/database.md) | Database schema |
 | [ai-analysis.md](docs/ai-analysis.md) | ESCO + Gemini pipelines |
 | [skill_alias_system.md](docs/skill_alias_system.md) | Skill alias system |
+| [templates.md](docs/templates.md) | Industry templates: format, rules, applying |
 | [development.md](docs/development.md) | Conventions, workflow, known tech debt |
 | [legacy-frontend.md](docs/legacy-frontend.md) | The old `frontend/` app (reference only) |
 

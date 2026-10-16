@@ -70,13 +70,15 @@ backend/
     │   ├── position_skill.py
     │   ├── assessment.py        # Assessment requests/responses (never contain answers)
     │   ├── question_bank.py     # Question bank format and validation (SkillQuestionBank)
-    │   └── organization.py
+    │   ├── organization.py
+    │   └── template.py          # Industry template format + cross-file checks
     ├── utils/
     │   └── skill_names.py       # normalize_skill_name (lowercase, single spaces)
     ├── data/
-    │   └── question_bank/
-    │       ├── output_question_bank.jsonl  # curated: 83 skills × 30 questions
-    │       └── generated/                  # generated: 67 skills × 15 questions
+    │   ├── question_bank/
+    │   │   ├── output_question_bank.jsonl  # curated: 83 skills × 30 questions
+    │   │   └── generated/                  # generated: 67 skills × 15 questions
+    │   └── templates/           # Industry templates, one folder per key (see templates.md)
     ├── crud/                    # Database CRUD operations
     │   ├── employee.py
     │   ├── department.py
@@ -118,6 +120,7 @@ backend/
     │   ├── assessment_grading_service.py     # Grading + profile update
     │   ├── assessment_service.py             # Sessions, answers, submit, HR assign
     │   ├── question_bank_import_service.py   # Imports the JSONL bank
+    │   ├── template_service.py               # Loads and applies industry templates
     │   └── old/                 # Superseded services (still imported by assessment.py)
     ├── ai/                      # Gemini AI modules
     │   ├── perfect_profile.py
@@ -129,6 +132,7 @@ backend/
         ├── seed_roles.py
         ├── import_question_bank.py
         ├── generate_question_bank.py
+        ├── apply_template.py    # Applies an industry template (see templates.md)
         └── seed_assessment_demo.py
 ```
 

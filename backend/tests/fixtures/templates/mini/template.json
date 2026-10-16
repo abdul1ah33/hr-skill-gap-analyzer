@@ -1,0 +1,8 @@
+{
+  "key": "mini",
+  "name": "Mini Port (test template)",
+  "industry": "port",
+  "version": 1,
+  "reviewed": false,
+  "description": "Small template used by the tests."
+}
