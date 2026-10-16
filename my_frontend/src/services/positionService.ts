@@ -13,7 +13,7 @@ export async function getPositionById(positionId: number): Promise<Position> {
 
 export async function createPosition(data: {
   title: string;
-  department_id: number;
+  department_id: number | null;
 }) {
   const response = await api.post("/positions/", data);
   return response.data;
@@ -21,7 +21,7 @@ export async function createPosition(data: {
 
 export async function updatePosition(
   positionId: number,
-  data: { title?: string; department_id?: number }
+  data: { title?: string; department_id?: number | null }
 ): Promise<Position> {
   const response = await api.put(`/positions/${positionId}`, data);
   return response.data;

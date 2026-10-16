@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.employee import Employee
@@ -30,7 +32,12 @@ def _base_query(db: Session):
 # ─── Create ──────────────────────────────────────────────────────────────────
 
 def create_employee(db: Session, employee: EmployeeCreate) -> Employee:
-    db_employee = Employee(**employee.model_dump())
+    # employee_number is NOT NULL and comes from the ID, which only exists
+    # after the insert: insert with a unique placeholder, then replace it
+    db_employee = Employee(
+        **employee.model_dump(),
+        employee_number=f"TMP-{uuid4().hex[:16]}",
+    )
 
     db.add(db_employee)
 

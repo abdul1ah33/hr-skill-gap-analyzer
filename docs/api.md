@@ -155,14 +155,14 @@ Lists all positions.
 
 ### `POST /positions`
 Creates a new position and triggers background skill generation.
-- **Body:** `PositionCreate` schema
+- **Body:** `PositionCreate` schema. `department_id` is optional: leave it out or send `null` for a position without a department. When given, it must exist (otherwise 404).
 - **Response:** `PositionResponse` (includes the read-only `source`: `manual`, `ai` or `template:<key>@<version>`)
 
 ### `GET /positions/{id}`
 Gets a specific position.
 
 ### `PUT /positions/{id}`
-Updates a position and sets its `source` to `manual`. If the `title` changes, automatically deletes old required skills and generates new ones in the background.
+Updates a position and sets its `source` to `manual`. Sending `"department_id": null` removes the department; leaving the field out keeps it. If the `title` changes, automatically deletes old required skills and generates new ones in the background.
 
 ### `DELETE /positions/{id}`
 Deletes a position and its `PositionSkill` rows. `Skill` rows are kept (they are shared with employees, the question bank and assessment history).

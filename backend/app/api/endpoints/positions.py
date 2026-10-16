@@ -76,12 +76,14 @@ def create_position_route(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    department = db.get(Department, position.department_id)
-    if not department:
-        raise HTTPException(
-            status_code=404,
-            detail="Department not found",
-        )
+    # A department is optional; when given, it must exist
+    if position.department_id is not None:
+        department = db.get(Department, position.department_id)
+        if not department:
+            raise HTTPException(
+                status_code=404,
+                detail="Department not found",
+            )
 
     db_position = create_position(
         db=db,

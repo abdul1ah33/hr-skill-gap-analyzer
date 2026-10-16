@@ -52,16 +52,13 @@ function PositionsPage() {
     event.preventDefault();
 
     if (!title.trim()) return;
-    if (!departmentId) {
-      alert("Please select a department.");
-      return;
-    }
 
     try {
       setLoading(true);
       await createPosition({
         title: title.trim(),
-        department_id: Number(departmentId),
+        // The department is optional
+        department_id: departmentId ? Number(departmentId) : null,
       });
       setTitle("");
       setDepartmentId("");
@@ -93,7 +90,8 @@ function PositionsPage() {
       setSavingEdit(true);
       await updatePosition(positionId, { 
         title: trimmed,
-        department_id: editingDepartmentId ? Number(editingDepartmentId) : undefined
+        // null removes the department ("No department")
+        department_id: editingDepartmentId ? Number(editingDepartmentId) : null
       });
       await loadData();
       cancelEdit();
@@ -189,7 +187,7 @@ function PositionsPage() {
                 outline: "none",
               }}
             >
-              <option value="">Select Department</option>
+              <option value="">No department</option>
               {departments.map((department) => (
                 <option key={department.id} value={department.id}>
                   {department.name}
