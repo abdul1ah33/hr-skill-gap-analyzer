@@ -1,0 +1,33 @@
+# One site block per client (docs/deployment.md).
+#
+# Each client gets its own domain. On it, /api/* goes to that client's
+# backend container with /api stripped (the backend runs with --root-path /api,
+# so its redirects and /api/docs keep the prefix) and everything else is the
+# frontend.
+#
+# The demo uses *.localhost names over plain HTTP. For real domains, remove
+# the global "auto_https off" and drop the http:// prefixes; Caddy then gets
+# certificates automatically.
+
+{
+	auto_https off
+}
+
+(client) {
+	handle_path /api/* {
+		reverse_proxy {args[0]}:8000
+	}
+	handle {
+		root * /srv/frontend
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+http://client-a.localhost {
+	import client api-client-a
+}
+
+http://client-b.localhost {
+	import client api-client-b
+}

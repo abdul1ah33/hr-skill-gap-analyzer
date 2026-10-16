@@ -12,7 +12,7 @@ See also: [API Reference](api.md) | [Database](database.md) | [AI Analysis](ai-a
 backend/
 ├── .env                         # Environment variables (not committed)
 ├── alembic.ini                  # Alembic migration configuration
-├── requirements.txt             # Python dependencies (full lock file)
+├── requirements.txt             # Python dependencies (pinned, only what the app uses)
 ├── generate_hash_pass.py        # Utility: generate a bcrypt password hash
 ├── test_skill_alias_system.py   # Test: skill alias matching
 ├── test_skill_comparison.py     # Test: skill comparison service
@@ -133,6 +133,10 @@ backend/
         ├── import_question_bank.py
         ├── generate_question_bank.py
         ├── apply_template.py    # Applies an industry template (see templates.md)
+        ├── provision_client.py  # Sets up a new client: database, migrations, data (see deployment.md)
+        ├── init_client.py       # Roles, organization settings, first HR user (used by provision_client)
+        ├── upgrade_clients.py   # Migrates every client after a release
+        ├── client_env.py        # Shared helpers for the two scripts above
         └── seed_assessment_demo.py
 ```
 
@@ -580,5 +584,5 @@ EmployeeSkillResponse serialized
 
 - `assessment.py` imports `backend.app.services.old.assessment_service` and `resume.py` imports `backend.app.auth.dependencies`. These `backend.`-prefixed imports only work because `app/core/paths.py` adds the project root to `sys.path` (it also prints that path on startup). Prefer `app.` imports.
 - The assessment feature (question bank → sessions → grading) is being built; see [assessment.md](assessment.md).
-- The `requirements.txt` is a complete lock file from a conda/venv environment that includes many scientific/ML packages (pandas, scikit-learn, h2o, etc.) that are not directly used by the web application. A slimmer install is possible for pure backend use.
+- `requirements.txt` pins only the packages the app uses. The backend Docker image installs the same file (see deployment.md).
 - The SQLAlchemy engine in `database.py` reads `DB_ECHO`, `DB_POOL_SIZE` and `DB_MAX_OVERFLOW` from the environment; SQL logging is off by default.

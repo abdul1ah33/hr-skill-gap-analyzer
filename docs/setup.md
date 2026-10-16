@@ -45,19 +45,10 @@ source .venv/bin/activate
 
 ### Install Python dependencies
 
-The `requirements.txt` is a comprehensive lock file. Install with:
+`requirements.txt` pins exactly the packages the app uses (including pytest); the Docker image installs the same file. Install with:
 
 ```bash
 pip install -r requirements.txt
-```
-
-If you want a minimal install instead (the lock file includes many ML/notebook packages that may not all be required for the web app):
-
-```bash
-pip install fastapi uvicorn sqlalchemy psycopg alembic \
-    python-jose[cryptography] passlib[bcrypt] python-dotenv \
-    pydantic[email] requests google-genai \
-    python-multipart pymupdf
 ```
 
 ---

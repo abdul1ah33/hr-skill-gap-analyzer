@@ -106,4 +106,4 @@ npm run build   # also type-checks
 2. **CV skill test endpoint:** `/assessment/employee/{id}/assess` is in use. It depends on `services/old/assessment_service` and the root `ai/` Ollama agents, and needs a local Ollama server. Not to be confused with the new `/assessments` (question-based test).
 3. **Frontend auth:** `ProtectedRoute` only checks that a token exists; no expiry check, no role check, no 401 handling.
 4. **Inconsistent URL naming:** `/positionSkills` (camelCase) vs `/skill-aliases` (kebab-case).
-5. **Bloated `requirements.txt`:** includes many ML packages the web app doesn't use.
+5. **Creating an employee from the form fails:** `crud/employee.py` `create_employee` flushes the new row before setting `employee_number`, which is `NOT NULL`, so `POST /employees/` returns 500. (`resume_service` avoids this with a temporary `"TEMP"` number.)

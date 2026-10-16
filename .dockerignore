@@ -1,0 +1,18 @@
+# Build context for backend/Dockerfile is the repository root
+.git
+.db_backups
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.env
+**/.env.*
+clients
+docs
+plans
+frontend
+my_frontend
+backend/tests
+backend/app/data/question_bank/generated/*.progress.json
+backend/app/data/question_bank/generated/*.rejections.log

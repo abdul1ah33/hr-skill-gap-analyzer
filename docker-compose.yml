@@ -1,0 +1,82 @@
+# Per-client deployment (docs/deployment.md, plan §3).
+#
+#   proxy          Caddy + built frontend; routes each client's domain
+#   postgres       one server, one database + one database user per client
+#   api-client-*   one backend container per client, same image, own env file
+#   tools          one-off container for provisioning and upgrades
+#
+# First time:
+#   cp deploy/compose.env.example .env          # then set POSTGRES_PASSWORD
+#   docker compose up -d postgres
+#   docker compose run --rm tools python -m app.scripts.provision_client client_a ...
+#   docker compose up -d --build
+name: hr-skill-gap
+
+# Every backend service builds the same Dockerfile; the build cache makes
+# them share all layers, so the image is really built once
+x-api: &api
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  proxy:
+    build:
+      context: my_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api-client-a
+      - api-client-b
+
+  tools:
+    <<: *api
+    profiles: ["tools"]
+    restart: "no"
+    # Writes clients/<name>.env on the host; run as the host user so the
+    # file stays readable by docker compose (Linux). Ignored on Docker Desktop.
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      POSTGRES_ADMIN_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/postgres
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    volumes:
+      - ./clients:/srv/clients
+    command: ["python", "-m", "app.scripts.upgrade_clients"]
+
+  # ── Clients: one service per client, created by provision_client ──────────
+  api-client-a:
+    <<: *api
+    env_file:
+      - path: clients/client_a.env
+        required: false
+
+  api-client-b:
+    <<: *api
+    env_file:
+      - path: clients/client_b.env
+        required: false
+
+volumes:
+  pgdata:
+  caddy_data:

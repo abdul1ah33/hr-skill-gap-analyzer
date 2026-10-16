@@ -46,7 +46,8 @@ hr-skill-gap-analyzer/
 │       ├── services/                # Business logic (ESCO, comparison, gap analysis, resume, assessments)
 │       ├── ai/                      # Gemini modules (perfect profile, gap report, resume parser, question generator)
 │       ├── data/question_bank/      # Assessment question bank (JSONL; generated/ for generated questions)
-│       └── scripts/                 # Seed, question import and generation scripts
+│       └── scripts/                 # Seed, question import/generation, templates, client provisioning
+│   ├── Dockerfile                   # Backend image (one per release, used by every client)
 │   └── tests/                       # pytest suite (separate test database)
 ├── my_frontend/                     # Main frontend (see my_frontend/README.md)
 │   └── src/
@@ -61,6 +62,9 @@ hr-skill-gap-analyzer/
 │       └── contexts/                # ThemeContext (light/dark/system)
 ├── frontend/                        # Legacy frontend (unused)
 ├── ai/                              # Ollama agents used by the CV skill test endpoint
+├── docker-compose.yml               # Deployment: proxy, postgres, one backend per client (docs/deployment.md)
+├── deploy/                          # Caddyfile, compose .env example
+├── clients/                         # One env file per client (not committed)
 └── docs/
 ```
 
@@ -198,6 +202,7 @@ Details in [docs/setup.md](docs/setup.md). Backend tests: `cd backend && pytest`
 | [ai-analysis.md](docs/ai-analysis.md) | ESCO + Gemini pipelines |
 | [skill_alias_system.md](docs/skill_alias_system.md) | Skill alias system |
 | [templates.md](docs/templates.md) | Industry templates: format, rules, applying |
+| [deployment.md](docs/deployment.md) | Docker deployment, one database per client: provisioning, upgrades, backups |
 | [development.md](docs/development.md) | Conventions, workflow, known tech debt |
 | [legacy-frontend.md](docs/legacy-frontend.md) | The old `frontend/` app (reference only) |
 

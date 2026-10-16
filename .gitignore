@@ -52,3 +52,7 @@ build/
 .db_backups/
 backend/app/data/question_bank/generated/*.progress.json
 backend/app/data/question_bank/generated/*.rejections.log
+
+# Client env files (secrets); provision_client creates them
+clients/*.env
+!clients/example.env
